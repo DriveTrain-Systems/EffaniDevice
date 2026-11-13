@@ -98,10 +98,10 @@ namespace Effani.Device.UI
 			_processEngine.QueueJob(job);
 		}
 		[Command]
-		public void ShowSettings()
+		public void ShowTools()
 		{
-			var settingsWindow = new UtilitiesView(_settingsService, _processEngine, _device, ConsoleMessages, Assay != null) { Title = "Settings" };
-			settingsWindow.ShowDialog();
+			var toolsWindow = new UtilitiesView(_settingsService, _processEngine, _device, ConsoleMessages, Assay != null) { Title = "Tools" };
+			toolsWindow.ShowDialog();
 		}
 		[Command]
 		public void ShowUpload()

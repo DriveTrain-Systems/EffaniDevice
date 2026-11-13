@@ -2,7 +2,7 @@
 
 namespace Drivetrain.Robotics.Process
 {
-	public class Home(DeviceControl device, AxisSpec axisSpec = null) : Command(device)
+	public class Home(DeviceControl device, AxisSpec axisSpec = null, TimeSpan? timeout = null) : Command(device, timeout ?? SettingTimeout(device, s => s.HomeAxisTimeoutSeconds))
 	{
 		protected override void Run()
 		{

@@ -2,7 +2,7 @@ using Drivetrain.Robotics.Control;
 
 namespace Drivetrain.Robotics.Process
 {
-	public class SetWifi(string ssid, string password, DeviceControl device) : Command(device)
+	public class SetWifi(string ssid, string password, DeviceControl device, TimeSpan? timeout = null) : Command(device, timeout ?? SettingTimeout(device, s => s.WifiTimeoutSeconds))
 	{
 		protected override void Run()
 		{

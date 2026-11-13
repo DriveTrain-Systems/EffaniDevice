@@ -10,9 +10,9 @@ namespace Drivetrain.Robotics.Control
 			: base(axis.GetAttribute<DisplayAttribute>().Name)
 		{
 			Axis = axis;
-			DriverPort = driverPort.DriverDesignation;
-			DriverBoardPort = driverPort;
-			EndstopBoardPort = endstopPort;
+			DriverBoardPort = driverPort.Expect(PortKind.Driver, $"The {Label} motor");
+			EndstopBoardPort = endstopPort.Expect(PortKind.Input, $"The {Label} endstop");
+			DriverPort = DriverBoardPort.Designation;
 			Designation = axis.GetAttribute<DisplayAttribute>().ShortName;
 			StartingPosition = startingPosition ?? 0;
 		}
@@ -25,7 +25,12 @@ namespace Drivetrain.Robotics.Control
 		public decimal StartingPosition { get; set; }
 		public decimal StepsPerMillimeter { get; set; }
 
+		/// <summary>The fastest the axis may go, in mm/min (M203 in config.g): the board holds every move to this.</summary>
 		public int MaxSpeed { get; set; } = 500;
+		/// <summary>The speed moves use when they do not ask for one, in mm/min; 0 means the max speed.</summary>
+		public int MoveSpeed { get; set; }
+		/// <summary>The speed moves use when they do not ask for one: the move speed, but never more than the max speed.</summary>
+		public int DefaultMoveSpeed => MoveSpeed > 0 ? Math.Min(MoveSpeed, MaxSpeed) : MaxSpeed;
 
 		public int Acceleration { get; set; } = 500;
 

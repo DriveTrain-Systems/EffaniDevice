@@ -132,34 +132,6 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirationDwell)));
             }
         }
-        public int AspirationSuctionToggleBoardNumber
-        {
-            get
-            {
-                return _aspirationSuctionToggleBoardNumber;
-            }
-            set
-            {
-                if (_aspirationSuctionToggleBoardNumber == value)
-                    return;
-                _aspirationSuctionToggleBoardNumber = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirationSuctionToggleBoardNumber)));
-            }
-        }
-        public int AspirationSuctionTogglePortNumber
-        {
-            get
-            {
-                return _aspirationSuctionTogglePortNumber;
-            }
-            set
-            {
-                if (_aspirationSuctionTogglePortNumber == value)
-                    return;
-                _aspirationSuctionTogglePortNumber = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirationSuctionTogglePortNumber)));
-            }
-        }
         public int BasalIncubationTimerPeriod
         {
             get
@@ -572,6 +544,21 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaReagentMaxSpeed)));
             }
         }
+        /// <summary>The speed of the DNA Reagent pump axis's moves in mm/min (sent with each move), at most <see cref="DnaReagentMaxSpeed"/>.</summary>
+        public int DnaReagentMoveSpeed
+        {
+            get
+            {
+                return _dnaReagentMoveSpeed;
+            }
+            set
+            {
+                if (_dnaReagentMoveSpeed == value)
+                    return;
+                _dnaReagentMoveSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaReagentMoveSpeed)));
+            }
+        }
         public int DnaReagentAcceleration
         {
             get
@@ -654,6 +641,21 @@ namespace Drivetrain.Robotics.Control
                     return;
                 _kohMaxSpeed = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(KohMaxSpeed)));
+            }
+        }
+        /// <summary>The speed of the KOH pump axis's moves in mm/min (sent with each move), at most <see cref="KohMaxSpeed"/>.</summary>
+        public int KohMoveSpeed
+        {
+            get
+            {
+                return _kohMoveSpeed;
+            }
+            set
+            {
+                if (_kohMoveSpeed == value)
+                    return;
+                _kohMoveSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(KohMoveSpeed)));
             }
         }
         public int KohAcceleration
@@ -740,6 +742,21 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhMaxSpeed)));
             }
         }
+        /// <summary>The speed of the NADH pump axis's moves in mm/min (sent with each move), at most <see cref="NadhMaxSpeed"/>.</summary>
+        public int NadhMoveSpeed
+        {
+            get
+            {
+                return _nadhMoveSpeed;
+            }
+            set
+            {
+                if (_nadhMoveSpeed == value)
+                    return;
+                _nadhMoveSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhMoveSpeed)));
+            }
+        }
         public int NadhAcceleration
         {
             get
@@ -824,6 +841,21 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BasalMaxSpeed)));
             }
         }
+        /// <summary>The speed of the Basal pump axis's moves in mm/min (sent with each move), at most <see cref="BasalMaxSpeed"/>.</summary>
+        public int BasalMoveSpeed
+        {
+            get
+            {
+                return _basalMoveSpeed;
+            }
+            set
+            {
+                if (_basalMoveSpeed == value)
+                    return;
+                _basalMoveSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BasalMoveSpeed)));
+            }
+        }
         public int BasalAcceleration
         {
             get
@@ -881,6 +913,111 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableXTravelLength)));
             }
         }
+        /// <summary>How the Table X motor's driver regulates its current (the D parameter of M569 in config.g).</summary>
+        public DriverMode TableXDriverMode
+        {
+            get
+            {
+                return _tableXDriverMode;
+            }
+            set
+            {
+                if (_tableXDriverMode == value)
+                    return;
+                _tableXDriverMode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableXDriverMode)));
+            }
+        }
+        /// <summary>How the Table Y motor's driver regulates its current (the D parameter of M569 in config.g).</summary>
+        public DriverMode TableYDriverMode
+        {
+            get
+            {
+                return _tableYDriverMode;
+            }
+            set
+            {
+                if (_tableYDriverMode == value)
+                    return;
+                _tableYDriverMode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableYDriverMode)));
+            }
+        }
+        /// <summary>How the aspirate motor's driver regulates its current (the D parameter of M569 in config.g).</summary>
+        public DriverMode AspirateDriverMode
+        {
+            get
+            {
+                return _aspirateDriverMode;
+            }
+            set
+            {
+                if (_aspirateDriverMode == value)
+                    return;
+                _aspirateDriverMode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirateDriverMode)));
+            }
+        }
+        /// <summary>How the DNA Reagent pump motor's driver regulates its current (the D parameter of M569 in config.g).</summary>
+        public DriverMode DnaReagentDriverMode
+        {
+            get
+            {
+                return _dnaReagentDriverMode;
+            }
+            set
+            {
+                if (_dnaReagentDriverMode == value)
+                    return;
+                _dnaReagentDriverMode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaReagentDriverMode)));
+            }
+        }
+        /// <summary>How the KOH pump motor's driver regulates its current (the D parameter of M569 in config.g).</summary>
+        public DriverMode KohDriverMode
+        {
+            get
+            {
+                return _kohDriverMode;
+            }
+            set
+            {
+                if (_kohDriverMode == value)
+                    return;
+                _kohDriverMode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(KohDriverMode)));
+            }
+        }
+        /// <summary>How the NADH pump motor's driver regulates its current (the D parameter of M569 in config.g).</summary>
+        public DriverMode NadhDriverMode
+        {
+            get
+            {
+                return _nadhDriverMode;
+            }
+            set
+            {
+                if (_nadhDriverMode == value)
+                    return;
+                _nadhDriverMode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhDriverMode)));
+            }
+        }
+        /// <summary>How the Basal pump motor's driver regulates its current (the D parameter of M569 in config.g).</summary>
+        public DriverMode BasalDriverMode
+        {
+            get
+            {
+                return _basalDriverMode;
+            }
+            set
+            {
+                if (_basalDriverMode == value)
+                    return;
+                _basalDriverMode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BasalDriverMode)));
+            }
+        }
         public int TableXMotorCurrent
         {
             get
@@ -921,6 +1058,34 @@ namespace Drivetrain.Robotics.Control
                     return;
                 _tableXMaxInstantaneousSpeedChange = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableXMaxInstantaneousSpeedChange)));
+            }
+        }
+        public int TableXHomingSpeed
+        {
+            get
+            {
+                return _tableXHomingSpeed;
+            }
+            set
+            {
+                if (_tableXHomingSpeed == value)
+                    return;
+                _tableXHomingSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableXHomingSpeed)));
+            }
+        }
+        public int TableXFineHomingSpeed
+        {
+            get
+            {
+                return _tableXFineHomingSpeed;
+            }
+            set
+            {
+                if (_tableXFineHomingSpeed == value)
+                    return;
+                _tableXFineHomingSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableXFineHomingSpeed)));
             }
         }
         public decimal TableYStepsPerMillimeter
@@ -993,6 +1158,34 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableYMaxInstantaneousSpeedChange)));
             }
         }
+        public int TableYHomingSpeed
+        {
+            get
+            {
+                return _tableYHomingSpeed;
+            }
+            set
+            {
+                if (_tableYHomingSpeed == value)
+                    return;
+                _tableYHomingSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableYHomingSpeed)));
+            }
+        }
+        public int TableYFineHomingSpeed
+        {
+            get
+            {
+                return _tableYFineHomingSpeed;
+            }
+            set
+            {
+                if (_tableYFineHomingSpeed == value)
+                    return;
+                _tableYFineHomingSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableYFineHomingSpeed)));
+            }
+        }
         // Motion parameters of the aspirate needle actuator (written to config.g as M92, M208, M906, M203, M201 and M566)
         public decimal AspirateStepsPerMillimeter
         {
@@ -1050,6 +1243,21 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirateMaxSpeed)));
             }
         }
+        /// <summary>The speed of the aspirate axis's moves in mm/min (sent with each move), at most <see cref="AspirateMaxSpeed"/>.</summary>
+        public int AspirateMoveSpeed
+        {
+            get
+            {
+                return _aspirateMoveSpeed;
+            }
+            set
+            {
+                if (_aspirateMoveSpeed == value)
+                    return;
+                _aspirateMoveSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirateMoveSpeed)));
+            }
+        }
         public int AspirateAcceleration
         {
             get
@@ -1090,6 +1298,126 @@ namespace Drivetrain.Robotics.Control
                     return;
                 _comPortNumber = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ComPortNumber)));
+            }
+        }
+        /// <summary>How long, in seconds, to wait for the controller board to report that it has finished a command before giving up on it.</summary>
+        public int BoardReadyTimeoutSeconds
+        {
+            get
+            {
+                return _boardReadyTimeoutSeconds;
+            }
+            set
+            {
+                if (_boardReadyTimeoutSeconds == value)
+                    return;
+                _boardReadyTimeoutSeconds = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BoardReadyTimeoutSeconds)));
+            }
+        }
+        /// <summary>How long to wait for one axis to finish homing (G28 on one axis).</summary>
+        public int HomeAxisTimeoutSeconds
+        {
+            get
+            {
+                return _homeAxisTimeoutSeconds;
+            }
+            set
+            {
+                if (_homeAxisTimeoutSeconds == value)
+                    return;
+                _homeAxisTimeoutSeconds = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HomeAxisTimeoutSeconds)));
+            }
+        }
+        /// <summary>How long to wait for all axes to finish homing (G28).</summary>
+        public int HomeAllTimeoutSeconds
+        {
+            get
+            {
+                return _homeAllTimeoutSeconds;
+            }
+            set
+            {
+                if (_homeAllTimeoutSeconds == value)
+                    return;
+                _homeAllTimeoutSeconds = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HomeAllTimeoutSeconds)));
+            }
+        }
+        /// <summary>How long to wait for a move of the table or an axis to finish.</summary>
+        public int MoveTimeoutSeconds
+        {
+            get
+            {
+                return _moveTimeoutSeconds;
+            }
+            set
+            {
+                if (_moveTimeoutSeconds == value)
+                    return;
+                _moveTimeoutSeconds = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MoveTimeoutSeconds)));
+            }
+        }
+        /// <summary>How long to wait for a fluid pump to finish emitting, including priming.</summary>
+        public int FluidEmissionTimeoutSeconds
+        {
+            get
+            {
+                return _fluidEmissionTimeoutSeconds;
+            }
+            set
+            {
+                if (_fluidEmissionTimeoutSeconds == value)
+                    return;
+                _fluidEmissionTimeoutSeconds = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FluidEmissionTimeoutSeconds)));
+            }
+        }
+        /// <summary>How long to wait for the aspiration needle to finish its stroke.</summary>
+        public int AspirateTimeoutSeconds
+        {
+            get
+            {
+                return _aspirateTimeoutSeconds;
+            }
+            set
+            {
+                if (_aspirateTimeoutSeconds == value)
+                    return;
+                _aspirateTimeoutSeconds = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirateTimeoutSeconds)));
+            }
+        }
+        /// <summary>How long to wait for the board to finish running config.g.</summary>
+        public int ApplyConfigTimeoutSeconds
+        {
+            get
+            {
+                return _applyConfigTimeoutSeconds;
+            }
+            set
+            {
+                if (_applyConfigTimeoutSeconds == value)
+                    return;
+                _applyConfigTimeoutSeconds = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ApplyConfigTimeoutSeconds)));
+            }
+        }
+        /// <summary>How long to wait for the board to finish switching or setting up WiFi.</summary>
+        public int WifiTimeoutSeconds
+        {
+            get
+            {
+                return _wifiTimeoutSeconds;
+            }
+            set
+            {
+                if (_wifiTimeoutSeconds == value)
+                    return;
+                _wifiTimeoutSeconds = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WifiTimeoutSeconds)));
             }
         }
         public bool Debug
@@ -2024,6 +2352,67 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StandardsWellCount)));
             }
         }
+        /// <summary>Maximum speed of the Table X axis in mm/min (M203 in config.g), and the speed table moves use.</summary>
+        public int TableXMaxSpeed
+        {
+            get
+            {
+                return _tableXMaxSpeed;
+            }
+            set
+            {
+                if (_tableXMaxSpeed == value)
+                    return;
+                _tableXMaxSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableXMaxSpeed)));
+            }
+        }
+        /// <summary>The speed of the Table X axis's moves in mm/min (sent with each move), at most <see cref="TableXMaxSpeed"/>.</summary>
+        public int TableXMoveSpeed
+        {
+            get
+            {
+                return _tableXMoveSpeed;
+            }
+            set
+            {
+                if (_tableXMoveSpeed == value)
+                    return;
+                _tableXMoveSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableXMoveSpeed)));
+            }
+        }
+        /// <summary>Maximum speed of the Table Y axis in mm/min (M203 in config.g), and the speed table moves use.</summary>
+        public int TableYMaxSpeed
+        {
+            get
+            {
+                return _tableYMaxSpeed;
+            }
+            set
+            {
+                if (_tableYMaxSpeed == value)
+                    return;
+                _tableYMaxSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableYMaxSpeed)));
+            }
+        }
+        /// <summary>The speed of the Table Y axis's moves in mm/min (sent with each move), at most <see cref="TableYMaxSpeed"/>.</summary>
+        public int TableYMoveSpeed
+        {
+            get
+            {
+                return _tableYMoveSpeed;
+            }
+            set
+            {
+                if (_tableYMoveSpeed == value)
+                    return;
+                _tableYMoveSpeed = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TableYMoveSpeed)));
+            }
+        }
+        /// <summary>No longer used: replaced by <see cref="TableXMaxSpeed"/> and <see cref="TableYMaxSpeed"/>. Kept so stored settings still load.</summary>
         public int TableAxisSpeed
         {
             get
@@ -2736,6 +3125,21 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhLaserPortNumber)));
             }
         }
+        /// <summary>Whether the NADH laser is on its board's laser output (<see cref="PortKind.Laser"/>, the port number is not used) or on an out port (<see cref="PortKind.Output"/>).</summary>
+        public PortKind NadhLaserPortKind
+        {
+            get
+            {
+                return _nadhLaserPortKind;
+            }
+            set
+            {
+                if (_nadhLaserPortKind == value)
+                    return;
+                _nadhLaserPortKind = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhLaserPortKind)));
+            }
+        }
         public int DnaLaserBoardNumber
         {
             get
@@ -2764,28 +3168,49 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaLaserPortNumber)));
             }
         }
+        /// <summary>Whether the DNA laser is on its board's laser output (<see cref="PortKind.Laser"/>, the port number is not used) or on an out port (<see cref="PortKind.Output"/>).</summary>
+        public PortKind DnaLaserPortKind
+        {
+            get
+            {
+                return _dnaLaserPortKind;
+            }
+            set
+            {
+                if (_dnaLaserPortKind == value)
+                    return;
+                _dnaLaserPortKind = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaLaserPortKind)));
+            }
+        }
         #endregion
         #endregion
 
         #region Fields
         DateTime VersionDate { get; set; }
 
-        decimal _aspirateActuatorStartPosition = 90m;
+        decimal _aspirateActuatorStartPosition = 0m;
         decimal _aspirateDistanceToPlate = 11m;
         Coordinate _aspirateLocation = new(330, 203);
         decimal _aspiratePositioningSpeed = 200m;
         decimal _aspirateStirSpeed = 200m;
         decimal _aspirateTravelPerMicroLiter = 0.013m;
         int _aspirationDwell = 8000;
-        int _aspirationSuctionToggleBoardNumber = 1;
-        int _aspirationSuctionTogglePortNumber = 2;
         int _basalIncubationTimerPeriod = 900000;
         Coordinate _basalLocation = new(165, 257);
-        decimal _basalSyringeLoadingPosition = 117m;
+        decimal _basalSyringeLoadingPosition = 0m;
         decimal _basalTravelPerMicroLiter = 0.00153m;
         int _basalVolume = 300;
         Coordinate _biopsyLocation = new(245, 110);
         int _comPortNumber = 4;
+        int _boardReadyTimeoutSeconds = 5;
+        int _homeAxisTimeoutSeconds = 120;
+        int _homeAllTimeoutSeconds = 300;
+        int _moveTimeoutSeconds = 30;
+        int _fluidEmissionTimeoutSeconds = 60;
+        int _aspirateTimeoutSeconds = 60;
+        int _applyConfigTimeoutSeconds = 30;
+        int _wifiTimeoutSeconds = 30;
         int _controllerBoardCount = 2;
         int _inputPortsPerBoard = 7;
         Direction _tableXDirection = Direction.Backwards;
@@ -2793,11 +3218,11 @@ namespace Drivetrain.Robotics.Control
         Direction _aspirateDirection = Direction.Forwards;
         Direction _dnaReagentDirection = Direction.Forwards;
         Direction _kohDirection = Direction.Forwards;
-        Direction _nadhDirection = Direction.Forwards;
+        Direction _nadhDirection = Direction.Backwards;
         Direction _basalDirection = Direction.Forwards;
         EndstopLocation _tableXEndstopLocation = EndstopLocation.LowEnd;
         EndstopLocation _tableYEndstopLocation = EndstopLocation.LowEnd;
-        EndstopLocation _aspirateEndstopLocation = EndstopLocation.LowEnd;
+        EndstopLocation _aspirateEndstopLocation = EndstopLocation.HighEnd;
         EndstopLocation _dnaReagentEndstopLocation = EndstopLocation.HighEnd;
         EndstopLocation _kohEndstopLocation = EndstopLocation.HighEnd;
         EndstopLocation _nadhEndstopLocation = EndstopLocation.HighEnd;
@@ -2805,43 +3230,59 @@ namespace Drivetrain.Robotics.Control
         decimal _dnaReagentStepsPerMillimeter = 1259.84m;
         int _dnaReagentTravelLength = 117;
         int _dnaReagentMotorCurrent = 1500;
-        int _dnaReagentMaxSpeed = 2286;
+        int _dnaReagentMaxSpeed = 2000;
+        int _dnaReagentMoveSpeed = 2000;
         int _dnaReagentAcceleration = 500;
         int _dnaReagentMaxInstantaneousSpeedChange = 900;
         decimal _kohStepsPerMillimeter = 1259.84m;
         int _kohTravelLength = 117;
         int _kohMotorCurrent = 1500;
-        int _kohMaxSpeed = 2286;
+        int _kohMaxSpeed = 2000;
+        int _kohMoveSpeed = 2000;
         int _kohAcceleration = 500;
         int _kohMaxInstantaneousSpeedChange = 900;
         decimal _nadhStepsPerMillimeter = 1259.84m;
         int _nadhTravelLength = 117;
         int _nadhMotorCurrent = 1500;
-        int _nadhMaxSpeed = 2286;
+        int _nadhMaxSpeed = 2000;
+        int _nadhMoveSpeed = 2000;
         int _nadhAcceleration = 500;
         int _nadhMaxInstantaneousSpeedChange = 900;
         decimal _basalStepsPerMillimeter = 1259.84m;
         int _basalTravelLength = 117;
         int _basalMotorCurrent = 1500;
-        int _basalMaxSpeed = 2286;
+        int _basalMaxSpeed = 2000;
+        int _basalMoveSpeed = 2000;
         int _basalAcceleration = 500;
         int _basalMaxInstantaneousSpeedChange = 900;
         decimal _aspirateStepsPerMillimeter = 1259.84m;
         int _aspirateTravelLength = 90;
         int _aspirateMotorCurrent = 500;
-        int _aspirateMaxSpeed = 4000;
+        int _aspirateMaxSpeed = 500;
+        int _aspirateMoveSpeed = 500;
         int _aspirateAcceleration = 500;
         int _aspirateMaxInstantaneousSpeedChange = 900;
-        decimal _tableXStepsPerMillimeter = 400m;
-        int _tableXTravelLength = 500;
+        decimal _tableXStepsPerMillimeter = 1066.67m;
+        int _tableXTravelLength = 360;
         int _tableXMotorCurrent = 400;
         int _tableXAcceleration = 500;
-        int _tableXMaxInstantaneousSpeedChange = 900;
-        decimal _tableYStepsPerMillimeter = 400m;
-        int _tableYTravelLength = 500;
+        int _tableXMaxInstantaneousSpeedChange = 120;
+        int _tableXHomingSpeed = 600;
+        int _tableXFineHomingSpeed = 300;
+        decimal _tableYStepsPerMillimeter = 1066.67m;
+        int _tableYTravelLength = 555;
         int _tableYMotorCurrent = 400;
+        DriverMode _tableXDriverMode = DriverMode.StealthChop;
+        DriverMode _tableYDriverMode = DriverMode.StealthChop;
+        DriverMode _aspirateDriverMode = DriverMode.SpreadCycle;
+        DriverMode _dnaReagentDriverMode = DriverMode.SpreadCycle;
+        DriverMode _kohDriverMode = DriverMode.SpreadCycle;
+        DriverMode _nadhDriverMode = DriverMode.SpreadCycle;
+        DriverMode _basalDriverMode = DriverMode.SpreadCycle;
         int _tableYAcceleration = 500;
-        int _tableYMaxInstantaneousSpeedChange = 900;
+        int _tableYMaxInstantaneousSpeedChange = 120;
+        int _tableYHomingSpeed = 600;
+        int _tableYFineHomingSpeed = 300;
         bool _debug;
         int _dnaAspirationVolume = 50;
         Coordinate _dnaLocation = new(331, 304);
@@ -2849,7 +3290,7 @@ namespace Drivetrain.Robotics.Control
         int _dnaSensorNumber = 0;
         int _dnaSensorReadHigh = 4095;
         int _dnaSensorReadLow = 0;
-        decimal _dnaSyringeLoadingPosition = 117m;
+        decimal _dnaSyringeLoadingPosition = 0m;
         int _dnaTimerPeriod = 360000;
         decimal _dnaTravelPerMicroLiter = 0.00153m;
         int _dnaVolume = 200;
@@ -2868,7 +3309,7 @@ namespace Drivetrain.Robotics.Control
         int _initialNadhFluidPrimingVolume = 100;
         int _kohAspirationVolume = 50;
         Coordinate _kohLocation = new(331, 256);
-        decimal _kohSyringeLoadingPosition = 117m;
+        decimal _kohSyringeLoadingPosition = 0m;
         int _kohTimerPeriod = 480000;
         decimal _kohTravelPerMicroLiter = 0.00897m;
         int _kohVolume = 20;
@@ -2880,7 +3321,7 @@ namespace Drivetrain.Robotics.Control
         int _nadhSensorNumber = 1;
         int _nadhSensorReadHigh = 4095;
         int _nadhSensorReadLow = 0;
-        decimal _nadhSyringeLoadingPosition = 117m;
+        decimal _nadhSyringeLoadingPosition = 0m;
         decimal _nadhTravelPerMicroLiter = 0.00897m;
         int _nadhVolume = 20;
         Coordinate _plateOffset = new(87.48m, 0);
@@ -2894,6 +3335,10 @@ namespace Drivetrain.Robotics.Control
         int _standardsWellCount = 6;
 		decimal _reprimePumpInterval = 20;
         int _tableAxisSpeed = 4000;
+        int _tableXMaxSpeed = 900;
+        int _tableXMoveSpeed = 700;
+        int _tableYMaxSpeed = 900;
+        int _tableYMoveSpeed = 600;
         int _testMediaAspirationVolume = 50;
         int _timerDescriptionUpdateInterval = 1000;
         Coordinate _trayLoadingLocation = new(0, 0);
@@ -2936,17 +3381,19 @@ namespace Drivetrain.Robotics.Control
         int _basalEndstopBoardNumber = 0;
         int _basalEndstopPortNumber = 3;
         int _trayUvBoardNumber = 0;
-        int _trayUvPortNumber = 6;
+        int _trayUvPortNumber = 4;
         int _chamberUvBoardNumber = 0;
         int _chamberUvPortNumber = 5;
-        int _nadh532LaserBoardNumber = 0;
-        int _nadh532LaserPortNumber = 2;
-        int _nadhSensorBoardNumber = 0;
-        int _nadhSensorPortNumber = 0;
+        int _nadh532LaserBoardNumber = 1;
+        int _nadh532LaserPortNumber = 6;
+        int _nadhSensorBoardNumber = 1;
+        int _nadhSensorPortNumber = 1;
         int _dna488LaserBoardNumber = 0;
-        int _dna488LaserPortNumber = 1;
-        int _dnaSensorBoardNumber = 0;
-        int _dnaSensorPortNumber = 1;
+        int _dna488LaserPortNumber = 6;
+        PortKind _nadhLaserPortKind = PortKind.Output;
+        PortKind _dnaLaserPortKind = PortKind.Output;
+        int _dnaSensorBoardNumber = 1;
+        int _dnaSensorPortNumber = 0;
         #endregion
 
         #region Events

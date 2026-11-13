@@ -7,7 +7,7 @@ namespace Effani.Device.Control
 	public class AlignWellToAxis : MoveTableAbsolute
 	{
 
-		public AlignWellToAxis(Axis axis, Well well, EffaniDeviceControl device) : base(device)
+		public AlignWellToAxis(Axis axis, Well well, EffaniDeviceControl device, TimeSpan? timeout = null) : base(device, null, timeout)
 		{
 			_axis = axis;
 			_well = well;

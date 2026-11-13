@@ -13,16 +13,14 @@
     <ROW Property="AI_REQUIRED_DOTNET_VERSION" MultiBuildValue="DefaultBuild:4.0.1" ValueLocId="-"/>
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
-    <ROW Property="ARPNOMODIFY" MultiBuildValue="DefaultBuild:1"/>
     <ROW Property="ARPNOREPAIR" MultiBuildValue="DefaultBuild:1"/>
     <ROW Property="ARPPRODUCTICON" Value="effanicow.exe" Type="8"/>
     <ROW Property="CTRLS" Value="2"/>
-    <ROW Property="LIMITUI" MultiBuildValue="DefaultBuild:1"/>
     <ROW Property="Manufacturer" Value="DriveTrain Systems"/>
-    <ROW Property="ProductCode" Value="1033:{7620BFA6-8853-47D5-87C7-DA48DB2DE101} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{4C7AEAC0-2F66-44DE-A0DB-9F8381165275} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Effani"/>
-    <ROW Property="ProductVersion" Value="4.0.1"/>
+    <ROW Property="ProductVersion" Value="4.0.3"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;AI_SETUPEXEPATH;SETUPEXEDIR"/>
     <ROW Property="UpgradeCode" Value="{70DD9A04-6B09-40D9-8373-64B63F7D4B79}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -37,6 +35,7 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
     <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
     <ROW Directory="CommonAppDataFolder" Directory_Parent="TARGETDIR" DefaultDir="COMMON~1|CommonAppDataFolder" IsPseudoRoot="1"/>
+    <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
     <ROW Directory="Resources_Dir" Directory_Parent="APPDIR" DefaultDir="RESOUR~1|Resources"/>
     <ROW Directory="StartMenuFolder" Directory_Parent="TARGETDIR" DefaultDir="STARTM~1|StartMenuFolder" IsPseudoRoot="1"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
@@ -326,7 +325,7 @@
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
-    <ROW File="EffaniDevice.exe" Component_="EffaniDevice.exe" FileName="EFFANI~1.EXE|Effani Device.exe" Attributes="0" SourcePath="..\Effani.Device.UI\bin\Release\net9.0-windows7.0\Effani Device.exe" SelfReg="false" DigSign="true"/>
+    <ROW File="EffaniDevice.exe" Component_="EffaniDevice.exe" FileName="EFFANI~1.EXE|Effani Device.exe" Attributes="0" SourcePath="..\Effani.Device.UI\bin\Release\net9.0-windows7.0\Effani Device.exe" SelfReg="false"/>
     <ROW File="DevExpress.BonusSkins.v25.1.dll" Component_="DevExpress.BonusSkins.v25.1.dll" FileName="DEVEXP~1.DLL|DevExpress.BonusSkins.v25.1.dll" Attributes="0" SourcePath="..\Effani.Device.UI\bin\Release\net9.0-windows7.0\DevExpress.BonusSkins.v25.1.dll" SelfReg="false"/>
     <ROW File="DevExpress.Charts.Designer.v25.1.dll" Component_="DevExpress.Charts.Designer.v25.1.dll" FileName="DEVEXP~2.DLL|DevExpress.Charts.Designer.v25.1.dll" Attributes="0" SourcePath="..\Effani.Device.UI\bin\Release\net9.0-windows7.0\DevExpress.Charts.Designer.v25.1.dll" SelfReg="false"/>
     <ROW File="DevExpress.Charts.v25.1.Core.dll" Component_="DevExpress.Charts.v25.1.Core.dll" FileName="DEVEXP~3.DLL|DevExpress.Charts.v25.1.Core.dll" Attributes="0" SourcePath="..\Effani.Device.UI\bin\Release\net9.0-windows7.0\DevExpress.Charts.v25.1.Core.dll" SelfReg="false"/>
@@ -588,7 +587,7 @@
     <ROW File="System.ServiceModel.NetFramingBase.resources.dll_12" Component_="System.ServiceModel.NetFramingBase.resources.dll_12" FileName="SYSTEM~2.DLL|System.ServiceModel.NetFramingBase.resources.dll" Attributes="0" SourcePath="..\Effani.Device.UI\bin\Release\net9.0-windows7.0\es\System.ServiceModel.NetFramingBase.resources.dll" SelfReg="false"/>
     <ROW File="System.ServiceModel.NetTcp.resources.dll_12" Component_="System.ServiceModel.NetTcp.resources.dll_12" FileName="SYSTEM~3.DLL|System.ServiceModel.NetTcp.resources.dll" Attributes="0" SourcePath="..\Effani.Device.UI\bin\Release\net9.0-windows7.0\es\System.ServiceModel.NetTcp.resources.dll" SelfReg="false"/>
     <ROW File="System.ServiceModel.Primitives.resources.dll_12" Component_="System.ServiceModel.Primitives.resources.dll_12" FileName="SYSTEM~4.DLL|System.ServiceModel.Primitives.resources.dll" Attributes="0" SourcePath="..\Effani.Device.UI\bin\Release\net9.0-windows7.0\es\System.ServiceModel.Primitives.resources.dll" SelfReg="false"/>
-    <ROW File="updater.exe" Component_="updater.exe" FileName="EFFANI~2.EXE|Effani Updater.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="&lt;AI_STUBS&gt;updater.exe" SelfReg="false" DigSign="true"/>
+    <ROW File="updater.exe" Component_="updater.exe" FileName="EFFANI~2.EXE|Effani Updater.exe" Version="65535.65535.65535.65535" Attributes="0" SourcePath="&lt;AI_STUBS&gt;updater.exe" SelfReg="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
     <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="2"/>
@@ -597,7 +596,7 @@
     <ROW Action="AI_DetectSoftware" Sequence="151"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
-    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="0" PackageFolder="C:\Users\rdwhe\Dropbox\Effani\Device Software Updates" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="..\Effani.Device.UI\Resources\effanicow.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" ExtUI="true" UseLargeSchema="true" ExeName="Effani Installer [|ProductVersion]"/>
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="0" PackageFolder="C:\Users\rdwhe\Dropbox\Effani\Device Software Updates" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" FilesInsideExe="true" ExeIconPath="..\Effani.Device.UI\Resources\effanicow.ico" ExtractionFolder="[AppDataFolder][|Manufacturer]\[|ProductName] [|ProductVersion]\install" ExtUI="true" UseLargeSchema="true" ExeName="Effani Installer [|ProductVersion]" UACExecutionLevel="2"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
     <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
@@ -1063,6 +1062,7 @@
     <ROW ServiceInstall="EffaniUpdater" Name="Effani Updater" DisplayName="Effani Updater" ServiceType="16" StartType="3" ErrorControl="1" Arguments="/runservice" Component_="updater.exe" Description="Updater Support Service"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
+    <ROW Shortcut="Effani" Directory_="DesktopFolder" Name="Effani" Component_="EffaniDevice.exe" Target="[#EffaniDevice.exe]" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
     <ROW Shortcut="EffaniDevice" Directory_="APPDIR" Name="Effani" Component_="EffaniDevice.exe" Target="[#EffaniDevice.exe]" Hotkey="0" Icon_="effanicow.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
     <ROW Shortcut="EffaniDevice_1" Directory_="StartMenuFolder" Name="Effani" Component_="EffaniDevice.exe" Target="[#EffaniDevice.exe]" Hotkey="0" Icon_="effanicow.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR" Advertised="true"/>
   </COMPONENT>
@@ -1097,7 +1097,7 @@
     <ROW XmlAttribute="xsischemaLocation" XmlElement="swidsoftware_identification_tag" Name="xsi:schemaLocation" Flags="14" Order="3" Value="http://standards.iso.org/iso/19770/-2/2008/schema.xsd software_identification_tag.xsd"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
-    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="1" UpdateIndexInParent="0"/>
+    <ROW XmlElement="swidbuild" ParentElement="swidnumeric" Name="swid:build" Condition="1" Order="2" Flags="14" Text="2" UpdateIndexInParent="0"/>
     <ROW XmlElement="swidentitlement_required_indicator" ParentElement="swidsoftware_identification_tag" Name="swid:entitlement_required_indicator" Condition="1" Order="0" Flags="14" Text="false" UpdateIndexInParent="0"/>
     <ROW XmlElement="swidmajor" ParentElement="swidnumeric" Name="swid:major" Condition="1" Order="0" Flags="14" Text="4" UpdateIndexInParent="0"/>
     <ROW XmlElement="swidminor" ParentElement="swidnumeric" Name="swid:minor" Condition="1" Order="1" Flags="14" Text="0" UpdateIndexInParent="0"/>

@@ -33,7 +33,13 @@ namespace Effani.Device.UI
 			_processEngine.BeginExecutingCommand += ProcessEngine_BeginExecutingCommand;
 			_processEngine.EndExecutingCommand += ProcessEngine_EndExecutingCommand;
 			_progressTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-			_progressTimer.Tick += (s, e) => UpdateProcessingProgress();
+			_progressTimer.Tick += (s, e) =>
+			{
+				UpdateProcessingProgress();
+				if (_executingCommand != null)
+					RaisePropertyChanged(nameof(ExecutingCommandText)); // refreshes the countdown to giving up on the board
+				CommandQueue.Refresh(_processEngine);
+			};
 			_progressTimer.Start();
 		}
 		#endregion
@@ -376,15 +382,17 @@ namespace Effani.Device.UI
 
 		private void ProcessEngine_EndExecutingCommand(object sender, DataArgs<Command> e)
 		{
-			ExecutingCommandText = "None";
+			_executingCommand = null;
+			RaisePropertyChanged(nameof(ExecutingCommandText));
 		}
 
 		private void ProcessEngine_BeginExecutingCommand(object sender, DataArgs<Command> e)
 		{
 			if (_config.Settings.PauseCommandsForPrompt)
-				MessageBox.Show(e.Data.Description, "Preparing to excute command");
+				MessageBox.Show(e.Data.DescriptionWithTimeout, "Preparing to excute command");
 
-			ExecutingCommandText = e.Data.Description;
+			_executingCommand = e.Data;
+			RaisePropertyChanged(nameof(ExecutingCommandText));
 		}
 		private void StatusMessages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -515,20 +523,10 @@ namespace Effani.Device.UI
 				RaisePropertyChanged(nameof(CurrentLoadingSample));
 			}
 		}
-		public string ExecutingCommandText
-		{
-			get
-			{
-				return _executingCommandText;
-			}
-			set
-			{
-				if (_executingCommandText == value)
-					return;
-				_executingCommandText = value;
-				RaisePropertyChanged(nameof(ExecutingCommandText));
-			}
-		}
+		/// <summary>The command being executed, with how long is left before the board is given up on while it is being waited for.</summary>
+		public string ExecutingCommandText => _executingCommand?.DescriptionWithTimeout ?? "None";
+		/// <summary>Everything still to run, in order, with the executing command flagged.</summary>
+		public CommandQueueDisplay CommandQueue { get; } = new();
 		public int NumberOfSamples
 		{
 			get
@@ -750,7 +748,7 @@ namespace Effani.Device.UI
 		ProcessEngine _processEngine;
 		bool _moveStartingPositionsComplete;
 		bool _fluidLoadingComplete;
-		string _executingCommandText = "None";
+		volatile Command _executingCommand;
 		bool _preparingToLoadSample;
 		readonly IAssayManagerService _assayManagerService;
 		readonly ISettingsService _settingsService;

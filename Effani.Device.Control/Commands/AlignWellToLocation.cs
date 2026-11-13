@@ -6,7 +6,7 @@ namespace Effani.Device.Control
 {
 	public class AlignWellToLocation : MoveTableAbsolute
 	{
-		public AlignWellToLocation(Coordinate location, Well well, EffaniDeviceControl device) : base(device)
+		public AlignWellToLocation(Coordinate location, Well well, EffaniDeviceControl device, TimeSpan? timeout = null) : base(device, null, timeout)
 		{
 			_location = location;
 			_well = well;

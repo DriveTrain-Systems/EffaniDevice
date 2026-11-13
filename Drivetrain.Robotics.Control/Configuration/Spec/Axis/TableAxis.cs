@@ -9,15 +9,13 @@ namespace Drivetrain.Robotics.Control
 			: base(axis, driverPort, endstopPort, startingPosition)
 		{
 			Maximum = maximumMovement;
-			StepsPerMillimeter = 400;
 			MaxSpeed = maxSpeed;
 			Driver = new DriverSpec(Label)
 			{
-				Current = 400, // 17HS13-0404S1 motor: 0.4 A per phase
 				Direction = direction,
 				Endstop = new EndstopSpec($"{Label} Endstop")
                 {
-                    SensorPort = endstopPort.InputDesignation,
+                    SensorPort = endstopPort.Designation,
                     Signal = PinSignal.High,
 					Location = endstopLocation,
 					FirstHomingSpeed = 3000

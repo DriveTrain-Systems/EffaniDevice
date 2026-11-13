@@ -4,7 +4,7 @@ using Drivetrain.Robotics.Process;
 
 namespace Effani.Device.Control
 {
-	public class RunSterilizationCycle(EffaniDeviceControl device, int dwell) : Command(device)
+	public class RunSterilizationCycle(EffaniDeviceControl device, int dwell, TimeSpan? timeout = null) : Command(device, timeout)
 	{
 
 		protected override void Run()

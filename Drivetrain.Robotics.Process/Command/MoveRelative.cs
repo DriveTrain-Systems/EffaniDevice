@@ -2,7 +2,7 @@
 
 namespace Drivetrain.Robotics.Process
 {
-	public class MoveRelative(decimal distance, DeviceControl device, AxisSpec axisSpec = null) : Command(device)
+	public class MoveRelative(decimal distance, DeviceControl device, AxisSpec axisSpec = null, TimeSpan? timeout = null) : Command(device, timeout ?? SettingTimeout(device, s => s.MoveTimeoutSeconds))
 	{
 		protected override void Run()
 		{

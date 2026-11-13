@@ -4,7 +4,7 @@ using Drivetrain.Robotics.Process;
 
 namespace Effani.Device.Control
 {
-	public class MoveToStartingLocation(Axis axisSpec, EffaniDeviceControl device) : Command(device)
+	public class MoveToStartingLocation(Axis axisSpec, EffaniDeviceControl device, TimeSpan? timeout = null) : Command(device, timeout ?? SettingTimeout(device, s => s.MoveTimeoutSeconds))
 	{
 		protected override void Run()
 		{

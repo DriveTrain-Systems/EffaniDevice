@@ -63,8 +63,11 @@ namespace Effani.Device.Control
 			var xaxis = Axes[Axis.TableX];
 			var yaxis = Axes[Axis.TableY];
 
+			// a move of both axes has a single speed: asking for the faster of the two move speeds lets a move that is mostly along
+			// one axis run at that axis's speed instead of being held to the slower one (the board still holds each axis to its own
+			// max speed, M203)
 			if (!speed.HasValue)
-				speed = Math.Min(xaxis.MaxSpeed, yaxis.MaxSpeed);
+				speed = Math.Max(MoveSpeedFor(xaxis), MoveSpeedFor(yaxis));
 
 			if (x < xaxis.Minimum || x > xaxis.Maximum || y < yaxis.Minimum || y > yaxis.Maximum)
 				return;
@@ -86,34 +89,49 @@ namespace Effani.Device.Control
 		{
 			return ReadSensor(1, Settings.SensorReadDwell);
 		}
-		public void LaserDnaOn()
+		/// <summary>
+		/// Where an output is wired, for messages: its board and connector from the settings, e.g. "board 0, out4" or "board 1, out6".
+		/// </summary>
+		public string OutputLocation(int board, int port) => $"board {board}, out{port}";
+		public string TrayUvLocation => OutputLocation(Settings.TrayUvBoardNumber, Settings.TrayUvPortNumber);
+		public string ChamberUvLocation => OutputLocation(Settings.ChamberUvBoardNumber, Settings.ChamberUvPortNumber);
+		public string DnaLaserLocation => LaserLocation(Settings.DnaLaserPortKind, Settings.DnaLaserBoardNumber, Settings.DnaLaserPortNumber);
+		public string NadhLaserLocation => LaserLocation(Settings.NadhLaserPortKind, Settings.NadhLaserBoardNumber, Settings.NadhLaserPortNumber);
+		private string LaserLocation(PortKind kind, int board, int port) => kind == PortKind.Laser ? $"board {board}, laser" : OutputLocation(board, port);
+		public string? LaserDnaOn()
 		{
-			AccOn(3);
+			return AccOn(3);
 		}
-		public void LaserDnaOff()
+		public string? LaserDnaOff()
 		{
-			AccOff(3);
+			return AccOff(3);
 		}
-		public void LaserNadhOn()
+		public string? LaserNadhOn()
 		{
-			AccOn(2);
+			return AccOn(2);
 		}
-		public void LaserNadhOff()
+		public string? LaserNadhOff()
 		{
-			AccOff(2);
+			return AccOff(2);
 		}
 		public void EmitFluid(AxisSpec axisSpec, int microLiters)
 		{
 			if(!(axisSpec is FluidAxis))
 				return;
 
-			var distance = CalcFluidTravelMmForMl(microLiters, axisSpec);
+			// emitting moves the actuator in the positive direction, away from its low-end endstop; the travel per microlitre is a
+			// distance, so its sign does not matter
+			var distance = Math.Abs(CalcFluidTravelMmForMl(microLiters, axisSpec));
 			MoveRelative(axisSpec.Axis, distance, Settings.FluidSyringeSpeed);
 			Pause(Settings.FluidEmissionDwell);
 		}
+		/// <summary>
+		/// Aspirates: the needle goes down from its start position to the plate (start + distance to tray), on down by the travel
+		/// for the volume while stirring, then back up to the start. Down is the positive direction: 0 is the top of the travel.
+		/// </summary>
 		public void Aspirate(int microLiters)
 		{
-			MoveAbsolute(Axis.Aspirate, (Settings.AspirateActuatorStartPosition - Settings.AspirateDistanceToPlate), Settings.AspiratePositioningSpeed);
+			MoveAbsolute(Axis.Aspirate, (Settings.AspirateActuatorStartPosition + Settings.AspirateDistanceToPlate), Settings.AspiratePositioningSpeed);
 			var distance = CalcAspirateTravelMmForMl(microLiters);
 			DoStirringDescent(Axes[Axis.Aspirate], distance);
 			MoveAbsolute(Axis.Aspirate, Settings.AspirateActuatorStartPosition);
@@ -126,14 +144,6 @@ namespace Effani.Device.Control
 		//{
 		//	AccOff(4);
 		//}
-		public void AspirationSuctionOn()
-		{
-			AccOn(5);
-		}
-		public void AspirationSuctionOff()
-		{
-			AccOff(5);
-		}
 		//public void AspirateFluid(int microLiters)
 		//{
 		//	// lower fluid aspirator needle to top of the plate
@@ -185,7 +195,7 @@ namespace Effani.Device.Control
 		}
 		private void DoStirringDescent(AxisSpec axis, decimal distance)
 		{
-			MoveRelative(axis, -distance, Configuration.Settings.AspirateStirSpeed); // needle starts at the top of its travel, so descending moves toward lower coordinates
+			MoveRelative(axis, Math.Abs(distance), Configuration.Settings.AspirateStirSpeed); // down is the positive direction: 0 is the top of the travel
 			Pause(Configuration.Settings.AspirationDwell);
 			//var repetitions = 1;
 			//var descentFactor = distance / (repetitions * 4);
@@ -248,6 +258,5 @@ namespace Effani.Device.Control
 		private Dictionary<Axis, AxisSpec>? _axes;
 		private Dictionary<Axis, Stopwatch>? _primingStopwatches;
         public List<AxisSpec> FluidAxes => Axes.Values.Where(x => x is FluidAxis).ToList();
-		public List<AxisSpec> ZAxes => Axes.Values.Where(x => x is BiopsyZAxis).ToList();
 	}
 }

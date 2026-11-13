@@ -19,6 +19,7 @@ namespace Effani.Device.UI
 			if (!isAssayRunning && !processEngine.IsBusy)
 				device.RefreshSettings();
 			DataContext = new UtilitiesViewModel(settingsService, processEngine, device, consoleMessages) { IsAssayRunning = isAssayRunning };
+			Closed += (s, e) => (DataContext as IDisposable)?.Dispose();
 			this.Height = (System.Windows.SystemParameters.PrimaryScreenHeight * 0.90);
 			this.Width = (System.Windows.SystemParameters.PrimaryScreenWidth * 0.90);
 		}

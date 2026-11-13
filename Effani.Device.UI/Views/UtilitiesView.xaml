@@ -12,7 +12,7 @@
     xmlns:control="clr-namespace:Drivetrain.Robotics.Control;assembly=Drivetrain.Robotics.Control"
     xmlns:local="clr-namespace:Effani.Device.UI"
     xmlns:sys="clr-namespace:System;assembly=mscorlib" d:DataContext="{d:DesignInstance Type=local:UtilitiesViewModel}"
-	Title="Settings" WindowStyle="ToolWindow" 
+	Title="Tools" WindowStyle="ToolWindow" 
 	WindowState="Maximized"
 	WindowStartupLocation="CenterScreen" 
     mc:Ignorable="d" d:DesignHeight="1024" d:DesignWidth="1980">
@@ -27,6 +27,38 @@
 				<Setter Property="LabelHorizontalAlignment" Value="Stretch"/>
 			</Style>
 			<local:PassThroughConverter x:Key="PassThroughConverter"/>
+			<local:AxisPositionConverter x:Key="AxisPositionConverter"/>
+			<local:AxisHomedConverter x:Key="AxisHomedConverter"/>
+			<local:AxisHomedBrushConverter x:Key="AxisHomedBrushConverter"/>
+			<!-- an on/off switch: blue with the knob on the right when on, grey with the knob on the left when off -->
+			<Style x:Key="UvSwitch" TargetType="ToggleButton">
+				<Setter Property="Width" Value="46" />
+				<Setter Property="Height" Value="22" />
+				<Setter Property="Cursor" Value="Hand" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="ToggleButton">
+							<Border x:Name="Track" CornerRadius="11" Background="#BDBDBD" BorderBrush="#9E9E9E" BorderThickness="1">
+								<Ellipse x:Name="Thumb" Width="16" Height="16" Fill="White" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2,0,0,0" />
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsChecked" Value="True">
+									<Setter TargetName="Track" Property="Background" Value="#1E88E5" />
+									<Setter TargetName="Track" Property="BorderBrush" Value="#1565C0" />
+									<Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right" />
+									<Setter TargetName="Thumb" Property="Margin" Value="0,0,2,0" />
+								</Trigger>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="Track" Property="BorderThickness" Value="2" />
+								</Trigger>
+								<Trigger Property="IsEnabled" Value="False">
+									<Setter TargetName="Track" Property="Opacity" Value="0.5" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
 			<Style x:Key="TabItemStyle" TargetType="dx:DXTabItem" >
 				<Setter Property="Header" Value="{Binding}"/>
 				<Setter Property="Content" Value="{Binding}"/>
@@ -71,20 +103,78 @@
 									</MultiBinding>
 								</TextBlock.Text>
 							</TextBlock>
+							<TextBlock Width="150" FontSize="12" FontWeight="SemiBold" Margin="0,1,5,0" ToolTip="Where the board says the axis is, read after every move and home">
+								<TextBlock.Text>
+									<MultiBinding Converter="{StaticResource AxisPositionConverter}">
+										<Binding Path="Designation" />
+										<Binding ElementName="axesList" Path="DataContext.Positions" />
+										<Binding ElementName="axesList" Path="DataContext.Homed" />
+									</MultiBinding>
+								</TextBlock.Text>
+							</TextBlock>
 						</StackPanel>
 						<StackPanel Orientation="Vertical">
 					</StackPanel>
 						<StackPanel>
 							<StackPanel Orientation="Horizontal">
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.HomeCommand}" CommandParameter="{Binding}" Content="Home" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveToStartCommand}" CommandParameter="{Binding}" Content="Move To Start" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.AlignToFirstWellCommand}" CommandParameter="{Binding}" Content="Align First Well" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.AlignToNextWellCommand}" CommandParameter="{Binding}" Content="Align Next Well" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.AlignToLastWellCommand}" CommandParameter="{Binding}" Content="Align Last Well" />
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.HomeCommand}" CommandParameter="{Binding}" Content="Home"
+										ToolTip="Home this axis. Yellow until the axis is homed, green once it is.">
+									<dx:SimpleButton.Background>
+										<MultiBinding Converter="{StaticResource AxisHomedBrushConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.Background>
+								</dx:SimpleButton>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveToStartCommand}" CommandParameter="{Binding}" Content="Move To Start">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.AlignToFirstWellCommand}" CommandParameter="{Binding}" Content="Align First Well" Visibility="{DXBinding '@DataContext.GetType() == typeof($control:TableAxis) ? $Visibility.Collapsed : $Visibility.Visible'}">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}" ConverterParameter="table">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.AlignToNextWellCommand}" CommandParameter="{Binding}" Content="Align Next Well" Visibility="{DXBinding '@DataContext.GetType() == typeof($control:TableAxis) ? $Visibility.Collapsed : $Visibility.Visible'}">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}" ConverterParameter="table">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.AlignToLastWellCommand}" CommandParameter="{Binding}" Content="Align Last Well" Visibility="{DXBinding '@DataContext.GetType() == typeof($control:TableAxis) ? $Visibility.Collapsed : $Visibility.Visible'}">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}" ConverterParameter="table">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
 								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.ReprimeIfNeededCommand}" CommandParameter="{Binding}" 
-										Visibility="{DXBinding '@DataContext.GetType() == typeof($control:FluidAxis) ? $Visibility.Visible : $Visibility.Collapsed'}" Content="Reprime If Needed" />
+										Visibility="{DXBinding '@DataContext.GetType() == typeof($control:FluidAxis) ? $Visibility.Visible : $Visibility.Collapsed'}" Content="Reprime If Needed">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
 								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.EmitFluidCommand}" CommandParameter="{Binding}"
 										Visibility="{DXBinding '@DataContext.GetType() == typeof($control:FluidAxis) ? $Visibility.Visible : $Visibility.Collapsed'}">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
 									<dx:SimpleButton.Content>
 										<StackPanel Orientation="Horizontal">
 											<TextBlock Text="Dispense Fluid" />
@@ -93,9 +183,25 @@
 										</StackPanel>
 									</dx:SimpleButton.Content>
 								</dx:SimpleButton>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.AspirateCommand}" CommandParameter="{Binding}" Content="Aspirate"
+										Visibility="{DXBinding '@DataContext.GetType() == typeof($control:AspirateZAxis) ? $Visibility.Visible : $Visibility.Collapsed'}"
+										ToolTipService.ShowOnDisabled="True" ToolTip="Aspirate the KOH aspiration volume with the needle (the same as Aspirate in the Actuators group); available once the needle is homed">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
 							</StackPanel>
 							<StackPanel Orientation="Horizontal">
 								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="&lt;&lt;&lt; -100">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
 									<Button.CommandParameter>
 										<MultiBinding Converter="{StaticResource PassThroughConverter}">
 											<Binding/>
@@ -108,6 +214,12 @@
 									</Button.CommandParameter>
 								</dx:SimpleButton>
 								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="&lt;&lt; -10">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
 									<Button.CommandParameter>
 										<MultiBinding Converter="{StaticResource PassThroughConverter}">
 											<Binding/>
@@ -120,6 +232,12 @@
 									</Button.CommandParameter>
 								</dx:SimpleButton>
 								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="&lt; -1">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
 									<Button.CommandParameter>
 										<MultiBinding Converter="{StaticResource PassThroughConverter}">
 											<Binding/>
@@ -131,7 +249,13 @@
 										</MultiBinding>
 									</Button.CommandParameter>
 								</dx:SimpleButton>
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+1 >">
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+1 &gt;">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
 									<Button.CommandParameter>
 										<MultiBinding Converter="{StaticResource PassThroughConverter}">
 											<Binding/>
@@ -143,7 +267,13 @@
 										</MultiBinding>
 									</Button.CommandParameter>
 								</dx:SimpleButton>
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+10 >>">
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+10 &gt;&gt;">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
 									<Button.CommandParameter>
 										<MultiBinding Converter="{StaticResource PassThroughConverter}">
 											<Binding/>
@@ -155,7 +285,13 @@
 										</MultiBinding>
 									</Button.CommandParameter>
 								</dx:SimpleButton>
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+100 >>>">
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+100 &gt;&gt;&gt;">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
 									<Button.CommandParameter>
 										<MultiBinding Converter="{StaticResource PassThroughConverter}">
 											<Binding/>
@@ -208,38 +344,74 @@
 		</ResourceDictionary>
 	</dx:ThemedWindow.Resources>
 	<Grid>
-		<dx:DXTabControl>
-			<dx:DXTabItem Header="Settings">
-				<local:SettingsControl/>
-			</dx:DXTabItem>
+		<dx:DXTabControl SelectedIndex="0">
 			<dx:DXTabItem Header="Utilities">
 				<DockPanel LastChildFill="True">
 					<DockPanel DockPanel.Dock="Left">
 						<StackPanel DockPanel.Dock="Bottom" Margin="12,6,6,8">
 							<TextBlock Opacity="0.7" Text="{Binding SoftwareVersion, StringFormat=Software version {0}}" />
-							<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="0,6,0,0" HorizontalAlignment="Left" Command="{Binding CheckForUpdatesCommand}" Content="Check for Updates" />
-							<TextBlock Margin="0,4,0,0" Opacity="0.7" TextWrapping="Wrap" MaxWidth="220" Text="{Binding UpdateStatus}" />
 						</StackPanel>
 						<dxlc:LayoutControl Orientation="Vertical">
-							<dxlc:LayoutGroup Header="Actuators" View="GroupBox" Orientation="Vertical">
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding HomeAllCommand}" Content="Home All" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding AlignForWasteCommand}" Content="Align For Waste" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding AlignForTrayLoadingCommand}" Content="Align For Tray Loading" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding AlignForSterilizationCommand}" Content="Align For Sterilization" />
-                                <dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding PrimeFluidCommand}" Content="Prime Fluid" />
-                                <dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding AspirateCommand}" Content="Aspirate" />
-                            </dxlc:LayoutGroup>
-							<dxlc:LayoutGroup Header="Sterilization" View="GroupBox" Orientation="Vertical">
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ChamberUvOnCommand}" Content="Chamber UV On" />
-									<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding ChamberUvOffCommand}" Content="Chamber UV Off" />
-									<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding TrayUvOnCommand}" Content="Tray UV On" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding TrayUvOffCommand}" Content="Tray UV Off" />
-							</dxlc:LayoutGroup>
-							<dxlc:LayoutGroup Header="Debug" View="GroupBox" Orientation="Vertical">
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding GenerateConfigFilesCommand}" Content="Generate Config" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding GetBoardDiagnosticsCommand}" CommandParameter="0" Content="Diagnostics 0" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding GetBoardDiagnosticsCommand}" CommandParameter="1" Content="Diagnostics 1" />
-								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding GetBoardDiagnosticsCommand}" CommandParameter="2" Content="Diagnostics 2" />
+							<dxlc:LayoutGroup View="GroupBox" Orientation="Vertical" VerticalAlignment="Top">
+								<dxlc:LayoutGroup.GroupBoxStyle>
+									<Style TargetType="dxlc:GroupBox">
+										<Setter Property="TitleVisibility" Value="Collapsed" />
+									</Style>
+								</dxlc:LayoutGroup.GroupBoxStyle>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding HomeAllCommand}" Content="Home All"
+										ToolTip="Home every axis. Yellow until all the axes are homed, green once they are.">
+									<dx:SimpleButton.Background>
+										<MultiBinding Converter="{StaticResource AxisHomedBrushConverter}" ConverterParameter="all">
+											<Binding Path="Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.Background>
+								</dx:SimpleButton>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding AlignForWasteCommand}" Content="Align For Waste" ToolTipService.ShowOnDisabled="True"
+										ToolTip="Moves the table: available once Table X and Y are homed.">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}" ConverterParameter="table">
+											<Binding Path="Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding AlignForTrayLoadingCommand}" Content="Align For Tray Loading" ToolTipService.ShowOnDisabled="True"
+										ToolTip="Moves the table: available once Table X and Y are homed.">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}" ConverterParameter="table">
+											<Binding Path="Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding AlignForSterilizationCommand}" Content="Align For Sterilization" ToolTipService.ShowOnDisabled="True"
+										ToolTip="Moves the table: available once Table X and Y are homed.">
+									<dx:SimpleButton.IsEnabled>
+										<MultiBinding Converter="{StaticResource AxisHomedConverter}" ConverterParameter="table">
+											<Binding Path="Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.IsEnabled>
+								</dx:SimpleButton>
+                                <dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding PrimeFluidCommand}" Content="Prime Fluid" ToolTipService.ShowOnDisabled="True"
+                                		ToolTip="Moves the four pumps: available once they are all homed.">
+                                	<dx:SimpleButton.IsEnabled>
+                                		<MultiBinding Converter="{StaticResource AxisHomedConverter}" ConverterParameter="DnaReagent,Koh,Nadh,Basal">
+                                			<Binding Path="Homed" />
+                                		</MultiBinding>
+                                	</dx:SimpleButton.IsEnabled>
+                                </dx:SimpleButton>
+								<Separator Margin="3,6,3,3" Opacity="0.5" />
+								<StackPanel Orientation="Horizontal" Margin="3" ToolTip="Switches the chamber UV light (output port 1). Shows whether the board reports it on; it updates after each switch.">
+									<ToggleButton Style="{StaticResource UvSwitch}" IsChecked="{Binding ChamberUvIsOn, Mode=TwoWay}" VerticalAlignment="Center" />
+									<TextBlock Text="Chamber UV" VerticalAlignment="Center" Margin="8,0,0,0" />
+								</StackPanel>
+								<StackPanel Orientation="Horizontal" Margin="3" ToolTip="Switches the tray UV light (output port 0). Shows whether the board reports it on; it updates after each switch.">
+									<ToggleButton Style="{StaticResource UvSwitch}" IsChecked="{Binding TrayUvIsOn, Mode=TwoWay}" VerticalAlignment="Center" />
+									<TextBlock Text="Tray UV" VerticalAlignment="Center" Margin="8,0,0,0" />
+								</StackPanel>
+								<Separator Margin="3,6,3,3" Opacity="0.5" />
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="3" Command="{Binding CheckForUpdatesCommand}" Content="Check for Updates"
+										ToolTipService.ShowOnDisabled="True" ToolTip="{DXBinding 'IsAssayRunning ? `Not available while an assay is running` : `Check whether a newer version of this software is available`'}" />
+								<TextBlock Margin="3,0,3,3" Opacity="0.7" TextWrapping="Wrap" MaxWidth="200" Text="{Binding UpdateStatus}"
+										Visibility="{DXBinding 'UpdateStatus == null or UpdateStatus == `` ? `Collapsed` : `Visible`'}" />
 							</dxlc:LayoutGroup>
 						</dxlc:LayoutControl>
 					</DockPanel>
@@ -250,20 +422,63 @@
 						</StackPanel>
 						<DockPanel LastChildFill="true" DockPanel.Dock="Right" Margin="20,20,0,0">
 							<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-								<dxe:TextEdit CornerRadius="3" Padding="5,3,5,3" Width="250" NullText="Command..." EditValue="{Binding SendCommandText}" Margin="0,0,5,0"></dxe:TextEdit>
+								<dxe:TextEdit CornerRadius="3" Padding="5,3,5,3" Width="250" NullText="Command..." EditValue="{Binding SendCommandText, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,5,0">
+									<dxe:TextEdit.InputBindings>
+										<!-- Enter sends the command, the same as the Send button -->
+										<KeyBinding Key="Return" Command="{Binding SendCommand}" />
+									</dxe:TextEdit.InputBindings>
+								</dxe:TextEdit>
 								<dx:SimpleButton HorizontalAlignment="Left" CornerRadius="3" Padding="5,3,5,3" Margin="0,0,20,0" Command="{Binding SendCommand}" Content="Send" />
+								<dxe:CheckEdit VerticalAlignment="Center" Margin="0,0,20,0" Content="Show response" IsChecked="{Binding ReportSendResponse}"
+										ToolTip="Wait for the board to finish the command and show what it replies in the messages. Don't use this for commands that stop the board, such as M112." />
+								<TextBlock VerticalAlignment="Center" Margin="0,0,5,0" Text="Timeout (s)" />
+								<dxe:SpinEdit Width="70" Margin="0,0,20,0" VerticalAlignment="Center" IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400"
+										EditValue="{Binding SendTimeoutSeconds}"
+										ToolTip="How long to wait for the board to finish the command and reply, when Show response is ticked. Starts as the general board timeout from Settings." />
 								<dx:SimpleButton HorizontalAlignment="Left" CornerRadius="3" Padding="5,3,5,3" Command="{Binding ClearMessagesCommand}" Content="Clear Messages" />
 							</StackPanel>
-							<ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding ConsoleMessages}" Background="Transparent" BorderThickness="1" IsTabStop="False">
+							<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+								<TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0" Text="Board Management" />
+								<ItemsControl ItemsSource="{Binding Boards}" VerticalAlignment="Center" IsTabStop="False">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<StackPanel Orientation="Horizontal" />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="0,0,5,0" Content="{Binding}" ContentStringFormat="Board {0} Diagnostics"
+													Command="{Binding DataContext.GetBoardDiagnosticsCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"
+													ToolTip="Ask this board for its diagnostics (M122) and show them in a window" />
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="15,0,0,0" Command="{Binding GenerateConfigFilesCommand}" Content="Generate Config"
+										ToolTip="Generate config.g and the homing files from the settings and send them to the controller board, which is then rebooted" />
+								<dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="5,0,0,0" Command="{Binding ReleaseComPortCommand}" Content="Release COM Port"
+										IsEnabled="{DXBinding '!IsCommandQueueBusy'}" ToolTipService.ShowOnDisabled="True"
+										ToolTip="Close the controller board's COM port so a terminal program can open it (only one program can have it open at a time). The next command sent from here reopens it, so close the terminal first. Unavailable while commands are queued or executing." />
+							</StackPanel>
+							<StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+								<TextBlock FontWeight="SemiBold" Text="Command queue" />
+								<TextBlock Opacity="0.7" Text="Nothing queued" Visibility="{DXBinding 'CommandQueue.Items.Count == 0 ? $Visibility.Visible : $Visibility.Collapsed'}" />
+								<local:LiveListBox ItemsSource="{Binding CommandQueue.Items}" ItemTemplate="{StaticResource QueuedCommandTemplate}" MaxHeight="200"
+										Background="Transparent" BorderThickness="1" IsTabStop="False"
+										Visibility="{DXBinding 'CommandQueue.Items.Count == 0 ? $Visibility.Collapsed : $Visibility.Visible'}" />
+							</StackPanel>
+							<local:LiveListBox DockPanel.Dock="Bottom" ItemsSource="{Binding ConsoleMessages}" Background="Transparent" BorderThickness="1" IsTabStop="False">
 								<ListBox.ItemTemplate>
 									<DataTemplate>
 										<TextBlock Text="{Binding}" Margin="0,1,0,0"></TextBlock>
 									</DataTemplate>
 								</ListBox.ItemTemplate>
-							</ListBox>
+							</local:LiveListBox>
 						</DockPanel>
 					</DockPanel>
 				</DockPanel>
+			</dx:DXTabItem>
+			<dx:DXTabItem Header="Settings">
+				<local:SettingsControl/>
 			</dx:DXTabItem>
 		</dx:DXTabControl>
 	</Grid>

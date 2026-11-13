@@ -26,7 +26,7 @@
 				<Image Source="{dx:DXImage 'SvgImages/Icon Builder/Weather_Cloudy.svg'}" />
 			</dx:SimpleButton.Content>
 		</dx:SimpleButton>
-		<dx:SimpleButton Command="{Binding ShowSettingsCommand}" BorderThickness="0" Margin="0,5,0,5">
+		<dx:SimpleButton Command="{Binding ShowToolsCommand}" BorderThickness="0" Margin="0,5,0,5" ToolTip="Tools">
 			<dx:SimpleButton.Content>
 				<Image Source="{dx:DXImage 'SvgImages/Icon Builder/Actions_Settings.svg'}" />
 			</dx:SimpleButton.Content>

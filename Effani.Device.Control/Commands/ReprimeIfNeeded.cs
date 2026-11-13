@@ -8,7 +8,7 @@ namespace Effani.Device.Control
 {
     public class ReprimeIfNeeded : Command
     {
-		public ReprimeIfNeeded(Axis axis, EffaniDeviceControl device) : base(device)
+		public ReprimeIfNeeded(Axis axis, EffaniDeviceControl device, TimeSpan? timeout = null) : base(device, timeout ?? SettingTimeout(device, s => s.FluidEmissionTimeoutSeconds))
 		{
 			Axis = axis;
             _description = $"Re-prime {axis} pump if needed. Current pump idle time: {GetPumpIdleSeconds()} sec.";

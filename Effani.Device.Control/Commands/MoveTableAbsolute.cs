@@ -6,7 +6,7 @@ using Drivetrain.Robotics.Process;
 
 namespace Effani.Device.Control
 {
-	public class MoveTableAbsolute(EffaniDeviceControl device, Coordinate coordinate = null) : Command(device)
+	public class MoveTableAbsolute(EffaniDeviceControl device, Coordinate coordinate = null, TimeSpan? timeout = null) : Command(device, timeout ?? SettingTimeout(device, s => s.MoveTimeoutSeconds))
 	{
 		protected override void Run()
 		{

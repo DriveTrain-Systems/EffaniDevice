@@ -10,7 +10,7 @@ namespace Drivetrain.Robotics.Control
 		TableX,
 		[Display(ShortName = "Y", Name = "Table Y")]
 		TableY,
-		[Display(ShortName = "U", Name = "Aspirate")]
+		[Display(ShortName = "Z", Name = "Aspirate")]
 		Aspirate,
 		[Display(ShortName = "V", Name = "DNA Reagent")]
 		DnaReagent,
@@ -19,8 +19,6 @@ namespace Drivetrain.Robotics.Control
 		[Display(ShortName = "A", Name = "NADH")]
 		Nadh,
 		[Display(ShortName = "B", Name = "Basal")]
-		Basal,
-        //[Display(ShortName = "D", Name = "Aspirate Fluid")]
-        //AspirateFluid,
+		Basal
 	}
 }

@@ -16,13 +16,10 @@ namespace Drivetrain.Robotics.Control
 			Location = location;
 		}
 
-		public string? PortDesignation
-		{
-			get
-			{
-				return new BoardPort(Board, Port).TempDesignation;
-			}
-		}
+		/// <summary>The temperature (thermistor) input the sensor is connected to; its analog reading is taken from there (M308).</summary>
+		public BoardPort BoardPort => BoardPort.Temp(Board, Port);
+		/// <summary>The input's name in config.g, e.g. "temp0" or "1.temp0".</summary>
+		public string? PortDesignation => BoardPort.Designation;
 		public int Board { get; set; } 
 		public int Port { get; set; }
 		public int SensorNumber { get; set; }

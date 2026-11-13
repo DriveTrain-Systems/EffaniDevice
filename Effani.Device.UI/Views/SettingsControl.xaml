@@ -16,6 +16,10 @@
 	d:DataContext="{d:DesignInstance Type=local:UtilitiesViewModel}"
     mc:Ignorable="d" d:DesignHeight="1024" d:DesignWidth="1980">
     <UserControl.Resources>
+        <x:Array x:Key="LaserPortKinds" Type="{x:Type control:PortKind}">
+            <control:PortKind>Output</control:PortKind>
+            <control:PortKind>Laser</control:PortKind>
+        </x:Array>
         <SolidColorBrush  x:Key="LevelOneColor" Color="#efefef"/>
         <SolidColorBrush  x:Key="LevelTwoColor" Color="#dfdfdf"/>
         <SolidColorBrush  x:Key="LevelThreeColor" Color="#d0d0d0"/>
@@ -48,6 +52,16 @@
                     <Setter Property="IsEnabled" Value="False"/>
                     <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
                     <Setter Property="ToolTip" Value="This setting is in use by the device control while an assay is running, so it cannot be changed until the assay is finished or canceled."/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <!-- the serial port: switching it would cut off the commands still queued or executing, so it is locked until the queue is empty -->
+        <Style x:Key="SerialPortSetting" TargetType="dxe:SpinEdit" BasedOn="{StaticResource {x:Type dxe:SpinEdit}}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=DataContext.IsCommandQueueBusy, RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" Value="True">
+                    <Setter Property="IsEnabled" Value="False"/>
+                    <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
+                    <Setter Property="ToolTip" Value="Commands are queued or executing, so the COM port cannot be changed until they have all finished."/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -205,18 +219,32 @@
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Emission Speed" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Fluid Syringe Speed (mm/s)" ToolTip="Speed at which a fluid syringe should travel">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding FluidSyringeSpeed}" />
+                            <dxlc:LayoutItem Label="Fluid Syringe Speed (mm/min)" ToolTip="Speed at which a fluid syringe moves while emitting or priming, in mm/min (sent as the F of each emission move; 5 mm/min is about 0.08 mm/s). The board holds it to the pump's Max Speed.">
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.5" MinValue="0.1" MaxValue="2000" EditValue="{Binding FluidSyringeSpeed}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Fluid Emission Pause (ms)" ToolTip="Milliseconds to wait before moving after dispensing fluid">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding FluidEmissionDwell}" />
+                            </dxlc:LayoutItem>
+                        </dxlc:LayoutGroup>
+                        <dxlc:LayoutGroup View="GroupBox" Header="Aspiration Pump Properties" Orientation="Vertical">
+                            <dxlc:LayoutItem Label="Aspirate Needle Start Position" ToolTip="The starting position (mm) of a the KOH aspiration needle">
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateActuatorStartPosition}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Aspirate Distrance to Tray" ToolTip="The distance (mm) between the tip of the KOH aspiration needle and the top of the sample tray">
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateDistanceToPlate}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Aspirate Travel Per Microliter" ToolTip="The distance (mm) the aspiration needle travels in order to remove 1μl">
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateTravelPerMicroLiter}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Aspirate Positioning Speed (mm/min)" ToolTip="Speed (mm/min) at which the aspiration needle moves to the sample tray before aspirating">
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspiratePositioningSpeed}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                     </dxlc:FlowLayoutControl>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Component Properties">
+            <dx:DXTabItem Header="Component Sizes">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Fluid Port Locations" Orientation="Vertical">
                         <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH is emitted">
@@ -313,7 +341,7 @@
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Properties" Orientation="Vertical">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Sizes" Orientation="Vertical">
                         <dxlc:LayoutItem Label="Well Width" ToolTip="Width (mm) of a sample well">
                             <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellWidth}" />
                         </dxlc:LayoutItem>
@@ -347,25 +375,15 @@
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup View="GroupBox" Header="Aspiration Pump Properties" Orientation="Vertical">
-                        <dxlc:LayoutItem Label="Aspirate Needle Start Position" ToolTip="The starting position (mm) of a the KOH aspiration needle">
-                            <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateActuatorStartPosition}" />
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Aspirate Distrance to Tray" ToolTip="The distance (mm) between the tip of the KOH aspiration needle and the top of the sample tray">
-                            <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateDistanceToPlate}" />
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Aspirate Travel Per Microliter" ToolTip="The distance (mm) the aspiration needle travels in order to remove 1μl">
-                            <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateTravelPerMicroLiter}" />
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Aspirate Positioning Speed (mm/min)" ToolTip="Speed (mm/min) at which the aspiration needle moves to the sample tray before aspirating">
-                            <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspiratePositioningSpeed}" />
-                        </dxlc:LayoutItem>                    </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
             <dx:DXTabItem Header="Electronic Settings">
                 <dxlc:LayoutControl Orientation="Horizontal" Name="main">
                     <dxlc:LayoutControl Orientation="Vertical">
                         <dxlc:LayoutGroup View="GroupBox" Header="Controller Boards" Orientation="Vertical">
+                            <dxlc:LayoutItem Label="COM Port Number" ToolTip="Number of the serial (COM) port the main controller board is connected to, e.g. 4 for COM4. See Device Manager under Ports. Not used for now: the board's port is found automatically by sending M115 (firmware version) to each COM port and using the one that answers. The port chosen is shown in the console messages.">
+                                <dxe:SpinEdit IsEnabled="False" IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="256" EditValue="{Binding ComPortNumber}" />
+                            </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Board Count" ToolTip="Number of controller boards installed (board 0 is the main board). Used to warn about connections to boards that do not exist.">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="10" EditValue="{Binding ControllerBoardCount}" />
                             </dxlc:LayoutItem>
@@ -428,12 +446,6 @@
                                 <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the Table X axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Table X axis motor turns for positive movement. Change this if the axis moves the wrong way.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding TableXDirection}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop End" ToolTip="Which end of the Table X axis travel its endstop is at. Homing moves toward this end. Change it together with Direction if the axis homes away from its endstop.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding TableXEndstopLocation}" />
-                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Table Y" Orientation="Vertical">
                                 <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the Table Y axis motor driver is connected">
@@ -447,12 +459,6 @@
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the Table Y axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYEndstopPortNumber}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Table Y axis motor turns for positive movement. Change this if the axis moves the wrong way.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding TableYDirection}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop End" ToolTip="Which end of the Table Y axis travel its endstop is at. Homing moves toward this end. Change it together with Direction if the axis homes away from its endstop.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding TableYEndstopLocation}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Aspirate" Orientation="Vertical">
@@ -468,12 +474,6 @@
                                 <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the Aspirate axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Aspirate axis motor turns for positive movement. Change this if the axis moves the wrong way.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding AspirateDirection}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop End" ToolTip="Which end of the Aspirate axis travel its endstop is at. Homing moves toward this end. Change it together with Direction if the axis homes away from its endstop.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding AspirateEndstopLocation}" />
-                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="DNA Reagent" Orientation="Vertical">
                                 <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the DNA Reagent axis motor driver is connected">
@@ -487,12 +487,6 @@
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the DNA Reagent axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentEndstopPortNumber}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Direction" ToolTip="Direction the DNA Reagent axis motor turns for positive movement. Change this if the axis moves the wrong way.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding DnaReagentDirection}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop End" ToolTip="Which end of the DNA Reagent axis travel its endstop is at. Homing moves toward this end. Change it together with Direction if the axis homes away from its endstop.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding DnaReagentEndstopLocation}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="KOH" Orientation="Vertical">
@@ -508,12 +502,6 @@
                                 <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the KOH axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Direction" ToolTip="Direction the KOH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding KohDirection}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop End" ToolTip="Which end of the KOH axis travel its endstop is at. Homing moves toward this end. Change it together with Direction if the axis homes away from its endstop.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding KohEndstopLocation}" />
-                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="NADH" Orientation="Vertical">
                                 <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the NADH axis motor driver is connected">
@@ -528,12 +516,6 @@
                                 <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the NADH axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Direction" ToolTip="Direction the NADH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding NadhDirection}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop End" ToolTip="Which end of the NADH axis travel its endstop is at. Homing moves toward this end. Change it together with Direction if the axis homes away from its endstop.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding NadhEndstopLocation}" />
-                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Basal" Orientation="Vertical">
                                 <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the Basal axis motor driver is connected">
@@ -547,12 +529,6 @@
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the Basal axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalEndstopPortNumber}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Basal axis motor turns for positive movement. Change this if the axis moves the wrong way.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding BasalDirection}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop End" ToolTip="Which end of the Basal axis travel its endstop is at. Homing moves toward this end. Change it together with Direction if the axis homes away from its endstop.">
-                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding BasalEndstopLocation}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                           </dxlc:FlowLayoutControl>
@@ -576,27 +552,25 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="NADH Laser" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the NADH Laser output is connected">
+                                <dxlc:LayoutItem Label="Port Kind" ToolTip="Output: an out port, chosen by the Port Number. Laser: the board's laser output (M950 C&quot;laser&quot;; on the Duet 3 Mini 5+ the same pin as out6, so nothing else on that board can use out6)">
+                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{StaticResource LaserPortKinds}" EditValue="{Binding NadhLaserPortKind, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the NADH Laser is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the NADH Laser output is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserPortNumber}" />
+                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the NADH Laser is connected. Not used when the Port Kind is Laser: each board has a single laser output, chosen by the Board Number">
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserPortNumber}" IsEnabled="{DXBinding 'NadhLaserPortKind != $control:PortKind.Laser'}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="DNA Laser" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the DNA Laser output is connected">
+                                <dxlc:LayoutItem Label="Port Kind" ToolTip="Output: an out port, chosen by the Port Number. Laser: the board's laser output (M950 C&quot;laser&quot;; on the Duet 3 Mini 5+ the same pin as out6, so nothing else on that board can use out6)">
+                                    <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{StaticResource LaserPortKinds}" EditValue="{Binding DnaLaserPortKind, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the DNA Laser is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the DNA Laser output is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserPortNumber}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup View="GroupBox" Header="Aspiration Suction" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the Aspiration Suction output is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirationSuctionToggleBoardNumber}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the Aspiration Suction output is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirationSuctionTogglePortNumber}" />
+                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the DNA Laser is connected. Not used when the Port Kind is Laser: each board has a single laser output, chosen by the Board Number">
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserPortNumber}" IsEnabled="{DXBinding 'DnaLaserPortKind != $control:PortKind.Laser'}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                           </dxlc:FlowLayoutControl>
@@ -616,14 +590,26 @@
                             <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the aspirate motor in mA (M906). The LMD8S11GD05-090 is rated 0.5 A.">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMotorCurrent}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="Maximum speed of the aspirate axis (M203).">
+                            <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the aspirate motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding AspirateDriverMode}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the aspirate axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMaxSpeed}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the aspirate axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding AspirateMoveSpeed}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the aspirate axis (M201).">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateAcceleration}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the aspirate axis (M566).">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMaxInstantaneousSpeedChange}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Aspirate axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding AspirateDirection}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the Aspirate axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding AspirateEndstopLocation}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Table Motors" Orientation="Vertical">
@@ -638,11 +624,32 @@
                                     <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the Table X motor in mA (M906). The 17HS13-0404S1 motor is rated 0.4 A per phase.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table X axis (M201). Its maximum speed is the Table Axis Speed setting.">
+                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the Table X motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding TableXDriverMode}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the Table X axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableXMaxSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Table X axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableXMoveSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table X axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXAcceleration}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Table X axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXMaxInstantaneousSpeedChange}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Homing Speed (mm/min)" ToolTip="Speed of the first (coarse) homing pass and of the 5 mm back-off of Table X. If the motor whines but does not move when homing, lower this (and Max Speed Change).">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXHomingSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Fine Homing Speed (mm/min)" ToolTip="Speed of the second (slow, accurate) homing pass of Table X.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXFineHomingSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Table X axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding TableXDirection}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the Table X axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding TableXEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="Table Y" Orientation="Vertical">
@@ -655,11 +662,32 @@
                                     <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the Table Y motor in mA (M906). The 17HS13-0404S1 motor is rated 0.4 A per phase.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table Y axis (M201). Its maximum speed is the Table Axis Speed setting.">
+                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the Table Y motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding TableYDriverMode}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the Table Y axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableYMaxSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Table Y axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableYMoveSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table Y axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYAcceleration}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Table Y axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYMaxInstantaneousSpeedChange}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Homing Speed (mm/min)" ToolTip="Speed of the first (coarse) homing pass and of the 5 mm back-off of Table Y. If the motor whines but does not move when homing, lower this (and Max Speed Change).">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYHomingSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Fine Homing Speed (mm/min)" ToolTip="Speed of the second (slow, accurate) homing pass of Table Y.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYFineHomingSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Table Y axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding TableYDirection}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the Table Y axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding TableYEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                             </dxlc:FlowLayoutControl>
@@ -673,17 +701,29 @@
                                     <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Usable travel of the DNA Reagent pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the DNA Reagent pump motor in mA (M906).">
+                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the DNA Reagent pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="Maximum speed of the DNA Reagent pump axis (M203).">
+                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the DNA Reagent pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding DnaReagentDriverMode}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the DNA Reagent pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMaxSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the DNA Reagent pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding DnaReagentMoveSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the DNA Reagent pump axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentAcceleration}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the DNA Reagent pump axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMaxInstantaneousSpeedChange}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the DNA Reagent axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding DnaReagentDirection}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the DNA Reagent axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding DnaReagentEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="KOH" Orientation="Vertical">
@@ -693,17 +733,29 @@
                                     <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Usable travel of the KOH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the KOH pump motor in mA (M906).">
+                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the KOH pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="Maximum speed of the KOH pump axis (M203).">
+                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the KOH pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding KohDriverMode}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the KOH pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMaxSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the KOH pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding KohMoveSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the KOH pump axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohAcceleration}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the KOH pump axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMaxInstantaneousSpeedChange}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the KOH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding KohDirection}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the KOH axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding KohEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="NADH" Orientation="Vertical">
@@ -713,17 +765,29 @@
                                     <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Usable travel of the NADH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the NADH pump motor in mA (M906).">
+                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the NADH pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="Maximum speed of the NADH pump axis (M203).">
+                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the NADH pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding NadhDriverMode}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the NADH pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMaxSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the NADH pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding NadhMoveSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the NADH pump axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhAcceleration}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the NADH pump axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMaxInstantaneousSpeedChange}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the NADH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding NadhDirection}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the NADH axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding NadhEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="Basal" Orientation="Vertical">
@@ -733,17 +797,29 @@
                                     <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Usable travel of the Basal pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the Basal pump motor in mA (M906).">
+                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the Basal pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="Maximum speed of the Basal pump axis (M203).">
+                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the Basal pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding BasalDriverMode}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the Basal pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMaxSpeed}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Basal pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding BasalMoveSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Basal pump axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalAcceleration}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Basal pump axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMaxInstantaneousSpeedChange}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Basal axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding BasalDirection}" />
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the Basal axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                        <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding BasalEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                             </dxlc:FlowLayoutControl>
@@ -799,6 +875,39 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
+                </dxlc:LayoutControl>
+            </dx:DXTabItem>
+            <dx:DXTabItem Header="Command Timeouts">
+                <dxlc:LayoutControl Orientation="Horizontal">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Board Timeouts (seconds)" Orientation="Vertical">
+                        <dxlc:LayoutItem Label="General" ToolTip="How long to wait for the controller board to report that it has finished a command before giving up on it (an error is logged and the next command runs). Used for every command that has no longer timeout below; the longer timeouts are never shorter than this.">
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding BoardReadyTimeoutSeconds}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Home One Axis" ToolTip="Homing one axis. The table axes are the slowest: the full 505 mm of travel at the coarse homing speed (600 mm/min is about 50 s), plus the back-off and the fine pass. Lower homing speeds need more time.">
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding HomeAxisTimeoutSeconds}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Home All Axes" ToolTip="Homing every axis one after another (G28): both table axes, the aspirate needle and the four pumps. About 135 s at the default homing speeds.">
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding HomeAllTimeoutSeconds}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Moves" ToolTip="Moving the table or an axis, including aligning wells and moving to starting positions. A full 500 mm table move at 4000 mm/min is about 8 s.">
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding MoveTimeoutSeconds}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Fluid Emission" ToolTip="A pump emitting fluid, including priming. The syringe moves slowly (Fluid Syringe Speed, 5 mm/min by default), so priming 1000 μl of DNA reagent or basal media takes about 18 s. The emission dwell is added automatically if it is longer.">
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding FluidEmissionTimeoutSeconds}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Aspirate" ToolTip="The aspiration needle moving down to the plate and back. 90 mm at the 200 mm/min positioning speed is about 27 s. The aspiration dwell is added automatically if it is longer.">
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding AspirateTimeoutSeconds}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Apply Config" ToolTip="Running config.g on the board. It waits 4 s for the expansion boards and then sets up WiFi.">
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding ApplyConfigTimeoutSeconds}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="WiFi" ToolTip="Switching WiFi on or off, or setting the network. Starting the WiFi module can take several seconds.">
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding WifiTimeoutSeconds}" />
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
+                    <dxlc:LayoutGroup View="GroupBox" Header="Added Automatically" Orientation="Vertical">
+                        <TextBlock TextWrapping="Wrap" MaxWidth="360" Text="Pauses and sensor readings wait for their own pause (Assay Timing tab) plus the General timeout, so they need no setting here. Timers do not wait for the board, so no timeout applies to them." />
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>

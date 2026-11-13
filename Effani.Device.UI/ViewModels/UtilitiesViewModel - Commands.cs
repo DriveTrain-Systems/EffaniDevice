@@ -60,17 +60,48 @@ namespace Effani.Device.UI
 		/// <summary>Reports the outcome of sending the generated files to the controller board; runs on the process engine thread.</summary>
 		private void SendConfigFilesComplete(string? error)
 		{
+			// the board now runs a config built from the current settings: rebuild Effani's own picture of the axes (limits, start
+			// positions, endstop ends) from the same settings, so moves are worked out the way the board now expects them. This runs on
+			// the process engine thread between commands, so no command is using the configuration at this moment.
+			if (error is null)
+				_device.ResetConfiguration();
 			Application.Current.Dispatcher.BeginInvoke(() =>
 			{
 				var now = DateTime.Now.ToString("H:mm:ss");
 				if (error is null)
 				{
+					// the axis boxes show and act on the rebuilt axes
+					Axes.Clear();
+					foreach (var axis in _device.Configuration.DeviceSpecification.Axes)
+						Axes.Add(axis);
 					ConsoleMessages.Insert(0, $"{now} Generated config files sent to the controller board; the board was rebooted.");
 					return;
 				}
 				ConsoleMessages.Insert(0, $"{now} Sending the generated config files to the controller board failed: {error}");
 				DXMessageBox.Show($"The config files were generated but could not be sent to the controller board (it was not rebooted).\n\n{error}", "Send Config Files");
 			});
+		}
+		/// <summary>Closes the controller board's COM port so a terminal program can open it; the next command sent reopens it.</summary>
+		[Command]
+		public void ReleaseComPort()
+		{
+			var now = DateTime.Now.ToString("H:mm:ss");
+			if (_processEngine.IsBusy)
+			{
+				ConsoleMessages.Insert(0, $"{now} The COM port was not released: commands are queued or executing.");
+				return;
+			}
+			try
+			{
+				var name = _device.ClosePort();
+				ConsoleMessages.Insert(0, name is null
+					? $"{now} The COM port is not open, so other programs can already use it."
+					: $"{now} {name} released: other programs (a terminal) can open it now. Close them before sending a command from here, which reopens it.");
+			}
+			catch (Exception ex)
+			{
+				ConsoleMessages.Insert(0, $"{now} Releasing the COM port failed: {ex.Message}");
+			}
 		}
 		[Command]
 		public async Task GenerateConfigFiles()
@@ -120,28 +151,14 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task LaserOff(SensorSpec sensor)
 		{
-			switch (sensor)
-			{
-				case DnaSensorSpec:
-					_device.LaserDnaOff();
-					break;
-				case NadhSensorSpec:
-					_device.LaserNadhOff();
-					break;
-			}
+			if (sensor is DnaSensorSpec or NadhSensorSpec)
+				_processEngine.QueueCommand(new SwitchLaser(sensor is DnaSensorSpec, on: false, _device));
 		}
 		[Command]
 		public async Task LaserOn(SensorSpec sensor)
 		{
-			switch (sensor)
-			{
-				case DnaSensorSpec:
-					_device.LaserDnaOn();
-					break;
-				case NadhSensorSpec:
-					_device.LaserNadhOn();
-					break;
-			}
+			if (sensor is DnaSensorSpec or NadhSensorSpec)
+				_processEngine.QueueCommand(new SwitchLaser(sensor is DnaSensorSpec, on: true, _device));
 		}
 		[Command]
 		public async Task MoveRapid(List<object> parameters)
@@ -183,7 +200,44 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task GetBoardDiagnostics(int boardNumber)
 		{
-			_processEngine.QueueCommand(new GetBoardDiagnostics(boardNumber, _device));
+			_processEngine.QueueCommand(new GetBoardDiagnostics(boardNumber, _device, ShowBoardDiagnostics));
+		}
+		/// <summary>Shows a board's diagnostics in a window of their own; called on the process engine thread.</summary>
+		private void ShowBoardDiagnostics(GetBoardDiagnostics command)
+		{
+			Application.Current.Dispatcher.BeginInvoke(() =>
+			{
+				var caption = $"Board {command.BoardNumber} Diagnostics";
+				var report = command.Result;
+				var now = DateTime.Now.ToString("H:mm:ss");
+				if (string.IsNullOrWhiteSpace(report) || report.StartsWith("Error"))
+				{
+					var reason = string.IsNullOrWhiteSpace(report) ? "the board did not reply" : report;
+					ConsoleMessages.Insert(0, $"{now} No diagnostics from board {command.BoardNumber}: {reason}");
+					DXMessageBox.Show($"No diagnostics were received from board {command.BoardNumber}: {reason}", caption);
+					return;
+				}
+
+				ConsoleMessages.Insert(0, $"{now} Diagnostics received from board {command.BoardNumber}.");
+				var window = new ThemedWindow
+				{
+					Title = caption,
+					Content = new System.Windows.Controls.TextBox
+					{
+						Text = report,
+						IsReadOnly = true, // still selectable, so it can be copied
+						FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+						VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto,
+						HorizontalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto,
+						Margin = new Thickness(10),
+					},
+					Width = 900,
+					Height = 650,
+					WindowStartupLocation = WindowStartupLocation.CenterOwner,
+					Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow,
+				};
+				window.Show(); // not modal, so the reports of several boards can be compared
+			});
 		}
 		[Command]
 		public async Task Home(AxisSpec axisSpec)
@@ -291,6 +345,8 @@ namespace Effani.Device.UI
 			}
 			_processEngine.QueueCommand(new SetWifi(Settings.WifiSsid, Settings.WifiPassword, _device));
 		}
+		/// <summary>Updates are not checked for (or installed) while an assay is running.</summary>
+		public bool CanCheckForUpdates() => !IsAssayRunning;
 		[Command]
 		public async Task CheckForUpdates()
 		{
@@ -327,7 +383,9 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task Send()
 		{
-			_processEngine.QueueCommand(new SendCommand(_sendCommandText, _device));
+			if (String.IsNullOrWhiteSpace(_sendCommandText))
+				return;
+			_processEngine.QueueCommand(new SendCommand(_sendCommandText, _device, ReportSendResponse, TimeSpan.FromSeconds(Math.Max(1, SendTimeoutSeconds))));
 		}
 	}
 }

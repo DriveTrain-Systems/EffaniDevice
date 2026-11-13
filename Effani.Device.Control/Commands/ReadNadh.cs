@@ -5,7 +5,7 @@ using Drivetrain.Robotics.Process;
 
 namespace Effani.Device.Control
 {
-	public class ReadNadh(EffaniDeviceControl device, Action<ReadSensor> resultCallback) : ReadSensor(device, resultCallback)
+	public class ReadNadh(EffaniDeviceControl device, Action<ReadSensor> resultCallback, TimeSpan? timeout = null) : ReadSensor(device, resultCallback, timeout)
 	{
 		protected override void Run()
 		{

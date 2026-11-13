@@ -5,23 +5,21 @@ namespace Drivetrain.Robotics.Control
 {
     public class AspirateZAxis : LocatedAxis
     {
-        public AspirateZAxis(Axis axis, BoardPort driverPort, BoardPort endstopPort, Coordinate location, decimal? startingPosition = null)
+        public AspirateZAxis(Axis axis, BoardPort driverPort, BoardPort endstopPort, Coordinate location, int maximumMovement, EndstopLocation endstopLocation, Direction direction, int maxSpeed, decimal? startingPosition = null)
             : base(axis, driverPort, endstopPort, location, startingPosition)
         {
-            Maximum = 500;
-            MaxSpeed = 4000;
-            StepsPerMillimeter = 1259.84m;
+            Maximum = maximumMovement;
+            MaxSpeed = maxSpeed;
             Driver = new DriverSpec(Label)
             {
-                Current = 500,
-                Direction = Direction.Forwards,
-                Endstop = new EndstopSpec(Label)
+                Direction = direction,
+                Endstop = new EndstopSpec($"{Label} Endstop")
                 {
-                    SensorPort = endstopPort.InputDesignation,
+                    SensorPort = endstopPort.Designation,
                     Signal = PinSignal.High,
-                    Location = EndstopLocation.HighEnd,
+                    Location = endstopLocation,
                     FirstHomingSpeed = 4000
-				}
+                }
             };
         }
     }

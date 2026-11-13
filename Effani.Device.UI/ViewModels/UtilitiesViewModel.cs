@@ -28,20 +28,91 @@ namespace Effani.Device.UI
 			_device = device;
 			_processEngine = processEngine;
 			_settingsService = settingsService;
+			_sendTimeoutSeconds = Math.Max(1, _device.Settings.BoardReadyTimeoutSeconds);
 
 			Axes = new ObservableCollection<AxisSpec>(_device.Configuration.DeviceSpecification.Axes);
 			Sensors = new ObservableCollection<SensorSpec>(_device.Configuration.DeviceSpecification.Sensors);
+
+			_executingTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+			_executingTimer.Tick += (s, e) => RefreshCommandQueue();
+			_executingTimer.Start();
+			RefreshCommandQueue();
+			_device.PositionsChanged += Device_PositionsChanged;
+			_device.OutputsChanged += Device_OutputsChanged;
+			// find out which axes are homed, so the move buttons of the others can be disabled
+			_processEngine.QueueCommand(new ReadPositions(_device));
 		}
 		#endregion
 
 		#region Public methods
 		public void Dispose()
 		{
+			_executingTimer.Stop();
+			_device.PositionsChanged -= Device_PositionsChanged;
+			_device.OutputsChanged -= Device_OutputsChanged;
+		}
+		#endregion
+
+		#region Private methods
+		private void Device_OutputsChanged(object? sender, EventArgs e) =>
+			Application.Current?.Dispatcher.BeginInvoke(() =>
+			{
+				RaisePropertyChanged(nameof(TrayUvIsOn));
+				RaisePropertyChanged(nameof(ChamberUvIsOn));
+			});
+		private bool IsOutputOn(int port) => _device.OutputStates.TryGetValue(port, out var on) && on;
+		private void Device_PositionsChanged(object? sender, EventArgs e) =>
+			Application.Current?.Dispatcher.BeginInvoke(() =>
+			{
+				RaisePropertyChanged(nameof(Positions));
+				RaisePropertyChanged(nameof(Homed));
+			});
+		private void RefreshCommandQueue()
+		{
+			CommandQueue.Refresh(_processEngine);
+			var busy = _processEngine.IsBusy;
+			if (busy == _isCommandQueueBusy)
+				return;
+			_isCommandQueueBusy = busy;
+			RaisePropertyChanged(nameof(IsCommandQueueBusy));
 		}
 		#endregion
 
 		#region Properties
 		public ObservableCollection<string> ConsoleMessages { get; init; }
+		/// <summary>The numbers of the controller boards (0 is the main board), from the Board Count setting.</summary>
+		public IReadOnlyList<int> Boards => Enumerable.Range(0, Math.Max(1, _device.Settings.ControllerBoardCount)).ToList();
+		/// <summary>Everything still to run, in order, with the executing command flagged (and counting down while the board is waited for).</summary>
+		public CommandQueueDisplay CommandQueue { get; } = new();
+		/// <summary>Where each axis was after the last move or home, by axis letter; read from the board after every move.</summary>
+		public IReadOnlyDictionary<string, decimal> Positions => _device.Positions;
+		/// <summary>Which axes are homed, by axis letter; an axis's move buttons are disabled until it is.</summary>
+		public IReadOnlyDictionary<string, bool> Homed => _device.Homed;
+		/// <summary>
+		/// Whether the tray UV light (output port 0) is on, as the board last reported it. Setting it queues the command that switches
+		/// the light; the switch then shows what the board reports once the command has run.
+		/// </summary>
+		public bool TrayUvIsOn
+		{
+			get => IsOutputOn(0);
+			set
+			{
+				if (value != IsOutputOn(0))
+					_processEngine.QueueCommand(value ? new TrayUvOn(_device) : new TrayUvOff(_device));
+			}
+		}
+		/// <summary>Whether the chamber UV light (output port 1) is on, as the board last reported it; setting it switches the light.</summary>
+		public bool ChamberUvIsOn
+		{
+			get => IsOutputOn(1);
+			set
+			{
+				if (value != IsOutputOn(1))
+					_processEngine.QueueCommand(value ? new ChamberUvOn(_device) : new ChamberUvOff(_device));
+			}
+		}
+		/// <summary>True while any command is queued or executing (checked every second); settings such as the COM port are locked while it is.</summary>
+		public bool IsCommandQueueBusy => _isCommandQueueBusy;
 		/// <summary>The version of the running software (major.minor.build).</summary>
 		public string SoftwareVersion { get; } = typeof(UtilitiesViewModel).Assembly.GetName().Version?.ToString(3) ?? "unknown";
 		/// <summary>The outcome of the last check for a new software version, or the progress of a check under way.</summary>
@@ -111,6 +182,30 @@ namespace Effani.Device.UI
 
 				_sendCommandText = value;
 				RaisePropertyChanged(nameof(SendCommandText));
+			}
+		}
+		/// <summary>How long Send waits for the board when <see cref="ReportSendResponse"/> is true; starts as the general board timeout.</summary>
+		public int SendTimeoutSeconds
+		{
+			get => _sendTimeoutSeconds;
+			set
+			{
+				if (_sendTimeoutSeconds == value)
+					return;
+				_sendTimeoutSeconds = value;
+				RaisePropertyChanged(nameof(SendTimeoutSeconds));
+			}
+		}
+		/// <summary>When true, Send waits for the board to finish the command and reports what it replied in the console messages.</summary>
+		public bool ReportSendResponse
+		{
+			get => _reportSendResponse;
+			set
+			{
+				if (_reportSendResponse == value)
+					return;
+				_reportSendResponse = value;
+				RaisePropertyChanged(nameof(ReportSendResponse));
 			}
 		}
 		public ObservableCollection<string> SettingsServiceActivity => _settingsService.Activity;
@@ -192,6 +287,10 @@ namespace Effani.Device.UI
 		int _emitFluidVolume;
 		readonly ProcessEngine _processEngine;
 		string _sendCommandText;
+		readonly System.Windows.Threading.DispatcherTimer _executingTimer;
+		bool _reportSendResponse;
+		bool _isCommandQueueBusy;
+		int _sendTimeoutSeconds;
 		string _updateStatus = "";
 		bool _checkingForUpdates;
 		readonly UpdateChecker _updateChecker = new();

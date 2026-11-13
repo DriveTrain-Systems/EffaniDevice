@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Drivetrain.Robotics.Process
 {
-	public class SetTableTemp(decimal temperature, DeviceControl device) : Command(device)
+	public class SetTableTemp(decimal temperature, DeviceControl device, TimeSpan? timeout = null) : Command(device, timeout)
 	{
 		protected override void Run()
 		{

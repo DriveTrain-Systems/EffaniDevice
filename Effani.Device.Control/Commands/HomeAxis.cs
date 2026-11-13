@@ -9,7 +9,7 @@ namespace Effani.Device.Control
 	{
 		private readonly Axis _axis;
 
-		public HomeAxis(Axis axis, EffaniDeviceControl device) : base(device)
+		public HomeAxis(Axis axis, EffaniDeviceControl device, TimeSpan? timeout = null) : base(device, null, timeout)
 		{
 			_axis = axis;
 			AxisSpec = (Device as EffaniDeviceControl).Axes[_axis];

@@ -5,5 +5,27 @@
 			 xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
 			 ShutdownMode="OnLastWindowClose">
 	<Application.Resources>
+		<!-- a row of the command queue: jobs in semibold with their commands indented under them, the executing command in bold green -->
+		<DataTemplate x:Key="QueuedCommandTemplate">
+			<TextBlock Text="{Binding Text}" TextWrapping="Wrap">
+				<TextBlock.Style>
+					<Style TargetType="TextBlock">
+						<Setter Property="Margin" Value="0,1,0,0" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding InJob}" Value="True">
+								<Setter Property="Margin" Value="16,1,0,0" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding IsJob}" Value="True">
+								<Setter Property="FontWeight" Value="SemiBold" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding IsExecuting}" Value="True">
+								<Setter Property="FontWeight" Value="Bold" />
+								<Setter Property="Foreground" Value="#FF2E7D32" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TextBlock.Style>
+			</TextBlock>
+		</DataTemplate>
 	</Application.Resources>
 </Application>
