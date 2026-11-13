@@ -3214,14 +3214,14 @@ namespace Drivetrain.Robotics.Control
         int _controllerBoardCount = 2;
         int _inputPortsPerBoard = 7;
         Direction _tableXDirection = Direction.Backwards;
-        Direction _tableYDirection = Direction.Backwards;
+        Direction _tableYDirection = Direction.Forwards;
         Direction _aspirateDirection = Direction.Forwards;
         Direction _dnaReagentDirection = Direction.Forwards;
         Direction _kohDirection = Direction.Forwards;
         Direction _nadhDirection = Direction.Backwards;
         Direction _basalDirection = Direction.Forwards;
         EndstopLocation _tableXEndstopLocation = EndstopLocation.LowEnd;
-        EndstopLocation _tableYEndstopLocation = EndstopLocation.LowEnd;
+        EndstopLocation _tableYEndstopLocation = EndstopLocation.HighEnd;
         EndstopLocation _aspirateEndstopLocation = EndstopLocation.HighEnd;
         EndstopLocation _dnaReagentEndstopLocation = EndstopLocation.HighEnd;
         EndstopLocation _kohEndstopLocation = EndstopLocation.HighEnd;

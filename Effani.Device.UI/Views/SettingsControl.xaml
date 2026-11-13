@@ -226,7 +226,7 @@
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding FluidEmissionDwell}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Aspiration Pump Properties" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Aspiration" Orientation="Vertical">
                             <dxlc:LayoutItem Label="Aspirate Needle Start Position" ToolTip="The starting position (mm) of a the KOH aspiration needle">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateActuatorStartPosition}" />
                             </dxlc:LayoutItem>
@@ -244,7 +244,7 @@
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Component Sizes">
+            <dx:DXTabItem Header="Component Locations">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Fluid Port Locations" Orientation="Vertical">
                         <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH is emitted">
@@ -287,7 +287,7 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="KOH Aspiration" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is aspirated">
+                        <dxlc:LayoutItem LabelPosition="Top" Label="Aspiration" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is aspirated">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
                                     <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationX}" />
