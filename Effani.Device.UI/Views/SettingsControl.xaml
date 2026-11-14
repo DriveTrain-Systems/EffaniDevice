@@ -36,6 +36,15 @@
             <Setter Property="LabelPosition" Value="Left"/>
             <Setter Property="FontSize" Value="12"/>
         </Style>
+        <!-- settings written to the board's config files (config.g, homeX.g, ...): the board only uses a change once the config is generated and sent -->
+        <SolidColorBrush x:Key="ConfigSettingColor" Color="#1F5FA8"/>
+        <Style x:Key="ConfigSettingLabel" TargetType="dxlc:LayoutItemLabel" BasedOn="{StaticResource {x:Type dxlc:LayoutItemLabel}}">
+            <Setter Property="Foreground" Value="{StaticResource ConfigSettingColor}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style x:Key="ConfigSetting" TargetType="dxlc:LayoutItem" BasedOn="{StaticResource {x:Type dxlc:LayoutItem}}">
+            <Setter Property="LabelStyle" Value="{StaticResource ConfigSettingLabel}"/>
+        </Style>
         <Style TargetType="dxlc:LayoutGroup">
             <Setter Property="ItemSpace" Value="10"/>
             <Setter Property="IsCollapsible" Value="True"/>
@@ -137,6 +146,9 @@
                 <!--<dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Upload.svg" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Upload these settings to the cloud" Command="{Binding UploadSettingsCommand}"/>
                 <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Download.svg" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Download these settings from the cloud" Command="{Binding DownloadSettingsCommand}"/>-->
             </StackPanel>
+            <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap">
+                <Run Text="Blue settings" Foreground="{StaticResource ConfigSettingColor}" FontWeight="SemiBold"/><Run Text=" are written to the board's config: after changing one, press Generate Config so the board uses it."/>
+            </TextBlock>
         </StackPanel>
         <dx:DXTabControl Margin="20,20,0,0" DataContext="{Binding Path=Settings}">
             <dx:DXTabItem Header="Fluid Emission">
@@ -392,39 +404,39 @@
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="DNA Sensor" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the DNA sensor is connected">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the DNA sensor is connected">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaSensorBoardNumber}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Temp Input" ToolTip="Temperature input (tempN) to which the DNA sensor is connected">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Temp Input" ToolTip="Temperature input (tempN) to which the DNA sensor is connected">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaSensorPortNumber}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Index" ToolTip="Configuration index of the DNA sensor">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Index" ToolTip="Configuration index of the DNA sensor">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaSensorNumber}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutGroup View="GroupBox" Header="Reading Range" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Upper Limit" ToolTip="Top of the range of values the DNA sensor should report">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Upper Limit" ToolTip="Top of the range of values the DNA sensor should report">
                                     <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding DnaSensorReadHigh}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Lower Limit" ToolTip="Bottom of the range of values the DNA sensor should report">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Lower Limit" ToolTip="Bottom of the range of values the DNA sensor should report">
                                     <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding DnaSensorReadLow}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="NADH Sensor" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the NADH sensor is connected">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the NADH sensor is connected">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhSensorBoardNumber}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Temp Input" ToolTip="Temperature input (tempN) to which the NADH sensor is connected">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Temp Input" ToolTip="Temperature input (tempN) to which the NADH sensor is connected">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhSensorPortNumber}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Index" ToolTip="Configuration index of the NADH sensor">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Index" ToolTip="Configuration index of the NADH sensor">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhSensorNumber}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutGroup View="GroupBox" Header="Reading Range" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Upper Limit" ToolTip="Top of the range of values the NADH sensor should report">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Upper Limit" ToolTip="Top of the range of values the NADH sensor should report">
                                     <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSensorReadHigh}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Lower Limit" ToolTip="Bottom of the range of values the NADH sensor should report">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Lower Limit" ToolTip="Bottom of the range of values the NADH sensor should report">
                                     <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSensorReadLow}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
@@ -434,100 +446,100 @@
                         <dxlc:LayoutGroup View="GroupBox" Header="Axis Motor Drivers and Endstops" Orientation="Vertical">
                           <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                             <dxlc:LayoutGroup View="GroupBox" Header="Table X" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the Table X axis motor driver is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Table X axis motor driver is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXDriverBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Driver Port" ToolTip="Motor driver port number on the board of the Table X axis">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the Table X axis">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXDriverPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Board" ToolTip="Control board number to which the Table X axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the Table X axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXEndstopBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the Table X axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the Table X axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Table Y" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the Table Y axis motor driver is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Table Y axis motor driver is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYDriverBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Driver Port" ToolTip="Motor driver port number on the board of the Table Y axis">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the Table Y axis">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYDriverPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Board" ToolTip="Control board number to which the Table Y axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the Table Y axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYEndstopBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the Table Y axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the Table Y axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Aspirate" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the Aspirate axis motor driver is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Aspirate axis motor driver is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateDriverBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Driver Port" ToolTip="Motor driver port number on the board of the Aspirate axis">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the Aspirate axis">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateDriverPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Board" ToolTip="Control board number to which the Aspirate axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the Aspirate axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateEndstopBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the Aspirate axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the Aspirate axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="DNA Reagent" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the DNA Reagent axis motor driver is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the DNA Reagent axis motor driver is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentDriverBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Driver Port" ToolTip="Motor driver port number on the board of the DNA Reagent axis">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the DNA Reagent axis">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentDriverPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Board" ToolTip="Control board number to which the DNA Reagent axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the DNA Reagent axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentEndstopBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the DNA Reagent axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the DNA Reagent axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="KOH" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the KOH axis motor driver is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the KOH axis motor driver is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohDriverBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Driver Port" ToolTip="Motor driver port number on the board of the KOH axis">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the KOH axis">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohDriverPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Board" ToolTip="Control board number to which the KOH axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the KOH axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohEndstopBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the KOH axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the KOH axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="NADH" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the NADH axis motor driver is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the NADH axis motor driver is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhDriverBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Driver Port" ToolTip="Motor driver port number on the board of the NADH axis">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the NADH axis">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhDriverPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Board" ToolTip="Control board number to which the NADH axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the NADH axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhEndstopBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the NADH axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the NADH axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Basal" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Driver Board" ToolTip="Control board number to which the Basal axis motor driver is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Basal axis motor driver is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalDriverBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Driver Port" ToolTip="Motor driver port number on the board of the Basal axis">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the Basal axis">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalDriverPortNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Board" ToolTip="Control board number to which the Basal axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the Basal axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalEndstopBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Endstop Port" ToolTip="Input (io) port number at which the Basal axis endstop is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the Basal axis endstop is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalEndstopPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
@@ -536,40 +548,40 @@
                         <dxlc:LayoutGroup View="GroupBox" Header="Switched Outputs" Orientation="Vertical">
                           <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                             <dxlc:LayoutGroup View="GroupBox" Header="Tray UV" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the Tray UV output is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the Tray UV output is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TrayUvBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the Tray UV output is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Output (out) port number at which the Tray UV output is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TrayUvPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Chamber UV" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the Chamber UV output is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the Chamber UV output is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding ChamberUvBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the Chamber UV output is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Output (out) port number at which the Chamber UV output is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding ChamberUvPortNumber}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="NADH Laser" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Port Kind" ToolTip="Output: an out port, chosen by the Port Number. Laser: the board's laser output (M950 C&quot;laser&quot;; on the Duet 3 Mini 5+ the same pin as out6, so nothing else on that board can use out6)">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Kind" ToolTip="Output: an out port, chosen by the Port Number. Laser: the board's laser output (M950 C&quot;laser&quot;; on the Duet 3 Mini 5+ the same pin as out6, so nothing else on that board can use out6)">
                                     <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{StaticResource LaserPortKinds}" EditValue="{Binding NadhLaserPortKind, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the NADH Laser is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the NADH Laser is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the NADH Laser is connected. Not used when the Port Kind is Laser: each board has a single laser output, chosen by the Board Number">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Output (out) port number at which the NADH Laser is connected. Not used when the Port Kind is Laser: each board has a single laser output, chosen by the Board Number">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserPortNumber}" IsEnabled="{DXBinding 'NadhLaserPortKind != $control:PortKind.Laser'}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="DNA Laser" Orientation="Vertical">
-                                <dxlc:LayoutItem Label="Port Kind" ToolTip="Output: an out port, chosen by the Port Number. Laser: the board's laser output (M950 C&quot;laser&quot;; on the Duet 3 Mini 5+ the same pin as out6, so nothing else on that board can use out6)">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Kind" ToolTip="Output: an out port, chosen by the Port Number. Laser: the board's laser output (M950 C&quot;laser&quot;; on the Duet 3 Mini 5+ the same pin as out6, so nothing else on that board can use out6)">
                                     <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{StaticResource LaserPortKinds}" EditValue="{Binding DnaLaserPortKind, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Board Number" ToolTip="Control board number to which the DNA Laser is connected">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the DNA Laser is connected">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserBoardNumber}" />
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Port Number" ToolTip="Output (out) port number at which the DNA Laser is connected. Not used when the Port Kind is Laser: each board has a single laser output, chosen by the Board Number">
+                                <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Output (out) port number at which the DNA Laser is connected. Not used when the Port Kind is Laser: each board has a single laser output, chosen by the Board Number">
                                     <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserPortNumber}" IsEnabled="{DXBinding 'DnaLaserPortKind != $control:PortKind.Laser'}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
@@ -581,112 +593,112 @@
             <dx:DXTabItem Header="Actuators">
                 <dxlc:LayoutControl Orientation="Horizontal">
                         <dxlc:LayoutGroup View="GroupBox" Header="Aspirate Actuator" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of needle travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of needle travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
                                 <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateStepsPerMillimeter}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Stroke (mm)" ToolTip="Usable stroke of the needle actuator in mm. The axis keeps its home coordinate, so this sets how far below it the lower limit (M208) is. The LMD8S11GD05-090 has a 90 mm stroke.">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the needle actuator in mm. The axis keeps its home coordinate, so this sets how far below it the lower limit (M208) is. The LMD8S11GD05-090 has a 90 mm stroke.">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateTravelLength}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the aspirate motor in mA (M906). The LMD8S11GD05-090 is rated 0.5 A.">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the aspirate motor in mA (M906). The LMD8S11GD05-090 is rated 0.5 A.">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMotorCurrent}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the aspirate motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the aspirate motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                 <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding AspirateDriverMode}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the aspirate axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the aspirate axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMaxSpeed}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the aspirate axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding AspirateMoveSpeed}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the aspirate axis (M201).">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the aspirate axis (M201).">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateAcceleration}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the aspirate axis (M566).">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the aspirate axis (M566).">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMaxInstantaneousSpeedChange}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Aspirate axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the Aspirate axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                 <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding AspirateDirection}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the Aspirate axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Location" ToolTip="Which end of the Aspirate axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
                                 <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding AspirateEndstopLocation}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Table Motors" Orientation="Vertical">
                             <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                                 <dxlc:LayoutGroup View="GroupBox" Header="Table X" Orientation="Vertical">
-                                    <dxlc:LayoutItem Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table X travel. Written to config.g with M92.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table X travel. Written to config.g with M92.">
                                         <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXStepsPerMillimeter}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Length of Table X travel in mm (upper limit of M208). Homing distance is based on this.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Length of Table X travel in mm (upper limit of M208). Homing distance is based on this.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the Table X motor in mA (M906). The 17HS13-0404S1 motor is rated 0.4 A per phase.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the Table X motor in mA (M906). The 17HS13-0404S1 motor is rated 0.4 A per phase.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the Table X motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the Table X motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding TableXDriverMode}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the Table X axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the Table X axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableXMaxSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Table X axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableXMoveSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table X axis (M201).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table X axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXAcceleration}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Table X axis (M566).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Table X axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXMaxInstantaneousSpeedChange}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Homing Speed (mm/min)" ToolTip="Speed of the first (coarse) homing pass and of the 5 mm back-off of Table X. If the motor whines but does not move when homing, lower this (and Max Speed Change).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Homing Speed (mm/min)" ToolTip="Speed of the first (coarse) homing pass and of the 5 mm back-off of Table X. If the motor whines but does not move when homing, lower this (and Max Speed Change).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXHomingSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Fine Homing Speed (mm/min)" ToolTip="Speed of the second (slow, accurate) homing pass of Table X.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Fine Homing Speed (mm/min)" ToolTip="Speed of the second (slow, accurate) homing pass of Table X.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXFineHomingSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Table X axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the Table X axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding TableXDirection}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the Table X axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Location" ToolTip="Which end of the Table X axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding TableXEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="Table Y" Orientation="Vertical">
-                                    <dxlc:LayoutItem Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table Y travel. Written to config.g with M92.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table Y travel. Written to config.g with M92.">
                                         <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYStepsPerMillimeter}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Length of Table Y travel in mm (upper limit of M208). Homing distance is based on this.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Length of Table Y travel in mm (upper limit of M208). Homing distance is based on this.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the Table Y motor in mA (M906). The 17HS13-0404S1 motor is rated 0.4 A per phase.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the Table Y motor in mA (M906). The 17HS13-0404S1 motor is rated 0.4 A per phase.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the Table Y motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the Table Y motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding TableYDriverMode}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the Table Y axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the Table Y axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableYMaxSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Table Y axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableYMoveSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table Y axis (M201).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table Y axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYAcceleration}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Table Y axis (M566).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Table Y axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYMaxInstantaneousSpeedChange}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Homing Speed (mm/min)" ToolTip="Speed of the first (coarse) homing pass and of the 5 mm back-off of Table Y. If the motor whines but does not move when homing, lower this (and Max Speed Change).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Homing Speed (mm/min)" ToolTip="Speed of the first (coarse) homing pass and of the 5 mm back-off of Table Y. If the motor whines but does not move when homing, lower this (and Max Speed Change).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYHomingSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Fine Homing Speed (mm/min)" ToolTip="Speed of the second (slow, accurate) homing pass of Table Y.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Fine Homing Speed (mm/min)" ToolTip="Speed of the second (slow, accurate) homing pass of Table Y.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYFineHomingSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Table Y axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the Table Y axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding TableYDirection}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the Table Y axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Location" ToolTip="Which end of the Table Y axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding TableYEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
@@ -695,130 +707,130 @@
                         <dxlc:LayoutGroup View="GroupBox" Header="Fluid Pump Actuators" Orientation="Vertical">
                             <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                                 <dxlc:LayoutGroup View="GroupBox" Header="DNA Reagent" Orientation="Vertical">
-                                    <dxlc:LayoutItem Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of DNA Reagent pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of DNA Reagent pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
                                         <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentStepsPerMillimeter}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Usable travel of the DNA Reagent pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the DNA Reagent pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the DNA Reagent pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the DNA Reagent pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the DNA Reagent pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the DNA Reagent pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding DnaReagentDriverMode}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the DNA Reagent pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the DNA Reagent pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMaxSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the DNA Reagent pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding DnaReagentMoveSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the DNA Reagent pump axis (M201).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the DNA Reagent pump axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentAcceleration}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the DNA Reagent pump axis (M566).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the DNA Reagent pump axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMaxInstantaneousSpeedChange}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the DNA Reagent axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the DNA Reagent axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding DnaReagentDirection}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the DNA Reagent axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Location" ToolTip="Which end of the DNA Reagent axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding DnaReagentEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="KOH" Orientation="Vertical">
-                                    <dxlc:LayoutItem Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of KOH pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of KOH pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
                                         <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohStepsPerMillimeter}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Usable travel of the KOH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the KOH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the KOH pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the KOH pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the KOH pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the KOH pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding KohDriverMode}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the KOH pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the KOH pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMaxSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the KOH pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding KohMoveSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the KOH pump axis (M201).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the KOH pump axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohAcceleration}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the KOH pump axis (M566).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the KOH pump axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMaxInstantaneousSpeedChange}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the KOH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the KOH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding KohDirection}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the KOH axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Location" ToolTip="Which end of the KOH axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding KohEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="NADH" Orientation="Vertical">
-                                    <dxlc:LayoutItem Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of NADH pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of NADH pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
                                         <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhStepsPerMillimeter}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Usable travel of the NADH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the NADH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the NADH pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the NADH pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the NADH pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the NADH pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding NadhDriverMode}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the NADH pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the NADH pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMaxSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the NADH pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding NadhMoveSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the NADH pump axis (M201).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the NADH pump axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhAcceleration}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the NADH pump axis (M566).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the NADH pump axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMaxInstantaneousSpeedChange}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the NADH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the NADH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding NadhDirection}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the NADH axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Location" ToolTip="Which end of the NADH axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding NadhEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="Basal" Orientation="Vertical">
-                                    <dxlc:LayoutItem Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Basal pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Basal pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
                                         <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalStepsPerMillimeter}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Travel (mm)" ToolTip="Usable travel of the Basal pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the Basal pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalTravelLength}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Current (mA)" ToolTip="RMS motor current for the Basal pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the Basal pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMotorCurrent}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Driver Mode" ToolTip="How the Basal pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the Basal pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding BasalDriverMode}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed (mm/min)" ToolTip="The fastest the Basal pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the Basal pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMaxSpeed}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Basal pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding BasalMoveSpeed}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Basal pump axis (M201).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Basal pump axis (M201).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalAcceleration}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Basal pump axis (M566).">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Basal pump axis (M566).">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMaxInstantaneousSpeedChange}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Direction" ToolTip="Direction the Basal axis motor turns for positive movement. Change this if the axis moves the wrong way.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the Basal axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding BasalDirection}" />
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Endstop Location" ToolTip="Which end of the Basal axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
+                                    <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Location" ToolTip="Which end of the Basal axis travel its endstop switch is at (M574 in config.g). Homing moves towards this end, then backs off 5 mm and homes again slowly; once homed the axis is at 0 (Low End) or at the top of its travel (High End). If homing heads the wrong way although this is right, change Direction (above) instead. Generate and send the config after changing it.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding BasalEndstopLocation}" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
@@ -925,10 +937,10 @@
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup View="GroupBox" Header="Controller WiFi" Orientation="Vertical">
-                        <dxlc:LayoutItem Label="WiFi SSID" ToolTip="Name of the WiFi network the controller board is configured with (M587).">
+                        <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="WiFi SSID" ToolTip="Name of the WiFi network the controller board is configured with (M587).">
                             <dxe:TextEdit MinWidth="300" EditValue="{Binding WifiSsid}" />
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="WiFi Password" ToolTip="Password of the WiFi network the controller board is configured with (M587). Stored as plain text.">
+                        <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="WiFi Password" ToolTip="Password of the WiFi network the controller board is configured with (M587). Stored as plain text.">
                             <dxe:PasswordBoxEdit ShowPasswordButtonVisibility="Auto" MinWidth="300" EditValue="{Binding WifiPassword}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem>
