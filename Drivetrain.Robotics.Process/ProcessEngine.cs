@@ -69,7 +69,7 @@ namespace Drivetrain.Robotics.Process
 			catch (Exception ex)
 			{
 				Log.Error(ex, "Exception executing command");
-				Messages.Enqueue($"Error running command: {ex.Message}");
+				EnqueueMessage($"Error running command: {ex.Message}");
 			}
 		}
 		private void DoJob(Job job)
@@ -103,7 +103,7 @@ namespace Drivetrain.Robotics.Process
 					_currentCommandIndex = index;
 
 					var descriptionPrefix = job.Description is null ? String.Empty : "     ";
-					EnqueueMessage($"{descriptionPrefix}{command.DescriptionWithTimeout}");
+					EnqueueMessage($"{descriptionPrefix}{command.Description}");
 					BeginExecutingCommand?.Invoke(this, new DataArgs<Command>(command));
 					_executingCommand = command;
 					try
@@ -169,7 +169,7 @@ namespace Drivetrain.Robotics.Process
 			catch (Exception ex)
 			{
 				Log.Error(ex, "Exception executing command");
-				Messages.Enqueue(ex.Message);
+				EnqueueMessage(ex.Message);
 			}
 		}
 		private void PublishMessages()
@@ -216,8 +216,8 @@ namespace Drivetrain.Robotics.Process
 						continue;
 					}
 					var isExecuting = ReferenceEquals(command, executing);
-					var text = Describe(command, isExecuting);
-					rows.Add(new QueuedCommand(isExecuting ? $"▶ {text}" : text, isExecuting, false, named, command));
+					var text = Describe(command);
+					rows.Add(new QueuedCommand(isExecuting ? $"▶ {text}" : text, isExecuting, false, named, command, isExecuting ? Countdown(command) : null));
 				}
 			}
 
@@ -243,11 +243,22 @@ namespace Drivetrain.Robotics.Process
 				return []; // the job's list was being changed while it was copied
 			}
 		}
-		private static string Describe(Command command, bool isExecuting)
+		private static string? Countdown(Command command)
 		{
 			try
 			{
-				return isExecuting ? command.DescriptionWithTimeout : command.Description;
+				return command.TimeoutCountdown;
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+		private static string Describe(Command command)
+		{
+			try
+			{
+				return command.Description;
 			}
 			catch (Exception)
 			{

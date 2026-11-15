@@ -5,9 +5,10 @@
 			 xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
 			 ShutdownMode="OnLastWindowClose">
 	<Application.Resources>
-		<!-- a row of the command queue: jobs in semibold with their commands indented under them, the executing command in bold green -->
+		<!-- a row of the command queue: jobs in semibold with their commands indented under them, the executing command in bold green with its countdown to giving up on the board -->
 		<DataTemplate x:Key="QueuedCommandTemplate">
-			<TextBlock Text="{Binding Text}" TextWrapping="Wrap">
+			<TextBlock TextWrapping="Wrap">
+				<Run Text="{Binding Text, Mode=OneWay}" /><Run Text="{Binding Countdown, Mode=OneWay, StringFormat='  ({0})', TargetNullValue=''}" />
 				<TextBlock.Style>
 					<Style TargetType="TextBlock">
 						<Setter Property="Margin" Value="0,1,0,0" />

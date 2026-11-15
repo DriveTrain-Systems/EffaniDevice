@@ -11,6 +11,8 @@
 		Temp,
 		/// <summary>An output, such as a UV lamp switch ("out5": M950).</summary>
 		Output,
+		/// <summary>The output side of an IO connector ("io2.out": M950); the same connector's input side is <see cref="Input"/> ("io2.in").</summary>
+		IoOutput,
 		/// <summary>
 		/// A board's laser output ("laser": M950). Each board has one, so it is named by its board alone and the port number is
 		/// not used. On the Duet 3 Mini 5+ and its expansion boards it is the same pin as out6.
@@ -28,9 +30,15 @@
 		public static BoardPort Input(int board, int port) => new(board, port, PortKind.Input);
 		public static BoardPort Temp(int board, int port) => new(board, port, PortKind.Temp);
 		public static BoardPort Output(int board, int port) => new(board, port, PortKind.Output);
+		public static BoardPort IoOutput(int board, int port) => new(board, port, PortKind.IoOutput);
 		public static BoardPort Laser(int board) => new(board, LaserOutputNumber, PortKind.Laser);
 		/// <summary>An output that may be wired to an out port or to the board's laser output (the port number is not used then).</summary>
-		public static BoardPort OutputOrLaser(PortKind kind, int board, int port) => kind == PortKind.Laser ? Laser(board) : Output(board, port);
+		public static BoardPort OutputOrLaser(PortKind kind, int board, int port) => kind switch
+		{
+			PortKind.Laser => Laser(board),
+			PortKind.IoOutput => IoOutput(board, port),
+			_ => Output(board, port)
+		};
 
 		/// <summary>
 		/// The port's name in config.g: a driver "1.2" (always with its board), an input "io4.in", a temperature input "temp0" or an
@@ -42,6 +50,7 @@
 			PortKind.Input => $"{BoardPrefix}io{Port}.in",
 			PortKind.Temp => $"{BoardPrefix}temp{Port}",
 			PortKind.Output => $"{BoardPrefix}out{Port}",
+			PortKind.IoOutput => $"{BoardPrefix}io{Port}.out",
 			PortKind.Laser => $"{BoardPrefix}laser",
 			_ => throw new InvalidOperationException($"Unknown port kind {Kind}")
 		};

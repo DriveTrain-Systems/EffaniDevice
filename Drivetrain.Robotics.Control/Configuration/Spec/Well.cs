@@ -12,7 +12,7 @@ namespace Drivetrain.Robotics.Control
 			plate.Wells.Add(this);
 			Plate = plate;
 			Location = location;
-			var row = x switch
+			var row = y switch // the letter is the row (Y), the number is the cell within the row (X)
 			{
 				0 => "A",
 				1 => "B",
@@ -28,10 +28,10 @@ namespace Drivetrain.Robotics.Control
 				11 => "L",
 				12 => "M",
 				13 => "N",
-				_ => x.ToString()
+				_ => y.ToString()
 			};
 
-			Label = $"{plate.Label}:{row}{y + 1}";
+			Label = $"{plate.Label}:{row}{x + 1}";
 		}
 		public override string ToString()
 		{

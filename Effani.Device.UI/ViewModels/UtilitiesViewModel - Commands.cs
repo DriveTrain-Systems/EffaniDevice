@@ -49,7 +49,9 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task AlignToLastWell(object parameter)
 		{
-			var plate = _config.DeviceSpecification.Plates.First();
+			// the last well of the tray the current well is on, so every tray can be reached: Align Next Well steps from here onto the next tray
+			var plates = _config.DeviceSpecification.Plates;
+			var plate = plates.FirstOrDefault(p => p == CurrentWell?.Plate) ?? plates.First();
 			var well = plate.Wells.Last();
 			CurrentWell = well;
 			if (parameter is AxisSpec axisSpec)
@@ -75,6 +77,10 @@ namespace Effani.Device.UI
 					foreach (var axis in _device.Configuration.DeviceSpecification.Axes)
 						Axes.Add(axis);
 					ConsoleMessages.Insert(0, $"{now} Generated config files sent to the controller board; the board was rebooted.");
+						// the board has this config now: the Generate Config button goes back to normal unless settings changed since
+						if (_pendingConfigSignature != null)
+							SentConfigSignature = _pendingConfigSignature;
+						UpdateConfigNeedsGenerating();
 					return;
 				}
 				ConsoleMessages.Insert(0, $"{now} Sending the generated config files to the controller board failed: {error}");
@@ -110,6 +116,7 @@ namespace Effani.Device.UI
 			{
 				// The active settings object is replaced when a settings version is activated or reset, so point the configuration at the current one.
 				_config.Settings = _settingsService.Settings;
+					_pendingConfigSignature = DeviceConfiguration.GetConfigSignature(_settingsService.Settings);
 				var fileLocation = _config
 					.GenerateConfigFiles(SettingsService.DataFolder);
 				string messageBoxText = $"Config generated at {fileLocation}";
@@ -257,13 +264,12 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task AlignToNextWell(object parameter)
 		{
-			var plate = _config.DeviceSpecification.Plates.First();
-			if (CurrentWell == null)
-				CurrentWell = plate.Wells.First();
-			var nextIndex = plate.Wells.IndexOf(CurrentWell) + 1;
-			if (plate.Wells.Count - 1 < nextIndex)
+			// across all trays: the well after the last one of a tray is the first one of the next tray
+			var wells = _config.DeviceSpecification.Plates.SelectMany(p => p.Wells).ToList();
+			var nextIndex = wells.IndexOf(CurrentWell) + 1; // the first well when the current well is not on the trays as they are now configured
+			if (nextIndex >= wells.Count)
 				return;
-			var well = plate.Wells[nextIndex];
+			var well = wells[nextIndex];
 			CurrentWell = well;
 			if (parameter is AxisSpec axisSpec)
 				_processEngine.QueueCommand(new AlignWellToAxis(axisSpec.Axis, well, _device));
@@ -343,7 +349,12 @@ namespace Effani.Device.UI
 				DXMessageBox.Show("Enter a WiFi SSID first.", "Set WiFi");
 				return;
 			}
-			_processEngine.QueueCommand(new SetWifi(Settings.WifiSsid, Settings.WifiPassword, _device));
+			if (Settings.WifiAuthentication != WifiAuthentication.Personal && string.IsNullOrWhiteSpace(Settings.WifiUsername))
+			{
+				DXMessageBox.Show("Enter a WiFi username first; the selected authentication needs one.", "Set WiFi");
+				return;
+			}
+			_processEngine.QueueCommand(new SetWifi(Settings.WifiAuthentication, Settings.WifiSsid, Settings.WifiUsername, Settings.WifiPassword, _device));
 		}
 		/// <summary>Updates are not checked for (or installed) while an assay is running.</summary>
 		public bool CanCheckForUpdates() => !IsAssayRunning;

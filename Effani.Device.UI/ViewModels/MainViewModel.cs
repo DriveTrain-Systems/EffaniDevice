@@ -389,7 +389,7 @@ namespace Effani.Device.UI
 		private void ProcessEngine_BeginExecutingCommand(object sender, DataArgs<Command> e)
 		{
 			if (_config.Settings.PauseCommandsForPrompt)
-				MessageBox.Show(e.Data.DescriptionWithTimeout, "Preparing to excute command");
+				MessageBox.Show(e.Data.Description, "Preparing to excute command");
 
 			_executingCommand = e.Data;
 			RaisePropertyChanged(nameof(ExecutingCommandText));
@@ -523,10 +523,22 @@ namespace Effani.Device.UI
 				RaisePropertyChanged(nameof(CurrentLoadingSample));
 			}
 		}
-		/// <summary>The command being executed, with how long is left before the board is given up on while it is being waited for.</summary>
-		public string ExecutingCommandText => _executingCommand?.DescriptionWithTimeout ?? "None";
+		/// <summary>The command being executed, with the countdown to giving up on the board while it is being waited for.</summary>
+		public string ExecutingCommandText
+		{
+			get
+			{
+				var command = _executingCommand;
+				if (command is null)
+					return "None";
+				var countdown = command.TimeoutCountdown;
+				return countdown is null ? command.Description : $"{command.Description} ({countdown})";
+			}
+		}
 		/// <summary>Everything still to run, in order, with the executing command flagged.</summary>
 		public CommandQueueDisplay CommandQueue { get; } = new();
+		/// <summary>The most samples an assay can hold: every well of every tray on the table, less the wells the standards use.</summary>
+		public decimal MaxNumberOfSamples => Math.Max(1, DeviceConfiguration.GetWellCount(_settingsService.Settings) - _settingsService.Settings.StandardsWellCount);
 		public int NumberOfSamples
 		{
 			get

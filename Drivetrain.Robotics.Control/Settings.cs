@@ -1709,6 +1709,36 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WifiSsid)));
             }
         }
+        /// <summary>How the controller board authenticates to the WiFi network (password only, or WPA2-Enterprise with a username and password).</summary>
+        public WifiAuthentication WifiAuthentication
+        {
+            get
+            {
+                return _wifiAuthentication;
+            }
+            set
+            {
+                if (_wifiAuthentication == value)
+                    return;
+                _wifiAuthentication = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WifiAuthentication)));
+            }
+        }
+        /// <summary>Username for WPA2-Enterprise networks (M587 U parameter).</summary>
+        public string WifiUsername
+        {
+            get
+            {
+                return _wifiUsername;
+            }
+            set
+            {
+                if (_wifiUsername == value)
+                    return;
+                _wifiUsername = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WifiUsername)));
+            }
+        }
         public string WifiPassword
         {
             get
@@ -1785,6 +1815,20 @@ namespace Drivetrain.Robotics.Control
                     return;
                 _fluidSyringeSpeed = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FluidSyringeSpeed)));
+            }
+        }
+        public int HorizontalTrayCount
+        {
+            get
+            {
+                return _horizontalTrayCount;
+            }
+            set
+            {
+                if (_horizontalTrayCount == value)
+                    return;
+                _horizontalTrayCount = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HorizontalTrayCount)));
             }
         }
         public int HorizontalWellCount
@@ -2555,6 +2599,20 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TrayTemperature)));
             }
         }
+        public int VerticalTrayCount
+        {
+            get
+            {
+                return _verticalTrayCount;
+            }
+            set
+            {
+                if (_verticalTrayCount == value)
+                    return;
+                _verticalTrayCount = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VerticalTrayCount)));
+            }
+        }
         public int VerticalWellCount
         {
             get
@@ -3297,11 +3355,14 @@ namespace Drivetrain.Robotics.Control
         string _effaniApiUrl = "https://www.effani.com/umbraco/api";
         string _effaniPassword;
         string _effaniUsername;
-        string _wifiSsid = "";
-        string _wifiPassword = "";
+        string _wifiSsid = "effani_device";
+        string _wifiPassword = "Effani1!";
+        WifiAuthentication _wifiAuthentication = WifiAuthentication.Personal;
+        string _wifiUsername = "";
         Coordinate _firstWellLocation = new(0, 0);
         int _fluidEmissionDwell = 10000;
         decimal _fluidSyringeSpeed = 5m;
+        int _horizontalTrayCount = 2;
         int _horizontalWellCount = 8;
         int _initialBasalFluidPrimingVolume = 1000;
         int _initialDnaFluidPrimingVolume = 1000;
@@ -3345,6 +3406,7 @@ namespace Drivetrain.Robotics.Control
         Coordinate _traySterilizationLocation = new(320, 20);
         int _traySterilizationTime = 6;
         decimal _trayTemperature = 38.777778m;
+        int _verticalTrayCount = 1;
         int _verticalWellCount = 12;
         Coordinate _wasteLocation = new(0, 0);
         decimal _wellDepth = 12m;
@@ -3385,13 +3447,13 @@ namespace Drivetrain.Robotics.Control
         int _chamberUvBoardNumber = 0;
         int _chamberUvPortNumber = 5;
         int _nadh532LaserBoardNumber = 1;
-        int _nadh532LaserPortNumber = 6;
+        int _nadh532LaserPortNumber = 3;
         int _nadhSensorBoardNumber = 1;
         int _nadhSensorPortNumber = 1;
-        int _dna488LaserBoardNumber = 0;
-        int _dna488LaserPortNumber = 6;
-        PortKind _nadhLaserPortKind = PortKind.Output;
-        PortKind _dnaLaserPortKind = PortKind.Output;
+        int _dna488LaserBoardNumber = 1;
+        int _dna488LaserPortNumber = 2;
+        PortKind _nadhLaserPortKind = PortKind.IoOutput;
+        PortKind _dnaLaserPortKind = PortKind.IoOutput;
         int _dnaSensorBoardNumber = 1;
         int _dnaSensorPortNumber = 0;
         #endregion

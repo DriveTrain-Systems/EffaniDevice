@@ -527,11 +527,10 @@ namespace Drivetrain.Robotics.Control
 		{
 			WriteWhenReady($"M552 S{(enabled ? 1 : 0)}");
 		}
-		public void SetWifi(string ssid, string password)
+		public void SetWifi(WifiAuthentication authentication, string ssid, string username, string password)
 		{
 			WriteWhenReady($"M552 S0");
-			// a double quote inside a G-code string is written as two double quotes
-			WriteWhenReady($"M587 S\"{(ssid ?? "").Replace("\"", "\"\"")}\" P\"{(password ?? "").Replace("\"", "\"\"")}\"");
+			WriteWhenReady(WifiCommand.BuildM587(authentication, ssid, username, password));
 			WriteWhenReady($"M552 S1");
 		}
 		#endregion

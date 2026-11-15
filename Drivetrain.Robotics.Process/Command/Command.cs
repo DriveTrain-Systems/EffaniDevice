@@ -37,18 +37,19 @@ namespace Drivetrain.Robotics.Process
 		/// <summary>The timeout that applies to this command: the one passed with it, otherwise the one from the settings.</summary>
 		public TimeSpan EffectiveTimeout => Timeout ?? Device?.ReadyTimeout ?? TimeSpan.Zero;
 		public abstract string Description { get; }
-		/// <summary>The description followed by how long the board is waited for before the command is given up on; used wherever a command being executed is reported.</summary>
-		public string DescriptionWithTimeout
+		/// <summary>
+		/// How long is left before this command gives up on the controller board, or null when it is not waiting for the board. Only
+		/// meaningful for the command being executed. Timeout information is reported here rather than in <see cref="Description"/>, so
+		/// that descriptions (which are logged) never carry it.
+		/// </summary>
+		public TimeSpan? TimeoutRemaining => Device?.ReadyTimeRemaining;
+		/// <summary><see cref="TimeoutRemaining"/> as text for display beside the command being executed, such as "12 s left"; null when it is not waiting for the board.</summary>
+		public string? TimeoutCountdown
 		{
 			get
 			{
-				if (Device is null)
-					return Description;
-				// while the board is being waited for, count down to giving up on it
-				var remaining = Device.ReadyTimeRemaining;
-				return remaining is null
-					? $"{Description} (board timeout {EffectiveTimeout.TotalSeconds:0} s)"
-					: $"{Description} (waiting for board: {Math.Ceiling(remaining.Value.TotalSeconds):0} s left)";
+				var remaining = TimeoutRemaining;
+				return remaining is null ? null : $"{Math.Ceiling(remaining.Value.TotalSeconds):0} s left";
 			}
 		}
 		public string Result { get; set; }

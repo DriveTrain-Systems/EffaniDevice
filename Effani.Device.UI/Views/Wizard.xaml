@@ -41,8 +41,9 @@
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
+    <!-- the background image is drawn by the main window, behind the toolbar and this wizard -->
     <UserControl.Background>
-        <ImageBrush ImageSource="{DXBinding '!AllSamplesLoadedAndProcessing ? `../Resources/effani_background.jpg` : null'}" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,1280,720"></ImageBrush>
+        <SolidColorBrush Color="Transparent" />
     </UserControl.Background>
     <Grid>
         <Grid Margin="0,0,0,0" Background="#fdf9fd" Visibility="{DXBinding 'AllSamplesLoadedAndProcessing ? $Visibility.Visible : $Visibility.Collapsed'}">
@@ -71,7 +72,7 @@
                                 <dxe:TextEdit x:Name="HerdIdTextEdit" NullText="Enter the identifier of the herd being tested." Text="{Binding HerdId, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" IsVisibleChanged="GetFocus"/>
                                 <TextBlock TextWrapping="WrapWithOverflow" Text="Number of animals to be tested" Margin="0,15,0,0"/>
                                 <dxe:SpinEdit x:Name="NumberOfSamplesEdit" Width="80" EditValue="{Binding NumberOfSamples, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" Text="0"
-								EditValueType="{x:Type sys:Int32}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" IsFloatValue="False" Mask="d0" MinValue="1" MaxValue="360" AllowSpinOnMouseWheel="True" />
+								EditValueType="{x:Type sys:Int32}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" IsFloatValue="False" Mask="d0" MinValue="1" MaxValue="{Binding MaxNumberOfSamples}" AllowSpinOnMouseWheel="True" />
                                 <dx:SimpleButton Margin="0,20,0,0" HorizontalAlignment="Stretch" Command="{Binding NextPageCommand}" IsEnabled="{Binding HerdIdAndNumberOfTestsComplete}">
                                     <dx:SimpleButton.Content>
                                         <StackPanel>

@@ -97,7 +97,12 @@ namespace Effani.Device.Control
 		public string ChamberUvLocation => OutputLocation(Settings.ChamberUvBoardNumber, Settings.ChamberUvPortNumber);
 		public string DnaLaserLocation => LaserLocation(Settings.DnaLaserPortKind, Settings.DnaLaserBoardNumber, Settings.DnaLaserPortNumber);
 		public string NadhLaserLocation => LaserLocation(Settings.NadhLaserPortKind, Settings.NadhLaserBoardNumber, Settings.NadhLaserPortNumber);
-		private string LaserLocation(PortKind kind, int board, int port) => kind == PortKind.Laser ? $"board {board}, laser" : OutputLocation(board, port);
+		private string LaserLocation(PortKind kind, int board, int port) => kind switch
+		{
+			PortKind.Laser => $"board {board}, laser",
+			PortKind.IoOutput => $"board {board}, io{port}.out",
+			_ => OutputLocation(board, port)
+		};
 		public string? LaserDnaOn()
 		{
 			return AccOn(3);

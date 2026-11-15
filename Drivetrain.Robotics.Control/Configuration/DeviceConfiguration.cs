@@ -30,6 +30,25 @@ namespace Drivetrain.Robotics.Control
 			AddPlates(spec);
 			DeviceSpecification = spec;
 		}
+		// when set, generated files are collected here instead of being written to disk (see GetConfigSignature)
+		private SortedDictionary<string, string>? _capture;
+		private DeviceConfiguration(Settings settings, bool withoutPlates)
+		{
+			Settings = settings;
+		}
+		/// <summary>
+		/// A fingerprint of every file <see cref="GenerateConfigFiles"/> would produce from <paramref name="settings"/>: it changes exactly when
+		/// a setting that ends up in config.g or the homing files changes. Nothing is written to disk.
+		/// </summary>
+		public static string GetConfigSignature(Settings settings)
+		{
+			var configuration = new DeviceConfiguration(settings, withoutPlates: true) { _capture = new SortedDictionary<string, string>() };
+			var spec = configuration.CreateDeviceSpec();
+			configuration.WriteConfig("", spec);
+			configuration.WriteHome("", spec);
+			var text = string.Concat(configuration._capture.Select(f => $"{f.Key}\n{f.Value}\n"));
+			return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(text)));
+		}
 		/// <summary>Full paths of the files written by the last <see cref="GenerateConfigFiles"/> call (config.g is last).</summary>
 		public IReadOnlyList<string> GeneratedFiles => _generatedFiles.OrderBy(f => Path.GetFileName(f) == "config.g").ToList();
 		private readonly List<string> _generatedFiles = new();
@@ -156,8 +175,6 @@ M575 P1 S2
 
 ; Network
 ");
-			if (!string.IsNullOrWhiteSpace(Settings.WifiSsid))
-				configTextBuilder.AppendLine($@"M587 S""{EscapeGCodeString(Settings.WifiSsid)}"" P""{EscapeGCodeString(Settings.WifiPassword)}"" ; add WiFi network");
 			configTextBuilder.Append(@"M552 S1 ; configure WiFi adapter
 M586 P0 S1 ; configure HTTP
 M586 P1 S1 ; configure FTP
@@ -259,6 +276,11 @@ M669 K0 ; configure Cartesian kinematics
 		}
 		private void WriteGeneratedFile(string path, string text)
 		{
+			if (_capture != null)
+			{
+				_capture[Path.GetFileName(path)] = text;
+				return;
+			}
 			File.WriteAllBytes(path, Encoding.ASCII.GetBytes(text));
 			_generatedFiles.Add(path);
 		}
@@ -328,33 +350,36 @@ G90 ; absolute positioning
 			spec.Sensors.Add(new NadhSensorSpec("NADH Sensor", Settings.NadhSensorNumber, Settings.NadhSensorBoardNumber, Settings.NadhSensorPortNumber, Settings.NadhSensorReadHigh, Settings.NadhSensorReadLow, Settings.NadhSensorLocation));
 			return spec;
 		}
+		/// <summary>The number of sample wells on the table: every well of every tray.</summary>
+		public static int GetWellCount(Settings settings)
+		{
+			return Math.Max(1, settings.HorizontalTrayCount) * Math.Max(1, settings.VerticalTrayCount) * settings.HorizontalWellCount * settings.VerticalWellCount;
+		}
+		/// <summary>
+		/// Adds the trays mounted on the table and their wells. Trays are numbered the way wells are: along X first, then the next row of
+		/// trays is one step along Y. Each tray is offset from the first by the tray offset setting times its position in the grid.
+		/// </summary>
 		private void AddPlates(DeviceSpecification spec)
 		{
-			spec.Plates.Add(new Plate(new Coordinate(0, 0)));
-			spec.Plates.Add(new Plate(new Coordinate(1, 0)));
-			Plate currentPlate = spec.Plates[0];
-			var wellsPerPlate = (Settings.HorizontalWellCount * Settings.VerticalWellCount);
-			for (int index = 0; index < 2 * wellsPerPlate; index++)
+			for (int trayY = 0; trayY < Math.Max(1, Settings.VerticalTrayCount); trayY++)
 			{
-				for (int x = 0; x < Settings.HorizontalWellCount; x++)
+				for (int trayX = 0; trayX < Math.Max(1, Settings.HorizontalTrayCount); trayX++)
 				{
+					var plate = new Plate(new Coordinate(trayX, trayY));
+					spec.Plates.Add(plate);
+					var baseX = Settings.FirstWellLocation.X + (Settings.PlateOffset.X * trayX);
+					var baseY = Settings.FirstWellLocation.Y + (Settings.PlateOffset.Y * trayY);
+					// wells are numbered along X first (the next cell is across the tray), then the next row is one step along Y
 					for (int y = 0; y < Settings.VerticalWellCount; y++)
 					{
-                        var baseX = Settings.FirstWellLocation.X + (Settings.PlateOffset.X * currentPlate.Location.X);
-                        var baseY = Settings.FirstWellLocation.Y + (Settings.PlateOffset.Y * currentPlate.Location.Y);
-						var location = new Coordinate(
-							((x * Settings.WellOffset.X) + baseX), 
-							((y * Settings.WellOffset.Y) + baseY));
-						new Well(currentPlate, x, y, location);
+						for (int x = 0; x < Settings.HorizontalWellCount; x++)
+						{
+							var location = new Coordinate(
+								((x * Settings.WellOffset.X) + baseX),
+								((y * Settings.WellOffset.Y) + baseY));
+							new Well(plate, x, y, location);
+						}
 					}
-				}
-				if (currentPlate.Wells.Count() == wellsPerPlate)
-				{
-					if(currentPlate == spec.Plates.Last())
-						break;
-
-					currentPlate = spec.Plates
-						.ElementAt(spec.Plates.IndexOf(currentPlate) + 1);
 				}
 			}
 		}

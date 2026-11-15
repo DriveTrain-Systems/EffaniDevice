@@ -18,6 +18,7 @@
     <UserControl.Resources>
         <x:Array x:Key="LaserPortKinds" Type="{x:Type control:PortKind}">
             <control:PortKind>Output</control:PortKind>
+            <control:PortKind>IoOutput</control:PortKind>
             <control:PortKind>Laser</control:PortKind>
         </x:Array>
         <SolidColorBrush  x:Key="LevelOneColor" Color="#efefef"/>
@@ -50,9 +51,23 @@
             <Setter Property="IsCollapsible" Value="True"/>
         </Style>
         <Style TargetType="dxe:SpinEdit" >
-            <Setter Property="MaxWidth" Value="80"/>
-            <Setter Property="MinWidth" Value="80"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MaxWidth" Value="120"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        <!-- touchscreen-sized text, password and drop-down editors -->
+        <Style TargetType="dxe:TextEdit">
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        <Style TargetType="dxe:PasswordBoxEdit">
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        <Style TargetType="dxe:ComboBoxEdit">
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="FontSize" Value="16"/>
         </Style>
         <!-- settings the device control reads while running: locked, with an explanation, while an assay is running -->
         <Style x:Key="DeviceControlSetting" TargetType="dxe:SpinEdit" BasedOn="{StaticResource {x:Type dxe:SpinEdit}}">
@@ -71,6 +86,22 @@
                     <Setter Property="IsEnabled" Value="False"/>
                     <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
                     <Setter Property="ToolTip" Value="Commands are queued or executing, so the COM port cannot be changed until they have all finished."/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <!-- turns amber when a setting that goes into the board's config has changed since the config was last sent to the board -->
+        <Style x:Key="GenerateConfigButton" TargetType="dx:SimpleButton">
+            <Setter Property="Content" Value="Generate Config"/>
+            <Setter Property="ToolTip" Value="Generate config.g and the homing files from the settings and send them to the controller board, which is then rebooted"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ConfigNeedsGenerating}" Value="True">
+                    <Setter Property="Background" Value="#FFB300"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Content" Value="Generate Config - settings changed"/>
+                    <Setter Property="ToolTip" Value="Settings that go into the board's config have changed since it was last sent to the board. Click to generate the config files and send them to the controller board, which is then rebooted."/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -143,6 +174,7 @@
                     </dx:SimpleButton.Content>
                 </dx:SimpleButton>
                 <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Reset.svg" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Reset settings to their default values." Command="{Binding ResetActiveSettingsCommand}"/>
+                <dx:SimpleButton Style="{StaticResource GenerateConfigButton}" Margin="30,0,0,0" CornerRadius="5" Padding="16,0,16,0" Height="40" Command="{Binding GenerateConfigFilesCommand}"/>
                 <!--<dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Upload.svg" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Upload these settings to the cloud" Command="{Binding UploadSettingsCommand}"/>
                 <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Download.svg" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Download these settings from the cloud" Command="{Binding DownloadSettingsCommand}"/>-->
             </StackPanel>
@@ -151,6 +183,10 @@
             </TextBlock>
         </StackPanel>
         <dx:DXTabControl Margin="20,20,0,0" DataContext="{Binding Path=Settings}">
+            <!-- the tabs wrap onto more rows when they do not fit, so every one stays in reach on a small touchscreen -->
+            <dx:DXTabControl.View>
+                <dx:TabControlMultiLineView />
+            </dx:DXTabControl.View>
             <dx:DXTabItem Header="Fluid Emission">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup>
@@ -258,58 +294,6 @@
             </dx:DXTabItem>
             <dx:DXTabItem Header="Component Locations">
                 <dxlc:LayoutControl Orientation="Horizontal">
-                    <dxlc:LayoutGroup View="GroupBox" Header="Fluid Port Locations" Orientation="Vertical">
-                        <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH is emitted">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="DNA Reagent" ToolTip="Platform coordinates (mm x mm) of the location at which DNA Reagent is emitted">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="KOH" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is emitted">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="Basal Media" ToolTip="Platform coordinates (mm x mm) of the location at which Basal Media is emitted">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="Aspiration" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is aspirated">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                    </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup View="GroupBox" Header="Sensor Locations" Orientation="Vertical">
                         <dxlc:LayoutItem LabelPosition="Top" Label="DNA" ToolTip="Platform coordinates (mm x mm) of the location at which DNA readings are taken">
                             <dxlc:LayoutGroup Orientation="Horizontal">
@@ -366,7 +350,13 @@
                         <dxlc:LayoutItem Label="Horizontal Well Count" ToolTip="Count of sample wells in a tray in the horizontal direction">
                             <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValue="{Binding HorizontalWellCount}" />
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="Tray Offset (mm)" ToolTip="Distance from well 0 of a tray to well 0 of the next tray">
+                        <dxlc:LayoutItem Label="Horizontal Tray Count" ToolTip="How many sample trays are mounted side by side on the table (along X); each is one Tray Offset X from the one before. Takes effect at the next assay.">
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValue="{Binding HorizontalTrayCount}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Vertical Tray Count" ToolTip="How many rows of sample trays are mounted on the table (along Y); each row is one Tray Offset Y from the one before, so set Tray Offset Y when this is more than 1. Takes effect at the next assay.">
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValue="{Binding VerticalTrayCount}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem LabelPosition="Top" Label="Tray Offset (mm)" ToolTip="Distance from the first well of a tray to the first well of the next tray: X between trays side by side, Y between rows of trays">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
                                     <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetX}" />
@@ -383,6 +373,62 @@
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
                                     <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetY}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
+                </dxlc:LayoutControl>
+            </dx:DXTabItem>
+            <dx:DXTabItem Header="Fluid Handling Locations">
+                <dxlc:LayoutControl Orientation="Horizontal">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Fluid Port Locations" Orientation="Vertical">
+                        <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH is emitted">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationX}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationY}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem LabelPosition="Top" Label="DNA Reagent" ToolTip="Platform coordinates (mm x mm) of the location at which DNA Reagent is emitted">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationX}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationY}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem LabelPosition="Top" Label="KOH" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is emitted">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationX}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationY}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem LabelPosition="Top" Label="Basal Media" ToolTip="Platform coordinates (mm x mm) of the location at which Basal Media is emitted">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationX}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationY}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem LabelPosition="Top" Label="Aspiration" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is aspirated">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationX}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationY}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -892,7 +938,7 @@
             </dx:DXTabItem>
             <dx:DXTabItem Header="Command Timeouts">
                 <dxlc:LayoutControl Orientation="Horizontal">
-                    <dxlc:LayoutGroup View="GroupBox" Header="Board Timeouts (seconds)" Orientation="Vertical">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Command Timeouts (seconds)" Orientation="Vertical">
                         <dxlc:LayoutItem Label="General" ToolTip="How long to wait for the controller board to report that it has finished a command before giving up on it (an error is logged and the next command runs). Used for every command that has no longer timeout below; the longer timeouts are never shorter than this.">
                             <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding BoardReadyTimeoutSeconds}" />
                         </dxlc:LayoutItem>
@@ -918,9 +964,6 @@
                             <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding WifiTimeoutSeconds}" />
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup View="GroupBox" Header="Added Automatically" Orientation="Vertical">
-                        <TextBlock TextWrapping="Wrap" MaxWidth="360" Text="Pauses and sensor readings wait for their own pause (Assay Timing tab) plus the General timeout, so they need no setting here. Timers do not wait for the board, so no timeout applies to them." />
-                    </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
             <dx:DXTabItem Header="Connectivity">
@@ -937,22 +980,28 @@
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup View="GroupBox" Header="Controller WiFi" Orientation="Vertical">
-                        <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="WiFi SSID" ToolTip="Name of the WiFi network the controller board is configured with (M587).">
+                        <dxlc:LayoutItem Label="WiFi SSID" ToolTip="Name of the WiFi network the controller board is configured with (M587).">
                             <dxe:TextEdit MinWidth="300" EditValue="{Binding WifiSsid}" />
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="WiFi Password" ToolTip="Password of the WiFi network the controller board is configured with (M587). Stored as plain text.">
+                        <dxlc:LayoutItem Label="Authentication" ToolTip="Password only (WPA2-PSK), or WPA2-Enterprise with a username and password (EAP-PEAP-MSCHAPv2 or EAP-TTLS-MSCHAPv2). Enterprise is experimental and needs RRF 3.5.1 or later with WiFi module firmware 2.1.0 or later (M587 X).">
+                            <dxe:ComboBoxEdit MinWidth="300" MaxWidth="300" IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:WifiAuthentication}}" EditValue="{Binding WifiAuthentication}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="WiFi Username" ToolTip="Username for WPA2-Enterprise networks (M587 U). Not used with password-only authentication.">
+                            <dxe:TextEdit MinWidth="300" EditValue="{Binding WifiUsername}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="WiFi Password" ToolTip="Password of the WiFi network the controller board is configured with (M587). Stored as plain text.">
                             <dxe:PasswordBoxEdit ShowPasswordButtonVisibility="Auto" MinWidth="300" EditValue="{Binding WifiPassword}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem>
                             <StackPanel Orientation="Horizontal">
-                                <dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Margin="0,0,5,0" Content="Enable Wifi on Controller" ToolTip="Turns the controller's WiFi on (M552 S1)."
+                                <dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="0,0,5,0" Content="Enable Wifi on Controller" ToolTip="Turns the controller's WiFi on (M552 S1)."
                                                  Command="{Binding Path=DataContext.EnableWifiCommand, RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
-                                <dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" Content="Disable Wifi on Controller" ToolTip="Turns the controller's WiFi off (M552 S0)."
+                                <dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Content="Disable Wifi on Controller" ToolTip="Turns the controller's WiFi off (M552 S0)."
                                                  Command="{Binding Path=DataContext.DisableWifiCommand, RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
                             </StackPanel>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem>
-                            <dx:SimpleButton CornerRadius="3" Padding="5,3,5,3" HorizontalAlignment="Left" Content="Send WiFi Settings" ToolTip="Sends M587 to the controller board with the SSID and password above."
+                            <dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" HorizontalAlignment="Left" Content="Send WiFi Settings" ToolTip="Sends M587 to the controller board with the authentication, SSID, username and password above."
                                              Command="{Binding Path=DataContext.SetWifiCommand, RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>

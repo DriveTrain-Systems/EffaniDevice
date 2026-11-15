@@ -29,6 +29,7 @@ namespace Effani.Device.UI
 			_processEngine = processEngine;
 			_settingsService = settingsService;
 			_sendTimeoutSeconds = Math.Max(1, _device.Settings.BoardReadyTimeoutSeconds);
+			AttachSettings();
 
 			Axes = new ObservableCollection<AxisSpec>(_device.Configuration.DeviceSpecification.Axes);
 			Sensors = new ObservableCollection<SensorSpec>(_device.Configuration.DeviceSpecification.Sensors);
@@ -48,6 +49,8 @@ namespace Effani.Device.UI
 		public void Dispose()
 		{
 			_executingTimer.Stop();
+			if (_attachedSettings != null)
+				_attachedSettings.PropertyChanged -= Settings_PropertyChanged;
 			_device.PositionsChanged -= Device_PositionsChanged;
 			_device.OutputsChanged -= Device_OutputsChanged;
 		}
@@ -59,7 +62,54 @@ namespace Effani.Device.UI
 			{
 				RaisePropertyChanged(nameof(TrayUvIsOn));
 				RaisePropertyChanged(nameof(ChamberUvIsOn));
+				RaisePropertyChanged(nameof(NadhLaserIsOn));
+				RaisePropertyChanged(nameof(DnaLaserIsOn));
 			});
+		/// <summary>Follows the active settings object (it is replaced when a version is activated or reset) to keep <see cref="ConfigNeedsGenerating"/> current.</summary>
+		private void AttachSettings()
+		{
+			if (_attachedSettings != null)
+				_attachedSettings.PropertyChanged -= Settings_PropertyChanged;
+			_attachedSettings = _settingsService.Settings;
+			_attachedSettings.PropertyChanged += Settings_PropertyChanged;
+			UpdateConfigNeedsGenerating();
+		}
+		private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e) => UpdateConfigNeedsGenerating();
+		private void UpdateConfigNeedsGenerating()
+		{
+			string current;
+			try { current = DeviceConfiguration.GetConfigSignature(_settingsService.Settings); }
+			catch { return; } // half-edited settings that cannot be turned into a config: leave the state as it was
+			// the first time through there is no record of what the board has: assume it matches the settings as they are now
+			if (s_sentConfigSignature == null)
+				SentConfigSignature = LoadSentSignature() ?? current;
+			var needs = current != s_sentConfigSignature;
+			if (needs == _configNeedsGenerating)
+				return;
+			_configNeedsGenerating = needs;
+			RaisePropertyChanged(nameof(ConfigNeedsGenerating));
+		}
+		private static string SentSignaturePath => System.IO.Path.Combine(SettingsService.DataFolder, "sent-config.sig");
+		private static string? LoadSentSignature()
+		{
+			try { return System.IO.File.Exists(SentSignaturePath) ? System.IO.File.ReadAllText(SentSignaturePath).Trim() : null; }
+			catch { return null; }
+		}
+		/// <summary>The fingerprint of the config last sent to the board (kept in a file so it survives a restart).</summary>
+		private static string? SentConfigSignature
+		{
+			get => s_sentConfigSignature;
+			set
+			{
+				s_sentConfigSignature = value;
+				try
+				{
+					System.IO.Directory.CreateDirectory(SettingsService.DataFolder);
+					System.IO.File.WriteAllText(SentSignaturePath, value ?? "");
+				}
+				catch { }
+			}
+		}
 		private bool IsOutputOn(int port) => _device.OutputStates.TryGetValue(port, out var on) && on;
 		private void Device_PositionsChanged(object? sender, EventArgs e) =>
 			Application.Current?.Dispatcher.BeginInvoke(() =>
@@ -111,8 +161,30 @@ namespace Effani.Device.UI
 					_processEngine.QueueCommand(value ? new ChamberUvOn(_device) : new ChamberUvOff(_device));
 			}
 		}
+		/// <summary>Whether the NADH laser (output port 2) is on, as the board last reported it; setting it switches the laser.</summary>
+		public bool NadhLaserIsOn
+		{
+			get => IsOutputOn(2);
+			set
+			{
+				if (value != IsOutputOn(2))
+					_processEngine.QueueCommand(new SwitchLaser(dna: false, on: value, _device));
+			}
+		}
+		/// <summary>Whether the DNA laser (output port 3) is on, as the board last reported it; setting it switches the laser.</summary>
+		public bool DnaLaserIsOn
+		{
+			get => IsOutputOn(3);
+			set
+			{
+				if (value != IsOutputOn(3))
+					_processEngine.QueueCommand(new SwitchLaser(dna: true, on: value, _device));
+			}
+		}
 		/// <summary>True while any command is queued or executing (checked every second); settings such as the COM port are locked while it is.</summary>
 		public bool IsCommandQueueBusy => _isCommandQueueBusy;
+		/// <summary>True when the settings now differ, in a way that matters to config.g or the homing files, from the config last sent to the board.</summary>
+		public bool ConfigNeedsGenerating => _configNeedsGenerating;
 		/// <summary>The version of the running software (major.minor.build).</summary>
 		public string SoftwareVersion { get; } = typeof(UtilitiesViewModel).Assembly.GetName().Version?.ToString(3) ?? "unknown";
 		/// <summary>The outcome of the last check for a new software version, or the progress of a check under way.</summary>
@@ -230,6 +302,7 @@ namespace Effani.Device.UI
 				return;
 
 			_settingsService.ActivateSettingsVersion(settingsVersion.Id);
+			AttachSettings();
 
 			RaisePropertyChanged(nameof(Settings));
 			RaisePropertyChanged(nameof(ActiveSettingsVersion));
@@ -250,6 +323,7 @@ namespace Effani.Device.UI
 				return;
 
 			_settingsService.SaveAcitveSettingsAsNew(NewSettingsDescription);
+			AttachSettings();
 			NewSettingsDescription = null;
 
 			RaisePropertyChanged(nameof(Settings));
@@ -263,6 +337,7 @@ namespace Effani.Device.UI
                 return;
 
             _settingsService.ResetSettings();
+            AttachSettings();
 
             RaisePropertyChanged(nameof(Settings));
             RaisePropertyChanged(nameof(ActiveSettingsVersion));
@@ -295,6 +370,10 @@ namespace Effani.Device.UI
 		bool _checkingForUpdates;
 		readonly UpdateChecker _updateChecker = new();
 		readonly ISettingsService _settingsService;
+		Settings? _attachedSettings;
+		bool _configNeedsGenerating;
+		static string? s_sentConfigSignature;
+		string? _pendingConfigSignature;
 		#endregion
 	}
 }

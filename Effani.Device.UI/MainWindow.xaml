@@ -7,7 +7,7 @@
     xmlns:dxco="http://schemas.devexpress.com/winfx/2008/xaml/controls"
     xmlns:local="clr-namespace:Effani.Device.UI"
 	xmlns:sys="clr-namespace:System;assembly=mscorlib"
-    Title="Effani" WindowStyle="ToolWindow" 
+    Title="Effani" WindowStyle="None"
 	WindowStartupLocation="CenterScreen" 
 	WindowState="Maximized"
 	Height="800" Width="1000">
@@ -20,19 +20,28 @@
 			<Setter Property="Padding" Value="20" />
 		</Style>
     </dx:ThemedWindow.Resources>
-    <dx:ThemedWindow.HeaderItems>
-		<dx:SimpleButton Command="{Binding ShowUploadCommand}" BorderThickness="0" Margin="0,5,0,5">
-			<dx:SimpleButton.Content>
-				<Image Source="{dx:DXImage 'SvgImages/Icon Builder/Weather_Cloudy.svg'}" />
-			</dx:SimpleButton.Content>
-		</dx:SimpleButton>
-		<dx:SimpleButton Command="{Binding ShowToolsCommand}" BorderThickness="0" Margin="0,5,0,5" ToolTip="Tools">
-			<dx:SimpleButton.Content>
-				<Image Source="{dx:DXImage 'SvgImages/Icon Builder/Actions_Settings.svg'}" />
-			</dx:SimpleButton.Content>
-		</dx:SimpleButton>
-	</dx:ThemedWindow.HeaderItems>
 	<Grid>
-		<local:Wizard></local:Wizard>
-    </Grid>
+		<!-- the background image is on the whole window, so it shows through the transparent toolbar as well as behind the wizard -->
+		<Grid.Background>
+			<ImageBrush ImageSource="{DXBinding '!AllSamplesLoadedAndProcessing ? `Resources/effani_background.jpg` : null'}" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,1280,720" />
+		</Grid.Background>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+		<!-- a toolbar of its own rather than title bar items, so the buttons can be big enough for a small touchscreen -->
+		<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Background="Transparent">
+			<dx:SimpleButton Command="{Binding ShowUploadCommand}" BorderThickness="0" Margin="4,4,4,4" MinWidth="72" MinHeight="64" ToolTip="Upload">
+				<dx:SimpleButton.Content>
+					<Image Width="44" Height="44" Source="{dx:DXImage 'SvgImages/Icon Builder/Weather_Cloudy.svg'}" />
+				</dx:SimpleButton.Content>
+			</dx:SimpleButton>
+			<dx:SimpleButton Command="{Binding ShowToolsCommand}" BorderThickness="0" Margin="4,4,4,4" MinWidth="72" MinHeight="64" ToolTip="Tools">
+				<dx:SimpleButton.Content>
+					<Image Width="44" Height="44" Source="{dx:DXImage 'SvgImages/Icon Builder/Actions_Settings.svg'}" />
+				</dx:SimpleButton.Content>
+			</dx:SimpleButton>
+		</StackPanel>
+		<local:Wizard Grid.Row="1"></local:Wizard>
+	</Grid>
 </dx:ThemedWindow>
