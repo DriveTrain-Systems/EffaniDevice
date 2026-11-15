@@ -51,6 +51,9 @@ namespace Effani.Device.UI
 		{
 			await AppHost!.StopAsync();
 
+			// typing on the touchscreen: a touched field opens the on-screen keyboard and a copy of the field above it
+			OnScreenInput.Register();
+
 			var startupForm = AppHost.Services.GetRequiredService<MainWindow>();
 			startupForm.Show();
 

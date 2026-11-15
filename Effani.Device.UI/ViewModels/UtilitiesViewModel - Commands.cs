@@ -167,6 +167,17 @@ namespace Effani.Device.UI
 			if (sensor is DnaSensorSpec or NadhSensorSpec)
 				_processEngine.QueueCommand(new SwitchLaser(sensor is DnaSensorSpec, on: true, _device));
 		}
+		/// <summary>
+		/// Queues a move of an axis to a position (mm) on its travel. Returns false, queuing nothing, when the position is outside
+		/// the axis's travel.
+		/// </summary>
+		public bool MoveAxisTo(AxisSpec axisSpec, decimal position)
+		{
+			if (position < axisSpec.Minimum || position > axisSpec.Maximum)
+				return false;
+			_processEngine.QueueCommand(new MoveAbsolute(position, _device, axisSpec));
+			return true;
+		}
 		[Command]
 		public async Task MoveRapid(List<object> parameters)
 		{

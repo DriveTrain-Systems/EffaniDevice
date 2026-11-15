@@ -23,4 +23,19 @@ namespace Effani.Device.UI
 			throw new NotSupportedException();
 		}
 	}
+	/// <summary>An axis's position as a number, for a slider: values[0] is the axis letter and values[1] the positions by axis letter. 0 until the position is read.</summary>
+	public class AxisPositionValueConverter : IMultiValueConverter
+	{
+		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (values.Length >= 2 && values[0] is string letter && values[1] is IReadOnlyDictionary<string, decimal> positions
+				&& positions.TryGetValue(letter, out var position))
+				return (double)position;
+			return 0d;
+		}
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+		{
+			throw new NotSupportedException();
+		}
+	}
 }

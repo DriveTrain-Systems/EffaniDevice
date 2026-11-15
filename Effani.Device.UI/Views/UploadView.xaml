@@ -11,12 +11,18 @@
     xmlns:control="clr-namespace:Drivetrain.Robotics.Control;assembly=Drivetrain.Robotics.Control"
     xmlns:local="clr-namespace:Effani.Device.UI"
     xmlns:sys="clr-namespace:System;assembly=mscorlib" d:DataContext="{d:DesignInstance Type=local:UploadViewModel}"
-	Title="Effani Online" WindowStyle="ToolWindow" 
+	Title="Effani Online" WindowStyle="None" FontSize="16" WindowState="Maximized" 
 	WindowStartupLocation="CenterScreen" 
     mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="1000">
 	<dx:ThemedWindow.Resources>
 		<Style TargetType="{x:Type dxe:TextEdit}">
 			<Setter Property="Margin" Value="0,10,0,0" />
+			<Setter Property="MinHeight" Value="52" />
+			<Setter Property="FontSize" Value="18" />
+		</Style>
+		<Style TargetType="{x:Type dxe:PasswordBoxEdit}">
+			<Setter Property="MinHeight" Value="52" />
+			<Setter Property="FontSize" Value="18" />
 		</Style>
 		<Style TargetType="{x:Type dxe:SpinEdit}">
 			<Setter Property="Margin" Value="0,10,0,0" />
@@ -35,23 +41,26 @@
 		</Style>
 	</dx:ThemedWindow.Resources>
 	<Grid>
-		<DockPanel Margin="20,20,20,20" LastChildFill="True">
-			<dxg:GridControl x:Name="grid" DockPanel.Dock="Top"
+		<DockPanel Margin="20,12,20,20" LastChildFill="True">
+			<!-- the window has no title bar: this button, in its upper left corner, goes back to the main screen -->
+			<dx:SimpleButton DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="0,0,0,12" Padding="24,0,28,0" MinHeight="54" CornerRadius="3" FontSize="18" Content="&#8592;  Back"
+					ToolTip="Close Effani Online and go back to the main screen" Click="Close_Click" />
+			<dxg:GridControl x:Name="grid" DockPanel.Dock="Top" FontSize="17" MaxHeight="480"
 							 ItemsSource="{Binding AssayData}">
 				<dxg:GridControl.InputBindings>
 					<KeyBinding Command="{Binding View.Commands.DeleteSelectedRows, ElementName=grid}" Key="Delete" />
 				</dxg:GridControl.InputBindings>
 				<dxg:GridControl.View>
-					<dxg:TableView AutoWidth="True" 
+					<dxg:TableView AutoWidth="True" RowMinHeight="52" 
 								   ShowGroupPanel="False"
 								   ValidateRowDeletionCommand="{Binding ValidateRowDeletionCommand}" 
 								   NewItemRowPosition="None"
 								   NavigationStyle="Row"/>
 				</dxg:GridControl.View>
-				<dxg:GridColumn FieldName="Delete" Width="18">
+				<dxg:GridColumn FieldName="Delete" Width="80" FixedWidth="True">
 					<dxg:GridColumn.CellTemplate>
 						<DataTemplate>
-							<dx:SimpleButton BorderThickness="0" Width="50" Background="Transparent">
+							<dx:SimpleButton BorderThickness="0" Width="64" Height="48" Background="Transparent">
 								<dx:SimpleButton.Content>
 									<Image Source="{dx:DXImage 'SvgImages/Dashboards/Delete.svg'}" />
 								</dx:SimpleButton.Content>
@@ -71,14 +80,14 @@
 				<dxg:GridColumn FieldName="UploadedOn" IsSmart="True"/>
 			</dxg:GridControl>
 			<DockPanel DockPanel.Dock="Bottom" LastChildFill="True">
-				<StackPanel DockPanel.Dock="Left">
+				<StackPanel DockPanel.Dock="Left" Width="520">
 					<TextBlock TextWrapping="WrapWithOverflow" Text="Provide your Effani account credentials to upload results." Margin="0,20,0,0"/>
-					<dxe:TextEdit Margin="0,3,0,0" NullText="Effani User Name" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-					<dxe:PasswordBoxEdit Margin="0,3,0,0" NullText="Effani Password" Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ShowCapsLockWarningToolTip="True" ShowPasswordButtonVisibility="Auto"/>
+					<dxe:TextEdit Margin="0,8,0,0" NullText="Effani User Name" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+					<dxe:PasswordBoxEdit Margin="0,8,0,0" NullText="Effani Password" Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ShowCapsLockWarningToolTip="True" ShowPasswordButtonVisibility="Auto"/>
 					<dx:SimpleButton Style="{StaticResource WizardButton}" Margin="0,20,0,0" HorizontalAlignment="Stretch" Command="{Binding UploadAssaysCommand}" IsEnabled="{DXBinding 'UsernameAndPasswordComplete'}">
 						<dx:SimpleButton.Content>
 							<StackPanel>
-								<TextBlock FontSize="25" TextAlignment="Center" VerticalAlignment="Center">Upload</TextBlock>
+								<TextBlock FontSize="30" TextAlignment="Center" VerticalAlignment="Center">Upload</TextBlock>
 								<TextBlock TextAlignment="Center" MaxWidth="500" TextWrapping="Wrap" HorizontalAlignment="Left" VerticalAlignment="Center" Text="Press here after typing your username and password."/>
 							</StackPanel>
 						</dx:SimpleButton.Content>
@@ -89,7 +98,7 @@
 						<ItemsControl ItemsSource="{Binding AssayManagerActivity}" BorderThickness="3" IsTabStop="False">
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
-									<TextBlock HorizontalAlignment="Left" Padding="0" Margin="0" Text="{Binding}" ToolTip="{Binding}" FontSize="15" TextWrapping="NoWrap" MaxHeight="20" MaxWidth="1000"></TextBlock>
+									<TextBlock HorizontalAlignment="Left" Padding="0" Margin="0" Text="{Binding}" ToolTip="{Binding}" FontSize="17" TextWrapping="NoWrap" MaxHeight="26" MaxWidth="1000"></TextBlock>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
@@ -97,5 +106,7 @@
 				</Border>
 			</DockPanel>
 		</DockPanel>
+		<!-- turns typing with the on-screen keyboard on and off; the same button is in the lower right corner of every window -->
+		<local:OnScreenInputToggle />
 	</Grid>
 </dx:ThemedWindow>

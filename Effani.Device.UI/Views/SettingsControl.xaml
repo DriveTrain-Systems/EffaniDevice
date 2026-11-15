@@ -30,12 +30,12 @@
         </Style>
         <Style TargetType="dxlc:LayoutItemLabel">
             <Setter Property="FontWeight" Value="Normal"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="15"/>
         </Style>
         <Style TargetType="dxlc:LayoutItem">
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="LabelPosition" Value="Left"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="15"/>
         </Style>
         <!-- settings written to the board's config files (config.g, homeX.g, ...): the board only uses a change once the config is generated and sent -->
         <SolidColorBrush x:Key="ConfigSettingColor" Color="#1F5FA8"/>
@@ -50,24 +50,26 @@
             <Setter Property="ItemSpace" Value="10"/>
             <Setter Property="IsCollapsible" Value="True"/>
         </Style>
+        <!-- spin arrows wide enough to hit with a finger -->
+        <Style TargetType="dxe:SpinButton"><Setter Property="MinWidth" Value="40"/></Style>
         <Style TargetType="dxe:SpinEdit" >
-            <Setter Property="MaxWidth" Value="120"/>
-            <Setter Property="MinWidth" Value="120"/>
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="MaxWidth" Value="140"/>
+            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontSize" Value="17"/>
         </Style>
         <!-- touchscreen-sized text, password and drop-down editors -->
         <Style TargetType="dxe:TextEdit">
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontSize" Value="17"/>
         </Style>
         <Style TargetType="dxe:PasswordBoxEdit">
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontSize" Value="17"/>
         </Style>
         <Style TargetType="dxe:ComboBoxEdit">
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="MinHeight" Value="48"/>
+            <Setter Property="FontSize" Value="17"/>
         </Style>
         <!-- settings the device control reads while running: locked, with an explanation, while an assay is running -->
         <Style x:Key="DeviceControlSetting" TargetType="dxe:SpinEdit" BasedOn="{StaticResource {x:Type dxe:SpinEdit}}">
@@ -94,7 +96,7 @@
             <Setter Property="Content" Value="Generate Config"/>
             <Setter Property="ToolTip" Value="Generate config.g and the homing files from the settings and send them to the controller board, which is then rebooted"/>
             <Setter Property="MinHeight" Value="40"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="17"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding ConfigNeedsGenerating}" Value="True">
                     <Setter Property="Background" Value="#FFB300"/>
@@ -106,6 +108,14 @@
             </Style.Triggers>
         </Style>
         <Style TargetType="dxlc:GroupBox">
+            <!-- a group title big enough to read on the touchscreen -->
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" FontSize="16" Margin="0,3,0,3" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="TitleBackground" Value="Gray"/>
             <Setter Property="TitleForeground" Value="White"/>
@@ -115,6 +125,13 @@
             <Setter Property="Background" Value="{StaticResource LevelTwoColor}"/>
         </Style>
         <Style x:Key="tertiaryGroupBox" TargetType="dxlc:GroupBox">
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" FontSize="15" Margin="0,2,0,2" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="TitleBackground" Value="#b1b1b1"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
@@ -136,10 +153,10 @@
     </dxmvvm:Interaction.Behaviors>
     <DockPanel LastChildFill="True" Background="{StaticResource LevelOneColor}">
         <StackPanel HorizontalAlignment="Left" DockPanel.Dock="Top" Margin="20,20,0,0">
-            <Label Content="Active Settings" />
+            <Label Content="Active Settings" FontSize="15" />
             <StackPanel Orientation="Horizontal">
                 <dxe:ComboBoxEdit
-					FontSize="15" MinWidth="200"
+					FontSize="17" MinWidth="320" MinHeight="52"
 					ItemsSource="{Binding SettingsVersions}"
 					DisplayMember="Description"
 					IsTextEditable="False"
@@ -148,7 +165,7 @@
                     <dxe:ComboBoxEdit.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <dx:SimpleButton HorizontalAlignment="Left" Margin="0" Padding="0" BorderThickness="0" Width="20" 
+                                <dx:SimpleButton HorizontalAlignment="Left" Margin="0" Padding="0" BorderThickness="0" Width="44" Height="44" 
 												 ToolTip="{DXBinding '@a($dxe:ComboBoxEdit).DataContext.ActiveSettingsVersion != @c ? `Delete these settings` : `Active settings cannot be deleted`'}" 
 												 IsEnabled="{DXBinding '@a($dxe:ComboBoxEdit).DataContext.ActiveSettingsVersion != @c'}">
                                     <dx:SimpleButton.Content>
@@ -163,35 +180,44 @@
 											MessageIcon="Question" MessageTitle="Delete Settings"/>
                                     </dxmvvm:Interaction.Behaviors>
                                 </dx:SimpleButton>
-                                <TextBlock FontSize="15" Text="{Binding Description}"/>
+                                <TextBlock FontSize="17" VerticalAlignment="Center" Margin="8,0,0,0" Text="{Binding Description}"/>
                             </StackPanel>
                         </DataTemplate>
                     </dxe:ComboBoxEdit.ItemTemplate>
                 </dxe:ComboBoxEdit>
-                <dx:SimpleButton Margin="5,0,0,0" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Save these settings as..." Command="{Binding SaveActiveSettingsAsNewVersionCommand}">
+                <dx:SimpleButton Margin="5,0,0,0" CornerRadius="5" Width="52" Padding="4" Background="AliceBlue" Height="52" ToolTip="Save these settings as..." Command="{Binding SaveActiveSettingsAsNewVersionCommand}">
                     <dx:SimpleButton.Content>
                         <Image Source="{dx:DXImage 'SvgImages/Save/SaveDialog.svg'}" />
                     </dx:SimpleButton.Content>
                 </dx:SimpleButton>
-                <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Reset.svg" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Reset settings to their default values." Command="{Binding ResetActiveSettingsCommand}"/>
-                <dx:SimpleButton Style="{StaticResource GenerateConfigButton}" Margin="30,0,0,0" CornerRadius="5" Padding="16,0,16,0" Height="40" Command="{Binding GenerateConfigFilesCommand}"/>
-                <!--<dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Upload.svg" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Upload these settings to the cloud" Command="{Binding UploadSettingsCommand}"/>
-                <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Download.svg" CornerRadius="5" Width="40" Padding="3" Background="AliceBlue" Height="40" ToolTip="Download these settings from the cloud" Command="{Binding DownloadSettingsCommand}"/>-->
+                <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Reset.svg" CornerRadius="5" Width="52" Padding="4" Background="AliceBlue" Height="52" ToolTip="Reset settings to their default values." Command="{Binding ResetActiveSettingsCommand}"/>
+                <dx:SimpleButton Style="{StaticResource GenerateConfigButton}" Margin="30,0,0,0" CornerRadius="5" Padding="20,0,20,0" Height="52" FontSize="17" Command="{Binding GenerateConfigFilesCommand}"/>
+                <!--<dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Upload.svg" CornerRadius="5" Width="52" Padding="4" Background="AliceBlue" Height="52" ToolTip="Upload these settings to the cloud" Command="{Binding UploadSettingsCommand}"/>
+                <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Download.svg" CornerRadius="5" Width="52" Padding="4" Background="AliceBlue" Height="52" ToolTip="Download these settings from the cloud" Command="{Binding DownloadSettingsCommand}"/>-->
             </StackPanel>
-            <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap">
+            <TextBlock Margin="0,8,0,0" FontSize="15" TextWrapping="Wrap">
                 <Run Text="Blue settings" Foreground="{StaticResource ConfigSettingColor}" FontWeight="SemiBold"/><Run Text=" are written to the board's config: after changing one, press Generate Config so the board uses it."/>
             </TextBlock>
         </StackPanel>
-        <dx:DXTabControl Margin="20,20,0,0" DataContext="{Binding Path=Settings}">
-            <!-- the tabs wrap onto more rows when they do not fit, so every one stays in reach on a small touchscreen -->
+        <!-- table of contents: a major heading for every page of settings and, under it, a heading for every group on that page. Choosing a
+             heading shows its settings on the right. The headings are built in the code-behind from the tab items and layout groups below,
+             so a page or group added there appears here by itself. -->
+        <TreeView x:Name="Contents" DockPanel.Dock="Left" Width="390" Margin="20,20,0,10" SelectedItemChanged="Contents_SelectedItemChanged"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.PanningMode="VerticalOnly" />
+        <!-- what the settings on show control: the note (local:SettingsControl.Note) of the chosen group, or of what it is nested in, or of its page -->
+        <Border x:Name="NotePanel" DockPanel.Dock="Bottom" Margin="10,8,0,10" Padding="14,10,14,10" CornerRadius="4" Background="{StaticResource LevelTwoColor}" Visibility="Collapsed">
+            <TextBlock x:Name="NoteText" TextWrapping="Wrap" FontSize="17" />
+        </Border>
+        <dx:DXTabControl x:Name="SettingsPages" Margin="10,20,0,0" DataContext="{Binding Path=Settings}">
+            <!-- the pages are chosen from the table of contents, so the tab headers are not shown -->
             <dx:DXTabControl.View>
-                <dx:TabControlMultiLineView />
+                <dx:TabControlMultiLineView HeaderLocation="None" />
             </dx:DXTabControl.View>
-            <dx:DXTabItem Header="Fluid Emission">
+            <dx:DXTabItem Header="Fluid Emission" local:SettingsControl.Note="How much of each fluid the pumps dispense, how the pumps are primed, how far a syringe moves per microlitre, and how the aspiration needle removes fluid from a well.">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup>
                     <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
-                        <dxlc:LayoutGroup View="GroupBox" Header="Emission Volumes (μl)" ToolTip="Fluid volume dispensed to a sample well" Orientation="Vertical" >
+                        <dxlc:LayoutGroup View="GroupBox" Header="Emission Volumes (μl)" local:SettingsControl.Note="The volume of each fluid dispensed into a sample well during an assay." ToolTip="Fluid volume dispensed to a sample well" Orientation="Vertical" >
                             <dxlc:LayoutItem Label="NADH">
                                 <dxe:SpinEdit EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding NadhVolume}" />
                             </dxlc:LayoutItem>
@@ -205,8 +231,8 @@
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding BasalVolume}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Priming Volumes (μl)" Orientation="Horizontal">
-                            <dxlc:LayoutGroup View="GroupBox" Header="Initial Priming" ToolTip="Volume dispensed during first pump priming" Orientation="Vertical" GroupBoxStyle="{StaticResource tertiaryGroupBox}">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Priming Volumes (μl)" local:SettingsControl.Note="The volume each pump pushes out to fill its line before it dispenses into wells: once when the fluids are loaded (initial priming), and again whenever a pump has stood idle for too long (secondary priming)." Orientation="Horizontal">
+                            <dxlc:LayoutGroup View="GroupBox" Header="Initial Priming" local:SettingsControl.Note="The volume each pump dispenses to fill its line when the fluids are loaded at the start of an assay." ToolTip="Volume dispensed during first pump priming" Orientation="Vertical" GroupBoxStyle="{StaticResource tertiaryGroupBox}">
                                 <dxlc:LayoutItem Label="NADH">
                                     <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding InitialNadhFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
@@ -220,7 +246,7 @@
                                     <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding InitialBasalFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup View="GroupBox" Header="Secondary Priming" ToolTip="Volume dispensed during second pump priming" Orientation="Vertical" GroupBoxStyle="{StaticResource tertiaryGroupBox}">
+                            <dxlc:LayoutGroup View="GroupBox" Header="Secondary Priming" local:SettingsControl.Note="The volume a pump dispenses at the waste location to refresh its line when it has not been used for longer than the Reprime Pump Interval." ToolTip="Volume dispensed during second pump priming" Orientation="Vertical" GroupBoxStyle="{StaticResource tertiaryGroupBox}">
                                 <dxlc:LayoutItem Label="NADH">
                                     <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding SecondaryNadhFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
@@ -238,7 +264,7 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Syringe Travel (mm/μl)" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Syringe Travel (mm/μl)" local:SettingsControl.Note="How far each pump's syringe moves to dispense one microlitre. Every volume is turned into actuator travel with this, so it sets the accuracy of each dispense." Orientation="Vertical">
                             <dxlc:LayoutItem Label="NADH" ToolTip="">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding NadhTravelPerMicroLiter}" />
                             </dxlc:LayoutItem>
@@ -252,7 +278,7 @@
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding BasalTravelPerMicroLiter}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Syringe Loading Positions (mm from 0)" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Syringe Loading Positions (mm from 0)" local:SettingsControl.Note="The position each pump's actuator moves to so that its syringe can be loaded, in mm from the actuator's zero position." Orientation="Vertical">
                             <dxlc:LayoutItem Label="NADH" ToolTip="">
                                 <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSyringeLoadingPosition}" />
                             </dxlc:LayoutItem>
@@ -266,7 +292,7 @@
                                 <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding BasalSyringeLoadingPosition}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Emission Speed" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Emission Speed" local:SettingsControl.Note="How fast a syringe moves while it dispenses or primes, and how long the device waits after dispensing before it moves on." Orientation="Vertical">
                             <dxlc:LayoutItem Label="Fluid Syringe Speed (mm/min)" ToolTip="Speed at which a fluid syringe moves while emitting or priming, in mm/min (sent as the F of each emission move; 5 mm/min is about 0.08 mm/s). The board holds it to the pump's Max Speed.">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.5" MinValue="0.1" MaxValue="2000" EditValue="{Binding FluidSyringeSpeed}" />
                             </dxlc:LayoutItem>
@@ -274,7 +300,7 @@
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding FluidEmissionDwell}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Aspiration" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Aspiration" local:SettingsControl.Note="How the aspiration needle removes fluid from a well: where the needle starts, how far it is from the tray, how far it travels for each microlitre removed, and how fast it moves into position." Orientation="Vertical">
                             <dxlc:LayoutItem Label="Aspirate Needle Start Position" ToolTip="The starting position (mm) of a the KOH aspiration needle">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateActuatorStartPosition}" />
                             </dxlc:LayoutItem>
@@ -292,9 +318,9 @@
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Component Locations">
+            <dx:DXTabItem Header="Component Locations" local:SettingsControl.Note="Where the sensors and the sample trays are on the table, and the size and spacing of the trays and their wells. The table uses these to bring each well to a sensor or a fluid port.">
                 <dxlc:LayoutControl Orientation="Horizontal">
-                    <dxlc:LayoutGroup View="GroupBox" Header="Sensor Locations" Orientation="Vertical">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Sensor Locations" local:SettingsControl.Note="The table coordinates of the DNA and NADH sensors. A well is moved to one of these when its reading is taken." Orientation="Vertical">
                         <dxlc:LayoutItem LabelPosition="Top" Label="DNA" ToolTip="Platform coordinates (mm x mm) of the location at which DNA readings are taken">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
@@ -315,7 +341,7 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>                    </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup View="GroupBox" Header="Tray Carrier Locations" Orientation="Vertical">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Tray Carrier Locations" local:SettingsControl.Note="Where the first well of the first tray is on the table, and where the table moves to so that trays can be loaded. The position of every other well is worked out from the first well." Orientation="Vertical">
                         <dxlc:LayoutItem LabelPosition="Top" Label="First Well Location" ToolTip="Platform coordinates (mm x mm) of the location of the lower left corner of the first sample well">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
@@ -337,7 +363,7 @@
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Sizes" Orientation="Vertical">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Sizes" local:SettingsControl.Note="The size of the wells, how many wells a tray has, how many trays are on the table, and the spacing between wells and between trays. With the first well location these give the position of every well." Orientation="Vertical">
                         <dxlc:LayoutItem Label="Well Width" ToolTip="Width (mm) of a sample well">
                             <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellWidth}" />
                         </dxlc:LayoutItem>
@@ -379,7 +405,7 @@
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Fluid Handling Locations">
+            <dx:DXTabItem Header="Fluid Handling Locations" local:SettingsControl.Note="The table coordinates of each fluid port and of the aspiration needle. A well is moved to one of these when that fluid is dispensed into it or removed from it.">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Fluid Port Locations" Orientation="Vertical">
                         <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH is emitted">
@@ -435,10 +461,10 @@
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Electronic Settings">
+            <dx:DXTabItem Header="Electronic Settings" local:SettingsControl.Note="How the electronics are wired to the controller boards: the board and port each sensor, motor driver, endstop switch and switched output is connected to.">
                 <dxlc:LayoutControl Orientation="Horizontal" Name="main">
                     <dxlc:LayoutControl Orientation="Vertical">
-                        <dxlc:LayoutGroup View="GroupBox" Header="Controller Boards" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Controller Boards" local:SettingsControl.Note="The serial port the main controller board is on, and how many boards and input ports there are. The counts are used to warn about a connection that names a board or port that does not exist." Orientation="Vertical">
                             <dxlc:LayoutItem Label="COM Port Number" ToolTip="Number of the serial (COM) port the main controller board is connected to, e.g. 4 for COM4. See Device Manager under Ports. Not used for now: the board's port is found automatically by sending M115 (firmware version) to each COM port and using the one that answers. The port chosen is shown in the console messages.">
                                 <dxe:SpinEdit IsEnabled="False" IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="256" EditValue="{Binding ComPortNumber}" />
                             </dxlc:LayoutItem>
@@ -449,7 +475,7 @@
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="32" EditValue="{Binding InputPortsPerBoard}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="DNA Sensor" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="DNA Sensor" local:SettingsControl.Note="The board and input the DNA sensor is connected to, its index in the board's configuration, and the range of readings it should report." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the DNA sensor is connected">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaSensorBoardNumber}" />
                             </dxlc:LayoutItem>
@@ -468,7 +494,7 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="NADH Sensor" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="NADH Sensor" local:SettingsControl.Note="The board and input the NADH sensor is connected to, its index in the board's configuration, and the range of readings it should report." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the NADH sensor is connected">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhSensorBoardNumber}" />
                             </dxlc:LayoutItem>
@@ -489,7 +515,7 @@
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutControl>
                     <dxlc:LayoutControl Orientation="Horizontal">
-                        <dxlc:LayoutGroup View="GroupBox" Header="Axis Motor Drivers and Endstops" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Axis Motor Drivers and Endstops" local:SettingsControl.Note="The board and port each axis's motor driver and endstop switch are connected to. They must match the wiring: otherwise the wrong motor moves, or an axis cannot find its home position." Orientation="Vertical">
                           <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                             <dxlc:LayoutGroup View="GroupBox" Header="Table X" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Table X axis motor driver is connected">
@@ -591,7 +617,7 @@
                             </dxlc:LayoutGroup>
                           </dxlc:FlowLayoutControl>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Switched Outputs" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Switched Outputs" local:SettingsControl.Note="The board and port that switch the two UV sterilization lamps and the two lasers on and off." Orientation="Vertical">
                           <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                             <dxlc:LayoutGroup View="GroupBox" Header="Tray UV" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the Tray UV output is connected">
@@ -636,9 +662,9 @@
                     </dxlc:LayoutControl>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Actuators">
+            <dx:DXTabItem Header="Actuators" local:SettingsControl.Note="The motor settings of every axis: steps per mm, travel, current, speeds, acceleration, direction and which end the endstop is at. Most of them are written to the board's config.">
                 <dxlc:LayoutControl Orientation="Horizontal">
-                        <dxlc:LayoutGroup View="GroupBox" Header="Aspirate Actuator" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Aspirate Actuator" local:SettingsControl.Note="The motor that lowers and raises the aspiration needle: its steps per mm, travel, current, speeds, acceleration, direction and which end its endstop is at." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of needle travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
                                 <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateStepsPerMillimeter}" />
                             </dxlc:LayoutItem>
@@ -670,7 +696,7 @@
                                 <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:EndstopLocation}}" EditValue="{Binding AspirateEndstopLocation}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Table Motors" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Table Motors" local:SettingsControl.Note="The two motors that move the table along X and Y: steps per mm, travel, current, speeds, acceleration, homing speeds, direction and endstop end for each." Orientation="Vertical">
                             <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                                 <dxlc:LayoutGroup View="GroupBox" Header="Table X" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table X travel. Written to config.g with M92.">
@@ -750,7 +776,7 @@
                                 </dxlc:LayoutGroup>
                             </dxlc:FlowLayoutControl>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Fluid Pump Actuators" Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Fluid Pump Actuators" local:SettingsControl.Note="The motors of the four syringe pumps (DNA Reagent, KOH, NADH and Basal): steps per mm, travel, current, speeds, acceleration, direction and endstop end for each." Orientation="Vertical">
                             <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                                 <dxlc:LayoutGroup View="GroupBox" Header="DNA Reagent" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of DNA Reagent pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
@@ -884,7 +910,7 @@
                         </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Assay Timing">
+            <dx:DXTabItem Header="Assay Timing" local:SettingsControl.Note="How long each stage of an assay lasts: incubation, mixing, the interval between readings, how long a sample stays in each solution, and the short pauses before aspirating and before a sensor reading.">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Assay Timing (ms)" Orientation="Vertical">
                         <dxlc:LayoutItem Label="Basal Media Incubation (ms)" ToolTip="Milliseconds sample stays in Basal media incubation">
@@ -917,7 +943,7 @@
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Sterilization">
+            <dx:DXTabItem Header="Sterilization" local:SettingsControl.Note="How long the sample trays are sterilized with UV light, and where the table moves to for it.">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Sterilization" Orientation="Vertical">
                         <dxlc:LayoutItem Label="Tray Sterilization Time (seconds)" ToolTip="Number of seconds tray will be UV sterilized">
@@ -936,7 +962,7 @@
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Command Timeouts">
+            <dx:DXTabItem Header="Command Timeouts" local:SettingsControl.Note="How long Effani waits for the controller board to finish each kind of command before it gives up and reports an error. Slow operations such as homing have their own, longer timeouts.">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Command Timeouts (seconds)" Orientation="Vertical">
                         <dxlc:LayoutItem Label="General" ToolTip="How long to wait for the controller board to report that it has finished a command before giving up on it (an error is logged and the next command runs). Used for every command that has no longer timeout below; the longer timeouts are never shorter than this.">
@@ -966,9 +992,9 @@
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Connectivity">
+            <dx:DXTabItem Header="Connectivity" local:SettingsControl.Note="The Effani online account that assay results are uploaded to, and the WiFi network the controller board joins.">
                 <dxlc:LayoutControl Orientation="Horizontal">
-                    <dxlc:LayoutGroup View="GroupBox" Header="Connectivity" Orientation="Vertical">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Connectivity" local:SettingsControl.Note="The address of the Effani online service and the account used to upload assay results to it." Orientation="Vertical">
                         <dxlc:LayoutItem Label="Effani API URL" ToolTip="Internet location of the Effani API endpoint.">
                             <dxe:TextEdit MinWidth="300" EditValue="{Binding EffaniApiUrl}" />
                         </dxlc:LayoutItem>
@@ -979,7 +1005,7 @@
                             <dxe:PasswordBoxEdit ShowPasswordButtonVisibility="Auto" MinWidth="300" EditValue="{Binding EffaniPassword}"  />
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup View="GroupBox" Header="Controller WiFi" Orientation="Vertical">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Controller WiFi" local:SettingsControl.Note="The WiFi network the controller board connects to: its name, how it signs in, and the username and password. Send WiFi Settings sends them to the board." Orientation="Vertical">
                         <dxlc:LayoutItem Label="WiFi SSID" ToolTip="Name of the WiFi network the controller board is configured with (M587).">
                             <dxe:TextEdit MinWidth="300" EditValue="{Binding WifiSsid}" />
                         </dxlc:LayoutItem>
