@@ -24,6 +24,8 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+## 4.1.3 - 2026-11-17
+
 ### Added
 
 - Tools, Component Control: jog buttons beside each axis's slider that move the axis 5 mm or 1 mm either way.
