@@ -24,6 +24,17 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+### Changed
+
+- Default settings: the table is set to 1600 steps/mm, up from 1066.67. The table was found to move exactly two thirds
+  of the distance commanded, because it travels 2 mm per motor turn and not 3. Every default that was set on the old
+  scale is multiplied by 2/3 so that it means the same place or speed in real millimetres: the table's travel (X 240,
+  Y 370), its move, maximum and homing speeds, its acceleration and speed change, and the default locations of the tray
+  loading and sterilization positions, the sensors, the fluid ports and the aspiration needle. Saved settings keep
+  their own values.
+- Updates: the update list no longer has an entry for 4.0.4, whose installer file no longer exists, and has been
+  rebuilt with the entry for 4.1.3.
+
 ## 4.1.3 - 2026-11-17
 
 ### Added
