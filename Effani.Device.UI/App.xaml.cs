@@ -54,6 +54,13 @@ namespace Effani.Device.UI
 			// typing on the touchscreen: a touched field opens the on-screen keyboard and a copy of the field above it
 			OnScreenInput.Register();
 
+#if DEBUG
+			// A debug build asks before it brings saved settings up to date for its version (a release build does it without
+			// asking): the settings may belong to the installed program, which a build under development should not alter
+			// unasked. This is a plain message box because no window of the program exists yet.
+			SettingsService.ConfirmMigration = question =>
+				MessageBox.Show(question, "Migrate Settings", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.Yes;
+#endif
 			var startupForm = AppHost.Services.GetRequiredService<MainWindow>();
 			startupForm.Show();
 

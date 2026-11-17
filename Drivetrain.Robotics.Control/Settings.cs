@@ -1416,6 +1416,25 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ApplyConfigTimeoutSeconds)));
             }
         }
+        /// <summary>
+        /// The version of the program these settings were created with, or last brought up to date by (e.g. "4.1.2"); null in
+        /// settings saved before this was recorded. It is not shown anywhere: it tells a newer version of the program which
+        /// changes saved settings still need (see SettingsMigrator in Effani.Device.Services), and only that code sets it.
+        /// </summary>
+        public string? SoftwareVersion
+        {
+            get
+            {
+                return _softwareVersion;
+            }
+            set
+            {
+                if (_softwareVersion == value)
+                    return;
+                _softwareVersion = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SoftwareVersion)));
+            }
+        }
         /// <summary>How long to wait for the board to finish switching or setting up WiFi.</summary>
         public int WifiTimeoutSeconds
         {
@@ -3280,6 +3299,7 @@ namespace Drivetrain.Robotics.Control
         int _aspirateTimeoutSeconds = 60;
         int _applyConfigTimeoutSeconds = 30;
         int _wifiTimeoutSeconds = 30;
+        string? _softwareVersion; // no default: settings loaded without one were saved before versions were recorded
         int _controllerBoardCount = 2;
         int _inputPortsPerBoard = 7;
         Direction _tableXDirection = Direction.Backwards;

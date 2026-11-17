@@ -29,12 +29,17 @@ the tagged version has no section here, no release is made and the run fails say
   well of the full set of trays could be brought to it, saying which values would work.
 - Settings: the **Biopsy Location** can be edited (Component Locations, Tray Carrier Locations).
 - Repository: pushing a version tag to GitHub publishes a GitHub Release whose notes are that version's section of this file.
+- Settings record the version of the program they were created with or last brought up to date by (not shown anywhere).
+  When the program starts, saved settings from an older version are brought up to date by the migrations defined for the
+  versions in between, then marked with the running version. No migrations are defined yet. A debug build asks first,
+  saying what it would change, and leaves the saved settings alone if the answer is no.
 
 ### Changed
 
 - Tools, Component Control: an axis that is not homed shows only a **Home to enable axis movement** button. Once it is homed
   the row shows its jog buttons, slider and Commands... list, with the list at the right-hand end.
 - Tools, Component Control: the axis sliders have a larger handle for use on a touchscreen.
+- Tools, Component Control: every axis's slider and its box are the same length and line up, whatever the axis's travel.
 - Tools, Component Control: the "Send Command" lists of the axes and sensors are labelled **Commands...**.
 - Tools, Component Control: the command queue and its Clear Command Queue button above the axis list are gone; the ones in
   the Commands area remain.
