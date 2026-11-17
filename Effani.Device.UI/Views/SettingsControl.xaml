@@ -222,42 +222,42 @@
                                 <dxe:SpinEdit EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding NadhVolume}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="DNA Reagent">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding DnaVolume}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaVolume}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="KOH">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding KohVolume}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding KohVolume}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Basal Media">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding BasalVolume}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding BasalVolume}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Priming Volumes (μl)" local:SettingsControl.Note="The volume each pump pushes out to fill its line before it dispenses into wells: once when the fluids are loaded (initial priming), and again whenever a pump has stood idle for too long (secondary priming)." Orientation="Horizontal">
                             <dxlc:LayoutGroup View="GroupBox" Header="Initial Priming" local:SettingsControl.Note="The volume each pump dispenses to fill its line when the fluids are loaded at the start of an assay." ToolTip="Volume dispensed during first pump priming" Orientation="Vertical" GroupBoxStyle="{StaticResource tertiaryGroupBox}">
                                 <dxlc:LayoutItem Label="NADH">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding InitialNadhFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialNadhFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="DNA Reagent">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding InitialDnaFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialDnaFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="KOH">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding InitialKohFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialKohFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Basal Media">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding InitialBasalFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialBasalFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Secondary Priming" local:SettingsControl.Note="The volume a pump dispenses at the waste location to refresh its line when it has not been used for longer than the Reprime Pump Interval." ToolTip="Volume dispensed during second pump priming" Orientation="Vertical" GroupBoxStyle="{StaticResource tertiaryGroupBox}">
                                 <dxlc:LayoutItem Label="NADH">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding SecondaryNadhFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryNadhFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="DNA Reagent">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding SecondaryDnaFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryDnaFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="KOH">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding SecondaryKohFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryKohFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Basal Media">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding SecondaryBasalFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryBasalFluidPrimingVolume}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Reprime Pump Interval (min)">
                                     <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="600" EditValue="{Binding ReprimePumpInterval}" />
@@ -297,7 +297,7 @@
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.5" MinValue="0.1" MaxValue="2000" EditValue="{Binding FluidSyringeSpeed}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Fluid Emission Pause (ms)" ToolTip="Milliseconds to wait before moving after dispensing fluid">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding FluidEmissionDwell}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding FluidEmissionDwell}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Aspiration" local:SettingsControl.Note="How the aspiration needle removes fluid from a well: where the needle starts, how far it is from the tray, how far it travels for each microlitre removed, and how fast it moves into position." Orientation="Vertical">
@@ -371,16 +371,16 @@
                             <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellDepth}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Vertical Well Count" ToolTip="Count of sample wells in a tray in the vertical direction">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValue="{Binding VerticalWellCount}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValueType="{x:Type sys:Int32}" EditValue="{Binding VerticalWellCount}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Horizontal Well Count" ToolTip="Count of sample wells in a tray in the horizontal direction">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValue="{Binding HorizontalWellCount}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValueType="{x:Type sys:Int32}" EditValue="{Binding HorizontalWellCount}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Horizontal Tray Count" ToolTip="How many sample trays are mounted side by side on the table (along X); each is one Tray Offset X from the one before. Takes effect at the next assay.">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValue="{Binding HorizontalTrayCount}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValueType="{x:Type sys:Int32}" EditValue="{Binding HorizontalTrayCount}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Vertical Tray Count" ToolTip="How many rows of sample trays are mounted on the table (along Y); each row is one Tray Offset Y from the one before, so set Tray Offset Y when this is more than 1. Takes effect at the next assay.">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValue="{Binding VerticalTrayCount}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValueType="{x:Type sys:Int32}" EditValue="{Binding VerticalTrayCount}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Tray Offset (mm)" ToolTip="Distance from the first well of a tray to the first well of the next tray: X between trays side by side, Y between rows of trays">
                             <dxlc:LayoutGroup Orientation="Horizontal">
@@ -477,39 +477,39 @@
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="DNA Sensor" local:SettingsControl.Note="The board and input the DNA sensor is connected to, its index in the board's configuration, and the range of readings it should report." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the DNA sensor is connected">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaSensorBoardNumber}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorBoardNumber}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Temp Input" ToolTip="Temperature input (tempN) to which the DNA sensor is connected">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaSensorPortNumber}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorPortNumber}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Index" ToolTip="Configuration index of the DNA sensor">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaSensorNumber}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorNumber}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutGroup View="GroupBox" Header="Reading Range" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Upper Limit" ToolTip="Top of the range of values the DNA sensor should report">
-                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding DnaSensorReadHigh}" />
+                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorReadHigh}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Lower Limit" ToolTip="Bottom of the range of values the DNA sensor should report">
-                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding DnaSensorReadLow}" />
+                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorReadLow}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="NADH Sensor" local:SettingsControl.Note="The board and input the NADH sensor is connected to, its index in the board's configuration, and the range of readings it should report." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the NADH sensor is connected">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhSensorBoardNumber}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorBoardNumber}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Temp Input" ToolTip="Temperature input (tempN) to which the NADH sensor is connected">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhSensorPortNumber}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorPortNumber}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Index" ToolTip="Configuration index of the NADH sensor">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhSensorNumber}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorNumber}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutGroup View="GroupBox" Header="Reading Range" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Upper Limit" ToolTip="Top of the range of values the NADH sensor should report">
-                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSensorReadHigh}" />
+                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorReadHigh}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Lower Limit" ToolTip="Bottom of the range of values the NADH sensor should report">
-                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSensorReadLow}" />
+                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorReadLow}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
@@ -914,31 +914,31 @@
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Assay Timing (ms)" Orientation="Vertical">
                         <dxlc:LayoutItem Label="Basal Media Incubation (ms)" ToolTip="Milliseconds sample stays in Basal media incubation">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding BasalIncubationTimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding BasalIncubationTimerPeriod}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="NADH-Basal Mixing Period (ms)" ToolTip="Milliseconds to wait for NADH to mix with Basal Media">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding NadhReading1TimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhReading1TimerPeriod}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="NADH Readings Interval (ms)" ToolTip="Milliseconds between NADH readings">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding NadhReadingsTimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhReadingsTimerPeriod}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="NADH Timer Period (ms)" ToolTip="Milliseconds sample stays in NADH solution">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding NadhIncubationDwell}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhIncubationDwell}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="KOH Timer Period (ms)" ToolTip="Milliseconds sample stays in KOH solution">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding KohTimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding KohTimerPeriod}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="DNA Reagent Timer Period (ms)" ToolTip="Milliseconds sample stays in DNA reagent">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding DnaTimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaTimerPeriod}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Standards Establishment Period (seconds)" ToolTip="Milliseconds taken for establishing standards">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding StandardsProcessingDwell}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding StandardsProcessingDwell}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Aspiration Dwell (ms)" ToolTip="Milliseconds to wait after lowering the aspiration needle into the sample">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding AspirationDwell}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding AspirationDwell}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Sensor Read Pause (ms)" ToolTip="Milliseconds to wait before taking a DNA or NADH sensor reading">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValue="{Binding SensorReadDwell}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SensorReadDwell}" />
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
@@ -947,7 +947,7 @@
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Sterilization" Orientation="Vertical">
                         <dxlc:LayoutItem Label="Tray Sterilization Time (seconds)" ToolTip="Number of seconds tray will be UV sterilized">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding TraySterilizationTime}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding TraySterilizationTime}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Tray Sterilization Location" ToolTip="Platform coordinates (mm x mm) of the location at which sample trays are sterilized">
                             <dxlc:LayoutGroup Orientation="Horizontal">

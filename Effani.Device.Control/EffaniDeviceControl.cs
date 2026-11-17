@@ -69,8 +69,10 @@ namespace Effani.Device.Control
 			if (!speed.HasValue)
 				speed = Math.Max(MoveSpeedFor(xaxis), MoveSpeedFor(yaxis));
 
+			// a target outside the travel is refused and the command fails saying so: it used to be skipped without a word, which
+			// left the table where it was while whatever came next (dispensing, reading) went ahead at the wrong place
 			if (x < xaxis.Minimum || x > xaxis.Maximum || y < yaxis.Minimum || y > yaxis.Maximum)
-				return;
+				throw new ApplicationException($"The table was not moved: X{x:0.##} Y{y:0.##} is outside its travel (X {xaxis.Minimum} to {xaxis.Maximum} mm, Y {yaxis.Minimum} to {yaxis.Maximum} mm). Check the location and well settings against the table travel lengths.");
 
 			MoveAbsolute([ new MoveSpec(xaxis, x), new MoveSpec(yaxis, y)], speed.Value);
 		}
@@ -83,11 +85,11 @@ namespace Effani.Device.Control
 		}
 		public string ReadDna()
 		{
-			return ReadSensor(0, Settings.SensorReadDwell);
+			return ReadSensor(Settings.DnaSensorNumber, Settings.SensorReadDwell);
 		}
 		public string ReadNadh()
 		{
-			return ReadSensor(1, Settings.SensorReadDwell);
+			return ReadSensor(Settings.NadhSensorNumber, Settings.SensorReadDwell);
 		}
 		/// <summary>
 		/// Where an output is wired, for messages: its board and connector from the settings, e.g. "board 0, out4" or "board 1, out6".

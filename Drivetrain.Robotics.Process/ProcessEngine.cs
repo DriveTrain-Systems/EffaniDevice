@@ -41,16 +41,33 @@ namespace Drivetrain.Robotics.Process
 			Interlocked.Increment(ref _unfinishedJobs);
 			PriorityJobQueue.Enqueue(job);
 		}
-		/// <summary>Discards every queued job and stops the job that is currently running after the command it is executing.</summary>
-		public void ClearPendingJobs()
+		/// <summary>
+		/// Discards every queued job and stops the job that is currently running after the command it is executing: that command
+		/// is not interrupted (the board finishes what it was sent). Returns the number of queued commands that were discarded.
+		/// </summary>
+		public int ClearPendingJobs()
 		{
 			HoldQueueForHighPriorityJob = false;
-			while (JobQueue.TryDequeue(out _))
+			var discarded = 0;
+			while (JobQueue.TryDequeue(out var job))
+			{
+				discarded += CommandsOf(job).Length;
 				Interlocked.Decrement(ref _unfinishedJobs);
-			while (PriorityJobQueue.TryDequeue(out _))
+			}
+			while (PriorityJobQueue.TryDequeue(out var job))
+			{
+				discarded += CommandsOf(job).Length;
 				Interlocked.Decrement(ref _unfinishedJobs);
+			}
+			var current = _currentJob;
 			if (_executingJob)
+			{
+				// the commands of the running job after the one being executed are not run either
+				if (current is not null)
+					discarded += Math.Max(0, CommandsOf(current).Length - _currentCommandIndex - 1);
 				_abortCurrentJob = true;
+			}
+			return discarded;
 		}
 		public void TerminateProcess()
 		{

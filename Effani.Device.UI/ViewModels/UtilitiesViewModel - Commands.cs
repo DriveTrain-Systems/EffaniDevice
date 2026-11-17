@@ -302,6 +302,32 @@ namespace Effani.Device.UI
 		{
 			ConsoleMessages.Clear();
 		}
+		/// <summary>The queue is not cleared from here while an assay is running: its jobs belong to the assay, which is cancelled from the assay screen.</summary>
+		public bool CanClearCommandQueue() => !IsAssayRunning;
+		/// <summary>
+		/// Discards every command that is waiting to run. The command being executed is not interrupted: the controller board does
+		/// not read anything sent to it over USB until it has finished the command it is running, so a move or homing under way
+		/// always completes.
+		/// </summary>
+		[Command]
+		public void ClearCommandQueue()
+		{
+			var executing = _processEngine.ExecutingCommand;
+			var discarded = _processEngine.ClearPendingJobs();
+			// a sensor reading that was still waiting in the queue will not be taken now: its button goes back to its plain caption
+			foreach (var sensor in Sensors)
+			{
+				var waiting = sensor is DnaSensorSpec ? _dnaSensorReading == ReadingPending && executing is not ReadDna
+					: sensor is NadhSensorSpec && _nadhSensorReading == ReadingPending && executing is not ReadNadh;
+				if (waiting)
+					SetSensorReading(sensor, null);
+			}
+			var now = DateTime.Now.ToString("H:mm:ss");
+			var running = executing is null ? "" : $" {executing.Description} was already running and will finish.";
+			ConsoleMessages.Insert(0, discarded == 0
+				? $"{now} Command queue cleared: nothing was waiting.{running}"
+				: $"{now} Command queue cleared: {discarded} queued command{(discarded == 1 ? "" : "s")} discarded.{running}");
+		}
 		[Command]
 		public async Task EmitFluid(AxisSpec axisSpec)
 		{
@@ -334,14 +360,52 @@ namespace Effani.Device.UI
 			switch (sensor)
 			{
 				case DnaSensorSpec:
-					_processEngine.QueueCommand(new ReadDna(_device, null));
+					SetSensorReading(sensor, ReadingPending);
+					_processEngine.QueueCommand(new ReadDna(_device, command => ShowSensorReading(sensor, command.Result)));
 					break;
 				case NadhSensorSpec:
-					_processEngine.QueueCommand(new ReadNadh(_device, null));
+					SetSensorReading(sensor, ReadingPending);
+					_processEngine.QueueCommand(new ReadNadh(_device, command => ShowSensorReading(sensor, command.Result)));
 					break;
 			}
 			Mouse.OverrideCursor = Cursors.Arrow;
 		}
+		/// <summary>The caption of the DNA sensor's Read Sensor button: once a reading has been asked for from here, it carries the reading.</summary>
+		public string DnaReadSensorText => ReadSensorText(_dnaSensorReading);
+		/// <summary>The caption of the NADH sensor's Read Sensor button: once a reading has been asked for from here, it carries the reading.</summary>
+		public string NadhReadSensorText => ReadSensorText(_nadhSensorReading);
+		private static string ReadSensorText(string? reading) => reading is null ? "Read Sensor" : $"Read Sensor: {reading}";
+		/// <summary>Shown on a Read Sensor button from the moment it is pressed until the reading arrives, so the last reading is not taken for the new one.</summary>
+		private const string ReadingPending = "…";
+		/// <summary>Puts the reading a sensor read came back with on that sensor's button; runs on the process engine thread.</summary>
+		private void ShowSensorReading(SensorSpec sensor, string? result)
+		{
+			// a failed reading comes back as text starting with "Error"; the whole of it is in Messages (the engine reports every reading there)
+			var reading = String.IsNullOrWhiteSpace(result) ? "no reply"
+				: result.StartsWith("Error", StringComparison.OrdinalIgnoreCase) ? "error"
+				: result.Trim();
+			var dispatcher = Application.Current?.Dispatcher;
+			if (dispatcher is null || dispatcher.CheckAccess())
+				SetSensorReading(sensor, reading);
+			else
+				dispatcher.BeginInvoke(() => SetSensorReading(sensor, reading));
+		}
+		private void SetSensorReading(SensorSpec sensor, string? reading)
+		{
+			switch (sensor)
+			{
+				case DnaSensorSpec:
+					_dnaSensorReading = reading;
+					RaisePropertyChanged(nameof(DnaReadSensorText));
+					break;
+				case NadhSensorSpec:
+					_nadhSensorReading = reading;
+					RaisePropertyChanged(nameof(NadhReadSensorText));
+					break;
+			}
+		}
+		private string? _dnaSensorReading;
+		private string? _nadhSensorReading;
 		[Command]
 		public async Task EnableWifi()
 		{

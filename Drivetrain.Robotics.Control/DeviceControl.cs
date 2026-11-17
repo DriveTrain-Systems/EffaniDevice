@@ -179,27 +179,29 @@ namespace Drivetrain.Robotics.Control
 		}
 		public void Home(AxisSpec axisSpec)
 		{
-			WriteWhenReady($"G28 {axisSpec.Designation}");
+			WriteMotion($"G28 {axisSpec.Designation}");
 			UpdatePositions();
 		}
 		public void HomeAll()
 		{
-			WriteWhenReady($"G28");
+			WriteMotion($"G28");
 			UpdatePositions();
 		}
 		public void Move(List<MoveSpec> moveSpecs, decimal speed)
 		{
 			var moveCode = String.Join(' ', moveSpecs.Select(s => s.ToGode()));
-			WriteWhenReady("G90");
-			WriteWhenReady($"G1 {moveCode} F{speed}");
+			if (!WriteMotion("G90"))
+				return;
+			WriteMove($"G1 {moveCode} F{speed}", speed, moveSpecs.Select(s => (s.Axis, TravelTo(s.Axis, s.location))));
 			UpdatePositions();
 		}
 		public void MoveAbsolute(List<MoveSpec> moveSpecs, decimal speed)
 		{
 			var moveCode = String.Join(' ', moveSpecs.Select(s => s.ToGode()));
-			WriteWhenReady("G90");
+			if (!WriteMotion("G90"))
+				return;
 			var formula = $"G1 {moveCode} F{speed}";
-			WriteWhenReady(formula);
+			WriteMove(formula, speed, moveSpecs.Select(s => (s.Axis, TravelTo(s.Axis, s.location))));
 			UpdatePositions();
 		}
 		public void MoveAbsolute(AxisSpec axisSpec, decimal location, decimal? speed = null)
@@ -209,8 +211,9 @@ namespace Drivetrain.Robotics.Control
 
 			if (!speed.HasValue)
 				speed = MoveSpeedFor(axisSpec);
-			WriteWhenReady("G90");
-			WriteWhenReady($"G1 {axisSpec.Designation}{location} F{speed}");
+			if (!WriteMotion("G90"))
+				return;
+			WriteMove($"G1 {axisSpec.Designation}{location} F{speed}", speed.Value, [(axisSpec, TravelTo(axisSpec, location))]);
 			UpdatePositions();
 		}
 		/// <summary>
@@ -239,24 +242,27 @@ namespace Drivetrain.Robotics.Control
 		public void MoveToStarting(AxisSpec axisSpec)
 		{
 			var speed = MoveSpeedFor(axisSpec);
-			WriteWhenReady("G90");
-			WriteWhenReady($"G1 {axisSpec.Designation}{axisSpec.StartingPosition} F{speed}");
+			if (!WriteMotion("G90"))
+				return;
+			WriteMove($"G1 {axisSpec.Designation}{axisSpec.StartingPosition} F{speed}", speed, [(axisSpec, TravelTo(axisSpec, axisSpec.StartingPosition))]);
 			UpdatePositions();
 		}
 		public void MoveRelativeClockwiseArc(List<MoveSpec> moveSpecs, decimal speed)
 		{
 			var moveCode = String.Join(' ', moveSpecs.Select(s => s.ToGode()));
-			WriteWhenReady("G91");
+			if (!WriteMotion("G91"))
+				return;
 			var formula = $"G2 {moveCode} R4.5 F{speed}";
-			WriteWhenReady(formula);
+			WriteMotion(formula);
 			UpdatePositions();
 		}
 		public void MoveRelativeCounterClockwiseArc(List<MoveSpec> moveSpecs, decimal speed)
 		{
 			var moveCode = String.Join(' ', moveSpecs.Select(s => s.ToGode()));
-			WriteWhenReady("G91");
+			if (!WriteMotion("G91"))
+				return;
 			var formula = $"G3 {moveCode} R4.5 F{speed}";
-			WriteWhenReady(formula);
+			WriteMotion(formula);
 			UpdatePositions();
 		}
 		public void MovePercent(AxisSpec axisSpec, decimal percent, decimal? speed = null)
@@ -269,8 +275,9 @@ namespace Drivetrain.Robotics.Control
 			if (location > axisSpec.Maximum)
 				location = axisSpec.Maximum;
 
-			WriteWhenReady("G90");
-			WriteWhenReady($"G1 {axisSpec.Designation}{location} F{speed}");
+			if (!WriteMotion("G90"))
+				return;
+			WriteMove($"G1 {axisSpec.Designation}{location} F{speed}", speed.Value, [(axisSpec, TravelTo(axisSpec, location))]);
 			UpdatePositions();
 		}
 		// Moves are sent as G1, not G0: G1 always runs at the F speed it is given (capped by M203), whereas the firmware can run
@@ -280,8 +287,9 @@ namespace Drivetrain.Robotics.Control
 			if (!speed.HasValue)
 				speed = MoveSpeedFor(axisSpec);
 
-			WriteWhenReady("G91");
-			WriteWhenReady($"G1 {axisSpec.Designation}{distance} F{speed}");
+			if (!WriteMotion("G91"))
+				return;
+			WriteMove($"G1 {axisSpec.Designation}{distance} F{speed}", speed.Value, [(axisSpec, Math.Abs(distance))]);
 			UpdatePositions();
 		}
 		/// <summary>
@@ -1002,6 +1010,67 @@ namespace Drivetrain.Robotics.Control
 				return $"Error: {ex.Message}";
 			}
 		}
+		/// <summary>
+		/// Sends a homing or move command, whose callers have no use for a result. If it could not be sent, or the board did not
+		/// finish it in time, the reason is shown in the console messages and false is returned: it used to go to the log file only,
+		/// so a move that never happened looked as if the button had done nothing. (What the board itself replies, its errors
+		/// included, is shown as before and does not count as a failure here.) A move is not sent when setting its mode (G90/G91)
+		/// failed, as its coordinates could then be taken the wrong way.
+		/// </summary>
+		private bool WriteMotion(string data)
+		{
+			try
+			{
+				Publish(Transact(data, waitForMoves: true));
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, $"Error sending to the controller board: {data}");
+				ClosePortAfterError(ex);
+				ReadData.Enqueue($"Error: {ex.Message}");
+				return false;
+			}
+		}
+		/// <summary>
+		/// Sends a G1 move and gives the board as long as the move takes: the timeout in force (the Move timeout setting, or the
+		/// one passed with the command) is kept when it is long enough and extended to <see cref="MoveTimeout"/> when it is not.
+		/// A long move, such as the table crossing its whole travel, is then not given up on while it is still under way.
+		/// </summary>
+		private bool WriteMove(string gcode, decimal speed, IEnumerable<(AxisSpec Axis, decimal Distance)> travel)
+		{
+			var needed = MoveTimeout(speed, travel);
+			var inForce = _timeoutOverride.Value ?? ReadyTimeout;
+			using (OverrideReadyTimeout(needed > inForce ? needed : null))
+				return WriteMotion(gcode);
+		}
+		/// <summary>
+		/// How long to allow for a move of the given axes by the given distances (mm) at <paramref name="speed"/> (mm/min): the time
+		/// the move takes, plus a fifth for acceleration and rounding, plus the general board timeout for the board to answer. The
+		/// speed applies along the line of the move, and no axis goes faster than its max speed, as on the board (M203).
+		/// </summary>
+		private TimeSpan MoveTimeout(decimal speed, IEnumerable<(AxisSpec Axis, decimal Distance)> travel)
+		{
+			double minutes = 0, squares = 0;
+			foreach (var (axis, distance) in travel)
+			{
+				var mm = (double)Math.Abs(distance);
+				squares += mm * mm;
+				if (axis.MaxSpeed > 0)
+					minutes = Math.Max(minutes, mm / axis.MaxSpeed);
+			}
+			if (speed > 0)
+				minutes = Math.Max(minutes, Math.Sqrt(squares) / (double)speed);
+			return TimeSpan.FromMinutes(minutes * 1.2) + ReadyTimeout;
+		}
+		/// <summary>
+		/// How far (mm) an absolute move of <paramref name="axis"/> to <paramref name="location"/> goes: from where the axis was after
+		/// the last move or home, or, while that is not known, from the end of its travel that is farther away.
+		/// </summary>
+		private decimal TravelTo(AxisSpec axis, decimal location)
+			=> axis.Designation is not null && Positions.TryGetValue(axis.Designation, out var from)
+				? Math.Abs(location - from)
+				: Math.Max(Math.Abs(location - axis.Minimum), Math.Abs(axis.Maximum - location));
 		#endregion
 
 		#region Properties
