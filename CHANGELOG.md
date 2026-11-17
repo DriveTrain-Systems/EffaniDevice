@@ -6,6 +6,16 @@ commit as the change. When a version is released, the Unreleased entries move un
 Entries are grouped as **Added** (new things), **Changed** (things that work differently), **Fixed** (faults put right) and
 **Removed**.
 
+To release a version, say 4.1.2:
+
+1. Put a heading `## 4.1.2 - 2026-11-17` (the version, then the date) under "Unreleased" and above its entries, so that
+   Unreleased is left empty.
+2. Commit, and tag that commit `v4.1.2`.
+3. Push the branch and the tag to GitHub: `git push github develop v4.1.2`.
+
+GitHub then publishes a Release called "Effani 4.1.2" with that section as its notes (`.github/workflows/release.yml`). If
+the tagged version has no section here, no release is made and the run fails saying so.
+
 ## Unreleased
 
 ### Added
@@ -18,6 +28,7 @@ Entries are grouped as **Added** (new things), **Changed** (things that work dif
 - Settings: a caution under a component location (fluid ports, aspiration needle, sensors, biopsy location) when not every
   well of the full set of trays could be brought to it, saying which values would work.
 - Settings: the **Biopsy Location** can be edited (Component Locations, Tray Carrier Locations).
+- Repository: pushing a version tag to GitHub publishes a GitHub Release whose notes are that version's section of this file.
 
 ### Changed
 
