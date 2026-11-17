@@ -72,7 +72,10 @@ namespace Drivetrain.Robotics.Control
             get => AspirateLocation.X;
             set
             {
+                if (AspirateLocation.X == value)
+                    return;
                 AspirateLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirateLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirateLocation)));
             }
         }
@@ -83,7 +86,10 @@ namespace Drivetrain.Robotics.Control
             get => AspirateLocation.Y;
             set
             {
+                if (AspirateLocation.Y == value)
+                    return;
                 AspirateLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirateLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AspirateLocation)));
             }
         }
@@ -178,7 +184,10 @@ namespace Drivetrain.Robotics.Control
             get => BasalLocation.X;
             set
             {
+                if (BasalLocation.X == value)
+                    return;
                 BasalLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BasalLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BasalLocation)));
             }
         }
@@ -189,7 +198,10 @@ namespace Drivetrain.Robotics.Control
             get => BasalLocation.Y;
             set
             {
+                if (BasalLocation.Y == value)
+                    return;
                 BasalLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BasalLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BasalLocation)));
             }
         }
@@ -256,7 +268,10 @@ namespace Drivetrain.Robotics.Control
             get => BiopsyLocation.X;
             set
             {
+                if (BiopsyLocation.X == value)
+                    return;
                 BiopsyLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BiopsyLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BiopsyLocation)));
             }
         }
@@ -267,7 +282,10 @@ namespace Drivetrain.Robotics.Control
             get => BiopsyLocation.Y;
             set
             {
+                if (BiopsyLocation.Y == value)
+                    return;
                 BiopsyLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BiopsyLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BiopsyLocation)));
             }
         }
@@ -1502,7 +1520,10 @@ namespace Drivetrain.Robotics.Control
             get => DnaLocation.X;
             set
             {
+                if (DnaLocation.X == value)
+                    return;
                 DnaLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaLocation)));
             }
         }
@@ -1513,7 +1534,10 @@ namespace Drivetrain.Robotics.Control
             get => DnaLocation.Y;
             set
             {
+                if (DnaLocation.Y == value)
+                    return;
                 DnaLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaLocation)));
             }
         }
@@ -1552,7 +1576,10 @@ namespace Drivetrain.Robotics.Control
             get => DnaSensorLocation.X;
             set
             {
+                if (DnaSensorLocation.X == value)
+                    return;
                 DnaSensorLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaSensorLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaSensorLocation)));
             }
         }
@@ -1563,7 +1590,10 @@ namespace Drivetrain.Robotics.Control
             get => DnaSensorLocation.Y;
             set
             {
+                if (DnaSensorLocation.Y == value)
+                    return;
                 DnaSensorLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaSensorLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaSensorLocation)));
             }
         }
@@ -1804,7 +1834,10 @@ namespace Drivetrain.Robotics.Control
             get => FirstWellLocation.X;
             set
             {
+                if (FirstWellLocation.X == value)
+                    return;
                 FirstWellLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FirstWellLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FirstWellLocation)));
             }
         }
@@ -1815,7 +1848,10 @@ namespace Drivetrain.Robotics.Control
             get => FirstWellLocation.Y;
             set
             {
+                if (FirstWellLocation.Y == value)
+                    return;
                 FirstWellLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FirstWellLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FirstWellLocation)));
             }
         }
@@ -1966,7 +2002,10 @@ namespace Drivetrain.Robotics.Control
             get => KohLocation.X;
             set
             {
+                if (KohLocation.X == value)
+                    return;
                 KohLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(KohLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(KohLocation)));
             }
         }
@@ -1977,7 +2016,10 @@ namespace Drivetrain.Robotics.Control
             get => KohLocation.Y;
             set
             {
+                if (KohLocation.Y == value)
+                    return;
                 KohLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(KohLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(KohLocation)));
             }
         }
@@ -2072,7 +2114,10 @@ namespace Drivetrain.Robotics.Control
             get => NadhLocation.X;
             set
             {
+                if (NadhLocation.X == value)
+                    return;
                 NadhLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhLocation)));
             }
         }
@@ -2083,7 +2128,10 @@ namespace Drivetrain.Robotics.Control
             get => NadhLocation.Y;
             set
             {
+                if (NadhLocation.Y == value)
+                    return;
                 NadhLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhLocation)));
             }
         }
@@ -2150,7 +2198,10 @@ namespace Drivetrain.Robotics.Control
             get => NadhSensorLocation.X;
             set
             {
+                if (NadhSensorLocation.X == value)
+                    return;
                 NadhSensorLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhSensorLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhSensorLocation)));
             }
         }
@@ -2161,7 +2212,10 @@ namespace Drivetrain.Robotics.Control
             get => NadhSensorLocation.Y;
             set
             {
+                if (NadhSensorLocation.Y == value)
+                    return;
                 NadhSensorLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhSensorLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhSensorLocation)));
             }
         }
@@ -2285,7 +2339,10 @@ namespace Drivetrain.Robotics.Control
             get => PlateOffset.X;
             set
             {
+                if (PlateOffset.X == value)
+                    return;
                 PlateOffset.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PlateOffsetX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PlateOffset)));
             }
         }
@@ -2296,7 +2353,10 @@ namespace Drivetrain.Robotics.Control
             get => PlateOffset.Y;
             set
             {
+                if (PlateOffset.Y == value)
+                    return;
                 PlateOffset.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PlateOffsetY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PlateOffset)));
             }
         }
@@ -2550,7 +2610,10 @@ namespace Drivetrain.Robotics.Control
             get => TrayLoadingLocation.X;
             set
             {
+                if (TrayLoadingLocation.X == value)
+                    return;
                 TrayLoadingLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TrayLoadingLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TrayLoadingLocation)));
             }
         }
@@ -2561,7 +2624,10 @@ namespace Drivetrain.Robotics.Control
             get => TrayLoadingLocation.Y;
             set
             {
+                if (TrayLoadingLocation.Y == value)
+                    return;
                 TrayLoadingLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TrayLoadingLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TrayLoadingLocation)));
             }
         }
@@ -2586,7 +2652,10 @@ namespace Drivetrain.Robotics.Control
             get => TraySterilizationLocation.X;
             set
             {
+                if (TraySterilizationLocation.X == value)
+                    return;
                 TraySterilizationLocation.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TraySterilizationLocationX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TraySterilizationLocation)));
             }
         }
@@ -2597,7 +2666,10 @@ namespace Drivetrain.Robotics.Control
             get => TraySterilizationLocation.Y;
             set
             {
+                if (TraySterilizationLocation.Y == value)
+                    return;
                 TraySterilizationLocation.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TraySterilizationLocationY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TraySterilizationLocation)));
             }
         }
@@ -2706,7 +2778,10 @@ namespace Drivetrain.Robotics.Control
             get => WellOffset.X;
             set
             {
+                if (WellOffset.X == value)
+                    return;
                 WellOffset.X = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WellOffsetX)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WellOffset)));
             }
         }
@@ -2717,7 +2792,10 @@ namespace Drivetrain.Robotics.Control
             get => WellOffset.Y;
             set
             {
+                if (WellOffset.Y == value)
+                    return;
                 WellOffset.Y = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WellOffsetY)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(WellOffset)));
             }
         }

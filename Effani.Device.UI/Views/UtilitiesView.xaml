@@ -150,6 +150,7 @@
 							<TextBlock Text="{Binding}" FontSize="22" FontWeight="Bold" Margin="0,1,5,0" />
 						</DataTemplate>
 					</GroupBox.HeaderTemplate>
+				<StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<StackPanel Orientation="Vertical">
 							<TextBlock Width="200" x:Name="label" FontSize="15" Margin="0,1,5,0">
@@ -405,7 +406,15 @@
 									</StackPanel>
 							</StackPanel>
 						</StackPanel>
+						<!-- opens, under the row, the settings that belong to this axis (AxisSettings_Toggled): the same ones as on the Settings tab -->
+						<ToggleButton Width="52" Height="52" Margin="8,4,4,4" Padding="6" VerticalAlignment="Center" Focusable="False" Checked="AxisSettings_Toggled" Unchecked="AxisSettings_Toggled"
+								ToolTip="Show or hide this axis's settings, to change them here instead of on the Settings tab.">
+							<Image Source="{dx:DXImage 'SvgImages/Icon Builder/Actions_Settings.svg'}" />
+						</ToggleButton>
 					</StackPanel>
+					<!-- the axis's settings, filled in the first time its gear is pressed -->
+					<ContentControl Tag="axisSettings" Visibility="Collapsed" Focusable="False" />
+				</StackPanel>
 				</GroupBox>
 			</DataTemplate>
 			<DataTemplate x:Key="SensorContentTemplate">
@@ -560,7 +569,7 @@
 				</DockPanel>
 			</dx:DXTabItem>
 			<dx:DXTabItem Header="Settings">
-				<local:SettingsControl/>
+				<local:SettingsControl x:Name="SettingsPagesControl"/>
 			</dx:DXTabItem>
 		</dx:DXTabControl>
 		<!-- the commands panel: sending a command to the board, board and software management, the command queue and the messages.

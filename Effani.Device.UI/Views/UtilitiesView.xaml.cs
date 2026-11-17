@@ -28,8 +28,84 @@ namespace Effani.Device.UI
 			Closed += (s, e) => (DataContext as IDisposable)?.Dispose();
 			this.Height = (System.Windows.SystemParameters.PrimaryScreenHeight * 0.90);
 			this.Width = (System.Windows.SystemParameters.PrimaryScreenWidth * 0.90);
+#if DEBUG
+			AddSimulateHomedToggle();
+#endif
 		}
+#if DEBUG
+		/// <summary>
+		/// Debug builds only: a button in the lower right corner, beside the on-screen keyboard's, that shows every axis as homed
+		/// (or goes back to what the board reports), so the controls of a homed axis can be tried without a board.
+		/// </summary>
+		private void AddSimulateHomedToggle()
+		{
+			if (Content is not Grid root || DataContext is not UtilitiesViewModel viewModel)
+				return;
+			var state = new TextBlock { FontSize = 12, FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center };
+			var toggle = new ToggleButton
+			{
+				Width = 60,
+				Height = 60,
+				Padding = new Thickness(0),
+				Focusable = false,
+				HorizontalAlignment = HorizontalAlignment.Right,
+				VerticalAlignment = VerticalAlignment.Bottom,
+				Margin = new Thickness(0, 0, 72, 6), // to the left of the keyboard button, which is 60 wide and 6 from the corner
+				Cursor = Cursors.Hand,
+				Content = new StackPanel
+				{
+					Children =
+					{
+						new TextBlock { Text = "⌂", FontFamily = new System.Windows.Media.FontFamily("Segoe UI Symbol"), FontSize = 26, HorizontalAlignment = HorizontalAlignment.Center },
+						state,
+					},
+				},
+			};
+			void Refresh()
+			{
+				toggle.IsChecked = viewModel.SimulateHomed;
+				state.Text = viewModel.SimulateHomed ? "SIM" : "REAL";
+				toggle.ToolTip = viewModel.SimulateHomed
+					? "Debug build only. Simulated homing is on: every axis is shown as homed, whatever the board reports. Touch to go back to what the board reports."
+					: "Debug build only. Axes are shown homed or not as the board reports. Touch to show every axis as homed, to try its controls without a board.";
+			}
+			toggle.Checked += (s, e) => { viewModel.SimulateHomed = true; Refresh(); };
+			toggle.Unchecked += (s, e) => { viewModel.SimulateHomed = false; Refresh(); };
+			Refresh();
+			Grid.SetColumnSpan(toggle, Math.Max(1, root.ColumnDefinitions.Count));
+			root.Children.Add(toggle);
+		}
+#endif
 		private void Close_Click(object sender, System.Windows.RoutedEventArgs e) => Close();
+		/// <summary>
+		/// The gear of an axis: shows or hides the axis's settings under its row. The panel is built the first time, from the
+		/// fields of the settings pages (see <see cref="SettingsControl.CreateAxisSettingsPanel"/>).
+		/// </summary>
+		private void AxisSettings_Toggled(object sender, RoutedEventArgs e)
+		{
+			if (sender is not ToggleButton { DataContext: AxisSpec axis } gear || DataContext is not UtilitiesViewModel viewModel)
+				return;
+			DependencyObject? row = gear;
+			while (row is not null and not GroupBox)
+				row = System.Windows.Media.VisualTreeHelper.GetParent(row);
+			if (row is null || FindTagged(row, "axisSettings") is not ContentControl host)
+				return;
+			if (gear.IsChecked == true && host.Content is null)
+				host.Content = SettingsPagesControl.CreateAxisSettingsPanel(axis.Label, viewModel);
+			host.Visibility = gear.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+		}
+		private static FrameworkElement? FindTagged(DependencyObject root, string tag)
+		{
+			for (var index = 0; index < System.Windows.Media.VisualTreeHelper.GetChildrenCount(root); index++)
+			{
+				var child = System.Windows.Media.VisualTreeHelper.GetChild(root, index);
+				if (child is FrameworkElement element && Equals(element.Tag, tag))
+					return element;
+				if (FindTagged(child, tag) is FrameworkElement deeper)
+					return deeper;
+			}
+			return null;
+		}
 		/// <summary>Move... in an axis's list of commands: asks how far to move the axis and which way, then queues the move.</summary>
 		private void MoveBy_Click(object sender, RoutedEventArgs e)
 		{

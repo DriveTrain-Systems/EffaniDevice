@@ -22,6 +22,12 @@ the tagged version has no section here, no release is made and the run fails say
 
 - Tools, Component Control: jog buttons beside each axis's slider that move the axis 5 mm or 1 mm either way.
 - Tools, Component Control: **Home** as the first entry of each axis's Commands... list, to home an axis again.
+- Tools, Component Control: a gear button on each axis opens, under the axis, the settings that belong to it (its motor,
+  its driver and endstop connections and, for a pump or the needle, its volumes, syringe travel and location), so they can
+  be changed without going to the Settings tab. They are the same settings as on the Settings tab and each shows changes
+  made in the other; Generate Config is offered there when a change needs it.
+- Debug builds only: a button beside the on-screen keyboard button in Tools shows every axis as homed (or goes back to
+  what the board reports), so the controls of a homed axis can be tried without a board.
 - Settings: an **Undo** button beside Reset. Tools remembers the settings as they were when it opened; Undo puts them back
   and closes Tools, after asking. If the board's config was generated from changed settings in the meantime, it offers to
   generate and send it again from the restored settings.

@@ -180,7 +180,37 @@ namespace Effani.Device.UI
 		/// <summary>Where each axis was after the last move or home, by axis letter; read from the board after every move.</summary>
 		public IReadOnlyDictionary<string, decimal> Positions => _device.Positions;
 		/// <summary>Which axes are homed, by axis letter; an axis's move buttons are disabled until it is.</summary>
-		public IReadOnlyDictionary<string, bool> Homed => _device.Homed;
+		public IReadOnlyDictionary<string, bool> Homed
+		{
+			get
+			{
+#if DEBUG
+				if (_simulateHomed)
+					return Axes.Where(a => a.Designation is not null).ToDictionary(a => a.Designation!, _ => true);
+#endif
+				return _device.Homed;
+			}
+		}
+#if DEBUG
+		/// <summary>
+		/// Debug builds only: while true, every axis is shown as homed whatever the board reports (or with no board at all), so the
+		/// controls of a homed axis can be tried. Only what is shown changes: the board still refuses to move an axis it has not
+		/// homed. Positions are not simulated.
+		/// </summary>
+		public bool SimulateHomed
+		{
+			get => _simulateHomed;
+			set
+			{
+				if (_simulateHomed == value)
+					return;
+				_simulateHomed = value;
+				RaisePropertyChanged(nameof(SimulateHomed));
+				RaisePropertyChanged(nameof(Homed));
+			}
+		}
+		private bool _simulateHomed;
+#endif
 		/// <summary>
 		/// Whether the tray UV light (output port 0) is on, as the board last reported it. Setting it queues the command that switches
 		/// the light; the switch then shows what the board reports once the command has run.
@@ -342,6 +372,9 @@ namespace Effani.Device.UI
 		public async void ActivateSettingsVersion(SettingsVersion settingsVersion)
 		{
 			if (settingsVersion == null)
+				return;
+			// the list also reports its selection when it is first shown: the settings that are already active need nothing done
+			if (settingsVersion.Id == _settingsService.ActiveSettingsVersion?.Id)
 				return;
 
 			_settingsService.ActivateSettingsVersion(settingsVersion.Id);

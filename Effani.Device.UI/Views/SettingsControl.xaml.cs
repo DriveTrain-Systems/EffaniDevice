@@ -42,6 +42,199 @@ namespace Effani.Device.UI
 
 		}
 
+		#region The settings of one axis
+		/// <summary>One field of an axis's settings: what it is called, its description, and the editor on these pages it is a copy of.</summary>
+		private sealed record AxisField(string Label, object? ToolTip, bool IsConfigSetting, BaseEdit Editor);
+		/// <summary>The fields found under one heading, and the cautions (by the name of the location they are about) shown with them.</summary>
+		private sealed class AxisSection(string title)
+		{
+			public string Title { get; } = title;
+			public List<AxisField> Fields { get; } = new();
+			public List<string> Cautions { get; } = new();
+		}
+
+		/// <summary>
+		/// Builds a panel of the settings that belong to one axis, for showing beside the axis on the Component Control tab. The
+		/// fields are copies of the ones on these pages: the same name, description, limits and setting, so a change made in one
+		/// shows in the other. They are found by the axis's name: the groups titled with it (its motor settings, its driver and
+		/// endstop connections) and the rows labelled with it in the lists that have a row per fluid (volumes, syringe travel,
+		/// its port's location). Nothing here names a setting, so a field added to these pages appears in the panel too.
+		/// </summary>
+		/// <param name="axisLabel">The axis's name as the axis list shows it, e.g. "Table X" or "DNA Reagent".</param>
+		/// <param name="viewModel">The view model of the Tools window: the settings, the cautions and Generate Config come from it.</param>
+		public FrameworkElement CreateAxisSettingsPanel(string axisLabel, UtilitiesViewModel viewModel)
+		{
+			var names = axisLabel switch
+			{
+				"Aspirate" => new[] { "Aspirate", "Aspirate Actuator", "Aspiration" },
+				"Basal" => new[] { "Basal", "Basal Media" },
+				_ => new[] { axisLabel },
+			};
+			var sections = new List<AxisSection>();
+			foreach (var page in SettingsPages.Items.OfType<DXTabItem>())
+			{
+				if (page.Content is LayoutControlBase root)
+					CollectAxisFields(root, names, page.Header?.ToString() ?? String.Empty, new List<LayoutGroup>(), sections);
+			}
+
+			var panel = new StackPanel { Margin = new Thickness(0, 6, 0, 4), MaxWidth = 1080, HorizontalAlignment = HorizontalAlignment.Left };
+			// the settings object is replaced when another settings version is activated: the panel follows it
+			panel.SetBinding(DataContextProperty, new Binding(nameof(UtilitiesViewModel.Settings)) { Source = viewModel });
+			if (TryFindResource(typeof(SpinButton)) is Style spinButtonStyle)
+				panel.Resources.Add(typeof(SpinButton), spinButtonStyle); // spin arrows wide enough for a finger, as on these pages
+			var configColor = TryFindResource("ConfigSettingColor") as System.Windows.Media.Brush;
+			var lockedStyle = TryFindResource("DeviceControlSetting") as Style;
+			var anyConfigSetting = false;
+			foreach (var section in sections.Where(s => s.Fields.Count > 0))
+			{
+				panel.Children.Add(new TextBlock { Text = section.Title, FontSize = 15, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 8, 0, 4) });
+				var fields = new WrapPanel();
+				foreach (var field in section.Fields)
+				{
+					if (CopyEditor(field.Editor, lockedStyle, viewModel.IsAssayRunning) is not FrameworkElement editor)
+						continue;
+					anyConfigSetting |= field.IsConfigSetting;
+					var label = new TextBlock { Text = field.Label, FontSize = 14, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 2) };
+					if (field.IsConfigSetting)
+					{
+						label.FontWeight = FontWeights.SemiBold;
+						if (configColor is not null)
+							label.Foreground = configColor;
+					}
+					fields.Children.Add(new StackPanel { Width = 168, Margin = new Thickness(0, 0, 12, 8), VerticalAlignment = VerticalAlignment.Bottom, ToolTip = field.ToolTip, Children = { label, editor } });
+				}
+				panel.Children.Add(fields);
+				foreach (var location in section.Cautions)
+				{
+					var caution = new TextBlock { Style = TryFindResource("LocationCaution") as Style, MaxWidth = 700 };
+					caution.SetBinding(TextBlock.TextProperty, new Binding($"{nameof(UtilitiesViewModel.LocationCautions)}[{location}]") { Source = viewModel });
+					panel.Children.Add(caution);
+				}
+			}
+			if (panel.Children.Count == 0)
+				panel.Children.Add(new TextBlock { Text = "This axis has no settings of its own.", Opacity = 0.7 });
+			if (anyConfigSetting)
+			{
+				// the blue ones only reach the board once its config is generated: say so, with the button to do it when it is needed
+				var note = new TextBlock { TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 14, 0), FontSize = 14 };
+				note.Inlines.Add(new System.Windows.Documents.Run("Blue settings") { FontWeight = FontWeights.SemiBold, Foreground = configColor ?? note.Foreground });
+				note.Inlines.Add(new System.Windows.Documents.Run(" are written to the board's config: after changing one, press Generate Config so the board uses it."));
+				var generate = new SimpleButton { Style = TryFindResource("GenerateConfigButton") as Style, DataContext = viewModel, CornerRadius = new CornerRadius(5), Padding = new Thickness(16, 0, 16, 0), MinHeight = 48 };
+				generate.SetBinding(System.Windows.Controls.Primitives.ButtonBase.CommandProperty, new Binding("GenerateConfigFilesCommand"));
+				panel.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 0), Children = { note, generate } });
+			}
+			return panel;
+		}
+		/// <summary>Walks a page for the fields that belong to the axis called any of <paramref name="names"/>, adding them to <paramref name="sections"/>.</summary>
+		private void CollectAxisFields(LayoutControlBase layout, string[] names, string pageTitle, List<LayoutGroup> groups, List<AxisSection> sections)
+		{
+			AxisSection Section(string title)
+			{
+				var section = sections.FirstOrDefault(s => s.Title == title);
+				if (section is null)
+					sections.Add(section = new AxisSection(title));
+				return section;
+			}
+			bool IsConfig(LayoutItem item) => item.Style is not null && ReferenceEquals(item.Style, TryFindResource("ConfigSetting"));
+
+			var children = layout.GetLogicalChildren(false).Cast<object>().ToList();
+			for (var index = 0; index < children.Count; index++)
+			{
+				var child = children[index];
+				if (child is LayoutGroup { View: LayoutGroupView.GroupBox, Header: string { Length: > 0 } header } group)
+				{
+					if (names.Contains(HeadingText(header)))
+					{
+						// a group that is the axis's own: every field in it, under the heading of the group it is one of (or its own)
+						var section = Section(groups.Count > 0 ? HeadingText((string)groups[^1].Header) : HeadingText(header));
+						foreach (var item in Descendants<LayoutItem>(group))
+						{
+							if (item.Content is BaseEdit editor && item.Label is string label)
+								section.Fields.Add(new AxisField(label, item.ToolTip, IsConfig(item), editor));
+						}
+						continue;
+					}
+					groups.Add(group);
+					CollectAxisFields(group, names, pageTitle, groups, sections);
+					groups.RemoveAt(groups.Count - 1);
+				}
+				else if (child is LayoutItem { Label: string itemLabel } row && names.Contains(itemLabel) && groups.Count > 0
+					&& !((string)groups[^1].Header).Contains("Sensor", StringComparison.OrdinalIgnoreCase)) // the DNA and NADH sensors are not the pumps of those names
+				{
+					// a row for this fluid in a list with a row per fluid: named after the list
+					var listTitle = (string)groups[^1].Header;
+					if (!listTitle.Contains('(') && groups.Count > 1 && (string)groups[^2].Header is string outer && outer.Contains('('))
+						listTitle += " " + outer[outer.IndexOf('(')..]; // the unit is on the group the list is in
+					var section = Section(pageTitle);
+					if (row.Content is BaseEdit editor)
+						section.Fields.Add(new AxisField(listTitle, row.ToolTip, IsConfig(row), editor));
+					else
+					{
+						// a location: its X and its Y, and the caution that follows it on the page
+						foreach (var part in row.Content is LayoutControlBase parts ? Descendants<LayoutItem>(parts) : Enumerable.Empty<LayoutItem>())
+						{
+							if (part.Content is BaseEdit partEditor && part.Label is string partLabel)
+								section.Fields.Add(new AxisField($"Location {partLabel}", row.ToolTip, IsConfig(row) || IsConfig(part), partEditor));
+						}
+						if (index + 1 < children.Count && children[index + 1] is TextBlock next
+							&& BindingOperations.GetBinding(next, TextBlock.TextProperty)?.Path?.Path is string path
+							&& path.IndexOf("LocationCautions[", StringComparison.Ordinal) is var at and >= 0)
+						{
+							var start = at + "LocationCautions[".Length;
+							section.Cautions.Add(path[start..path.IndexOf(']', start)]);
+						}
+					}
+				}
+				else if (child is LayoutControlBase arrangement)
+					CollectAxisFields(arrangement, names, pageTitle, groups, sections); // a group without a heading only arranges what is in it
+			}
+		}
+		private static IEnumerable<T> Descendants<T>(LayoutControlBase layout) where T : class
+		{
+			foreach (var child in layout.GetLogicalChildren(false))
+			{
+				if (child is T match)
+					yield return match;
+				if (child is LayoutControlBase inner)
+				{
+					foreach (var deeper in Descendants<T>(inner))
+						yield return deeper;
+				}
+				else if (child is LayoutItem { Content: LayoutControlBase content })
+				{
+					foreach (var deeper in Descendants<T>(content))
+						yield return deeper;
+				}
+			}
+		}
+		/// <summary>
+		/// A new editor for the setting an editor on these pages edits, with the same limits and look. A setting that is locked on
+		/// these pages while an assay runs is locked in the copy too. Null for a kind of editor that is not copied.
+		/// </summary>
+		private FrameworkElement? CopyEditor(BaseEdit source, Style? lockedStyle, bool isAssayRunning)
+		{
+			if (BindingOperations.GetBinding(source, BaseEdit.EditValueProperty)?.Path?.Path is not string setting)
+				return null;
+			BaseEdit copy;
+			if (source is SpinEdit spin)
+				copy = new SpinEdit { IsFloatValue = spin.IsFloatValue, Increment = spin.Increment, MinValue = spin.MinValue, MaxValue = spin.MaxValue, EditValueType = spin.EditValueType, Mask = spin.Mask };
+			else if (source is ComboBoxEdit combo)
+				copy = new ComboBoxEdit { ItemsSource = combo.ItemsSource, ValueMember = combo.ValueMember, DisplayMember = combo.DisplayMember, IsTextEditable = combo.IsTextEditable, MinWidth = 160 };
+			else
+				return null;
+			copy.Style = source.Style ?? TryFindResource(source.GetType()) as Style;
+			copy.HorizontalAlignment = HorizontalAlignment.Left;
+			copy.SetBinding(BaseEdit.EditValueProperty, new Binding(setting) { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+			if (isAssayRunning && lockedStyle is not null && ReferenceEquals(source.Style, lockedStyle))
+			{
+				copy.IsEnabled = false;
+				ToolTipService.SetShowOnDisabled(copy, true);
+				copy.ToolTip = "This setting is in use by the device control while an assay is running, so it cannot be changed until the assay is finished or canceled.";
+			}
+			return copy;
+		}
+		#endregion
+
 		#region Notes
 		/// <summary>
 		/// A sentence or two saying what the settings of a page (tab item) or group control; set in the XAML and shown under the page
