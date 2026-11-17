@@ -1,27 +1,20 @@
 # Effani hardware
 
-What is known about the hardware the Effani program drives, and where each fact came from. Written 17 November 2026.
-
-Each fact is marked by how sure it is:
-
-- **Confirmed**: read from a manufacturer's page, or stated by the people building the machine.
-- **From the program**: what the code, its default settings or a generated board config say. This is what the software
-  assumes, not a measurement of the machine, and a machine's saved settings can differ from the defaults.
-- **Inferred**: worked out from other facts; not checked against the hardware.
-- **Unknown**: not recorded anywhere I have seen.
+What is known about the hardware the Effani program drives. Links to the manufacturers' and firmware pages are at the end.
 
 ## Controller electronics
 
-| Item | What is known | Status |
-|---|---|---|
-| Main controller (board 0) | Duet 3 Mini 5+, WiFi version, running RepRapFirmware 3.x. It has five motor drivers (0 to 4). | From the program; the WiFi version from the setup guide used |
-| Second board (board 1) | A board on the CAN bus at address 1. The program treats it as having the same connectors as a Mini 5+ (five drivers, `io` ports, `temp` inputs, `out6`/laser). Its model is not recorded. | From the program; model unknown |
-| Firmware | RepRapFirmware 3.x. WPA2-Enterprise WiFi needs 3.5.1 or later with WiFi module firmware 2.1.0 or later. The exact version on the boards is not recorded. | From the program and Duet's documents |
-| Connection to the PC | USB serial. The board is found by sending `M115` to each COM port; a Duet identifies itself by USB vendor ID `1D50`. The link is put in raw mode with `M575 P0 S2`. | From the program |
-| COM port | COM6 on the development PC when the board was last connected to it (13 and 14 November 2026). The same PC also has a "USB Serial Device (COM3)" that is not the board. | From the app log |
-| WiFi | The board's WiFi module, turned on in config.g only when a WiFi SSID is set. | From the program |
+| Item | What is known |
+|---|---|
+| Main controller (board 0) | Duet 3 Mini 5+, WiFi version. It has five motor drivers (0 to 4). |
+| Second board (board 1) | A board on the CAN bus at address 1. The program treats it as having the same connectors as a Mini 5+ (five drivers, `io` ports, `temp` inputs, `out6`/laser). Its model is not known. |
+| Firmware | RepRapFirmware 3.7.0. The version on board 1 is not known. |
+| WiFi module firmware | Not known. WPA2-Enterprise WiFi needs RepRapFirmware 3.5.1 or later, which 3.7.0 satisfies, together with WiFi module firmware 2.1.0 or later. |
+| Connection to the PC | USB serial. The board is found by sending `M115` to each COM port; a Duet identifies itself by USB vendor ID `1D50`. The link is put in raw mode with `M575 P0 S2`. |
+| COM port | COM6 on the development PC when the board was last connected to it. The same PC also has a "USB Serial Device (COM3)" that is not the board. |
+| WiFi | The board's WiFi module, turned on in config.g only when a WiFi SSID is set. |
 
-Things about the firmware that shaped the program:
+Firmware behaviour the program depends on (not yet checked against 3.7.0):
 
 - Commands sent over USB are only read when the previous one has finished. An emergency stop (`M112`) sent over USB
   therefore waits behind a running move or homing; it is only acted on at once from the network or the PanelDue port.
@@ -32,12 +25,11 @@ Things about the firmware that shaped the program:
 
 ## Axes
 
-Seven axes. The values are the program's defaults and the board config generated on 14 November 2026; microstepping is
-x16 with interpolation on every axis.
+Seven axes. Microstepping is x16 with interpolation on every axis.
 
 | Axis | Letter | Driver | Endstop input | Endstop end | Travel (mm) | Steps/mm | Current (mA) | Driver mode | Max speed (mm/min) |
 |---|---|---|---|---|---|---|---|---|---|
-| Table X | X | 1.0 | 1.io0.in | Low | 360 (364 in the 14 Nov config) | 1066.67 | 400 | StealthChop | 900 |
+| Table X | X | 1.0 | 1.io0.in | Low | 360 by default; 364 in the last generated board config | 1066.67 | 400 | StealthChop | 900 |
 | Table Y | Y | 1.2 | 1.io1.in | High | 555 | 1066.67 | 400 | StealthChop | 900 |
 | Aspirate (needle) | Z | 0.0 | io0.in | High | 90 | 1259.84 | 500 | SpreadCycle | 500 |
 | DNA Reagent pump | V | 0.4 | io4.in | High | 117 | 1259.84 | 1500 | SpreadCycle | 2000 |
@@ -45,67 +37,169 @@ x16 with interpolation on every axis.
 | NADH pump | A | 0.1 | io1.in | High | 117 | 1259.84 | 1500 | SpreadCycle | 2000 |
 | Basal pump | B | 0.3 | io3.in | High | 117 | 1259.84 | 1500 | SpreadCycle | 2000 |
 
-Status: from the program.
-
-Other motion defaults: acceleration 500 mm/s² on every axis; move speeds Table X 700 and Table Y 600 mm/min; homing at
+Other motion settings: acceleration 500 mm/s² on every axis; move speeds Table X 700 and Table Y 600 mm/min; homing at
 600 then 300 mm/min for the table; fluid is dispensed at 5 mm/min of syringe travel.
 
 ### Table lead screws (X and Y)
 
-| Item | Value | Status |
-|---|---|---|
-| Part | McMaster-Carr 7549K75, precision lead screw | Confirmed (named by the builder, 17 Nov 2026) |
-| Thread | M12 × 3 mm, metric trapezoidal, DIN 103, class 8e, right hand | Confirmed (McMaster page) |
-| Thread starts | 1 | Confirmed |
-| Travel per turn (lead) | 3 mm | Confirmed |
-| Accuracy of travel | ±0.15 mm per 300 mm | Confirmed |
-| Length, material | 1000 mm, 1018 low-carbon steel | Confirmed |
+| Item | Value |
+|---|---|
+| Part | McMaster-Carr 7549K75, precision lead screw |
+| Thread | M12 × 3 mm, metric trapezoidal, DIN 103, class 8e, right hand |
+| Thread starts | 1 |
+| Travel per turn (lead) | 3 mm |
+| Accuracy of travel | ±0.15 mm per 300 mm |
+| Length, material | 1000 mm, 1018 low-carbon steel |
 
 The table's 1066.67 steps/mm is 3200 ÷ 3: a 200-step motor at 16 microsteps turning this screw directly. So the setting
 matches the screw.
 
-### Pump and needle screws
+### Table motors (X and Y)
 
-The 1259.84 steps/mm of the pumps and the needle is 3200 ÷ 2.54, which implies a screw of 0.1 inch (2.54 mm) per turn
-on a 200-step motor at 16 microsteps. Status: inferred from the number; the parts are unknown.
+| Item | Value |
+|---|---|
+| Part | StepperOnline 17HS13-0404S1, NEMA 17 bipolar stepper |
+| Step angle | 1.8° (200 full steps per turn) |
+| Holding torque | 26 N·cm (36.82 oz·in) |
+| Rated current | 0.4 A per phase |
+| Phase resistance | 30 Ω |
+| Inductance | 37 mH ±20% (at 1 kHz) |
+| Size | 42 × 42 mm frame, 34 mm body, 5 mm D-cut shaft, 4 leads |
+| Wiring | A+ black, A− green, B+ red, B− blue |
 
-Syringe travel per microlitre, from the program: 0.00153 mm for DNA reagent and basal media, 0.00897 mm for KOH and
-NADH, 0.013 mm for the aspiration needle. The syringe sizes are unknown.
+What follows from that:
 
-### Motors
+- **Steps per mm.** 200 steps per turn at 16 microsteps on the 3 mm screw is 1066.67 steps/mm, which is the setting,
+  provided the motor turns the screw directly. The motor's step angle is therefore not the cause of short moves.
+- **Current.** The setting of 400 mA is the motor's rated current. `M906` sets the peak current; a peak equal to the
+  rated current gives about 71% of the holding torque while moving, and Duet recommends no more than the rated current
+  (up to 1.41 times it only with the standstill current reduced). So there is little room to raise it.
+- **Speed.** Duet advises against motors with a rated voltage above 4 V or an inductance above 4 mH. This one is 12 V
+  (0.4 A × 30 Ω) and 37 mH. By Duet's formula, revs per second = (2 × supply voltage) ÷ (steps per turn × π ×
+  inductance × current), its torque starts to fall at about 2.6 turns per second on a 12 V supply and 5.2 on 24 V. On the
+  3 mm screw that is about 465 mm/min at 12 V and 930 mm/min at 24 V. The formula leaves out the motor's resistance and
+  its back emf from turning, both large for this motor, so the real figures are lower. The table's move speeds are 700
+  (X) and 600 (Y) mm/min and its maximum 900, so the table is run at or beyond the speed where this motor loses torque.
 
-Unknown: the motor models, their step angle (1.8° or 0.9°), and whether anything (a belt or gears) sits between a motor
-and its screw.
+Not known: whether anything (a belt or gears) sits between a motor and its screw, and the supply voltage.
+
+### Fluid pump actuators (DNA reagent, KOH, NADH and basal media)
+
+Each of the four fluid pumps is a linear actuator: a stepper motor, its lead screw and a guide rail slide in one unit,
+with a sensor for the zero position.
+
+| Item | Value |
+|---|---|
+| Part | StepperOnline LMD14S13GF15-120, NEMA 14 stepper lead screw linear actuator |
+| Step angle | 1.8° (200 full steps per turn) |
+| Screw | Trapezoidal lead screw, 6.35 mm diameter, 179 mm long |
+| Travel per turn (lead) | 2.54 mm (0.1 in); 0.0127 mm per full step |
+| Stroke | 120 mm at most |
+| Speed | 38.1 mm/s at most (2286 mm/min) |
+| Thrust, load | 135 N maximum thrust; 300 N rated load |
+| Position accuracy | ±0.02 mm |
+| Rated current | 1.5 A per phase |
+| Phase resistance, inductance | 0.95 Ω ±10%; 1.0 mH ±20% |
+| Holding torque | 0.14 N·m (19.83 oz·in) |
+| Motor wiring | A+ red, A− red/white, B+ green, B− green/white |
+| Zero-position sensor | Photoelectric, NPN output; +5 to 24 V brown, ground blue, signal black |
+| Motor size, weight | 35 × 35 × 34 mm; 0.812 kg |
+
+How the program's settings sit against it:
+
+- **Steps per mm.** 200 steps per turn at 16 microsteps on a 2.54 mm lead is 1259.84 steps/mm, which is the setting.
+- **Travel.** The setting of 117 mm is inside the 120 mm stroke.
+- **Speed.** The maximum and move speeds of 2000 mm/min are under the actuator's 2286 mm/min.
+- **Current.** The setting of 1500 mA is the rated current, the most Duet recommends for the peak current `M906` sets.
+- **Motor.** At 1.0 mH and 1.4 V (1.5 A × 0.95 Ω) it is well inside Duet's advice of under 4 mH and 4 V, unlike the
+  table motors.
+- **Endstop.** The pumps home to the high end of their travel on inputs io1 to io4; whether those inputs are these
+  built-in sensors is not known.
+
+Syringe travel per microlitre is set to 0.00153 mm for DNA reagent and basal media and 0.00897 mm for KOH and NADH. One
+microlitre is one cubic millimetre, so those figures imply syringe bores of about 28.8 mm and 11.9 mm, which are the
+sizes of roughly a 50 to 60 ml and a 5 ml syringe. The syringes fitted are not known.
+
+### Aspiration needle actuator
+
+| Item | Value |
+|---|---|
+| Part | StepperOnline LMD8S11GD05-090, NEMA 8 stepper lead screw linear actuator |
+| Other numbers on record for it | LUD2S1160865420, LADES11G005490 |
+| Step angle | 1.8° (200 full steps per turn) |
+| Screw | Trapezoidal lead screw, 4.76 mm diameter, 124 mm long |
+| Travel per turn (lead) | 2.54 mm (0.1 in); 0.0127 mm per full step |
+| Stroke | 90 mm at most |
+| Speed | 38.1 mm/s at most (2286 mm/min) |
+| Rated load | 60 N |
+| Position accuracy | ±0.02 mm |
+| Rated current | 0.5 A per phase |
+| Phase resistance, inductance | 5.0 Ω ±10%; 1.5 mH ±20% |
+| Holding torque | 0.01 N·m (1.416 oz·in) |
+| Motor wiring | A+ red, A− red/white, B+ green, B− green/white |
+| Zero-position sensor | Photoelectric, NPN output; +5 to 24 V brown, ground blue, signal black |
+| Motor size, weight | 20 × 20 × 28.2 mm; 0.2 kg |
+
+The program's settings against it: 1259.84 steps/mm is 200 steps at 16 microsteps on a 2.54 mm lead; the travel of
+90 mm is the whole stroke; the current of 500 mA is the rated current; the maximum and move speeds of 500 mm/min are
+well under the actuator's 2286. The program moves the needle 0.013 mm per microlitre aspirated.
 
 ## Switched outputs
 
-| Output | Firmware port | Pin (14 Nov config) | Program default | Status |
-|---|---|---|---|---|
-| Tray UV light | P0 | out4 | board 0, out4 | From the program |
-| Chamber UV light | P1 | out5 | board 0, out5 | From the program |
-| NADH laser | P2 | 1.out6 (the laser pin of board 1) | board 1, io3.out | From the program |
-| DNA laser | P3 | out6 (the laser pin of board 0) | board 1, io2.out | From the program |
+| Output | Firmware port | Pin in the last generated board config | Default setting |
+|---|---|---|---|
+| Tray UV light | P0 | out4 | board 0, out4 |
+| Chamber UV light | P1 | out5 | board 0, out5 |
+| NADH laser | P2 | 1.out6 (the laser pin of board 1) | board 1, io3.out |
+| DNA laser | P3 | out6 (the laser pin of board 0) | board 1, io2.out |
 
 They are switched with `M42 P{n} S1` and `S0`, and their state is read with `M409 K"state.gpOut[].pwm"`. On a Mini 5+
 the laser pin is the same pin as out6.
 
-The settings fields for the lasers are named "532" for NADH and "488" for DNA, which suggests a 532 nm and a 488 nm
-laser. Status: inferred from the names; the laser parts are unknown.
+### Lasers
+
+| Laser | Part |
+|---|---|
+| NADH (532 nm) | Lasever LSR532NL-50-FC |
+| DNA (488 nm) | Lasever LSR488NL-50-FC |
+
+Lasever Inc. is Ningbo Yuanming Laser Technology Co., Ltd. In the part numbers, "-50" is taken to be 50 mW and "-FC" a
+fibre-coupled output.
+
+The LSR532NL series:
+
+| Item | Value |
+|---|---|
+| Wavelength, mode | 532 nm, TEM00 |
+| Operation | Continuous or modulated; modulation 0 to 30 kHz, analog or TTL |
+| Temperature control | TEC |
+| Warm-up time | Under 1 minute |
+| Power stability | Within ±5% over 4 hours |
+| Life | 10,000 hours |
+| Beam | Under 2 mm diameter, under 1 mrad divergence |
+| Laser head | 100 × 40 × 50 mm (a fan adds 15 mm) |
+| Power supply | LSR-PS-I, 100 × 58 × 32 mm |
+
+**The 488 nm laser** is taken to follow the LSR532NL figures above in everything but its wavelength. No data sheet for
+the LSR488NL has been found.
+
+**How the lasers are switched.** Each Duet laser output drives the TTL modulation input of that laser's supply. The
+supply, and so the laser, stays powered and warm; the output only gates the beam, which switches at once (the
+modulation input works up to 30 kHz). The warm-up time therefore applies when the machine is powered up, not each time
+the program switches a laser on, and the 6 seconds the program waits before a reading is ample.
 
 ## Sensors
 
-| Sensor | Firmware sensor | Input | Read as | Range | Status |
-|---|---|---|---|---|---|
-| DNA sensor | S0 | 1.temp0 (a thermistor input of board 1) | linear analog | 0 to 4095 | From the program |
-| NADH sensor | S1 | 1.temp1 | linear analog | 0 to 4095 | From the program |
+| Sensor | Firmware sensor | Input | Read as | Range |
+|---|---|---|---|---|
+| DNA sensor | S0 | 1.temp0 (a thermistor input of board 1) | linear analog | 0 to 4095 |
+| NADH sensor | S1 | 1.temp1 | linear analog | 0 to 4095 |
 
 Defined with `M308 S{n} P"{pin}" Y"linear-analog" ... B0 C4095` and read with
 `M409 K"sensors.analog[{n}].lastReading"`. A reading is taken 6 seconds after the laser is switched on. The sensor
-parts are unknown.
+parts are not known.
 
 ## Sample trays and the table
-
-From the program's defaults; the layout was last revised on 17 November 2026 from positions given by the builder.
 
 - Tray: 8 wells across by 12 up, wells 9 mm apart each way, 6.67 mm wide and 12 mm deep (the layout of a 96-well plate).
 - Trays on the carrier: 2 across, 1 up, 87.48 mm from one tray to the next across.
@@ -126,48 +220,47 @@ From the program's defaults; the layout was last revised on 17 November 2026 fro
 
 ## Open questions
 
-1. **Short table moves.** On 17 November 2026, Align Next Well was reported to move the table only about 60% of the way
-   to the next well. The program commands exactly one well offset (9 mm) and the screw matches the steps/mm setting, so
-   the candidates are: a 0.9° motor (the table would move exactly half), a reduction between motor and screw, missed
-   steps at 400 mA in StealthChop, or a tray whose wells are not 9 mm apart. A commanded 100 mm move, measured, tells
-   them apart. Not resolved.
+1. **Short table moves.** Align Next Well moves the table only about 60% of the way to the next well. The program
+   commands exactly one well offset (9 mm), and the screw (3 mm per turn) and the motor (1.8°) both match the steps/mm
+   setting. The leading candidate is missed steps: the table motors are run at or beyond the speed where they lose
+   torque (see Table motors), in StealthChop. The others are a reduction between motor and screw, or a tray whose wells
+   are not 9 mm apart. Tests: repeat the move with the table's Move Speed lowered (to 300 mm/min, say); and command a
+   100 mm move and measure it.
 2. The model of board 1.
-3. The motor models and whether they drive the screws directly.
-4. The pump and needle screw parts, and the syringe sizes.
-5. The laser, sensor and UV lamp parts.
-6. The firmware version on the boards.
+3. Whether the table motors drive the screws directly, and the supply voltage (VIN).
+4. The syringes fitted to the pumps, and whether the pumps' endstop inputs are the actuators' built-in sensors.
+5. The data sheets of the lasers as fitted (50 mW, fibre-coupled), the 488 nm one above all. The sensor and UV lamp
+   parts.
+6. The firmware version of board 1 and of the WiFi module.
 
-## Sources
+## Links
 
-Manufacturer and firmware documents:
+Parts:
 
-- McMaster-Carr, lead screw 7549K75: https://www.mcmaster.com/product/7549K75 — the table screw's thread and travel per
-  turn. Read 17 November 2026.
-- Duet3D G-code dictionary: https://docs.duet3d.com/User_manual/Reference/Gcodes — the meaning of every command the
-  program sends (`M42`, `M112`, `M308`, `M409`, `M552`, `M574`, `M575`, `M581`, `M587`, `M950` and the rest).
-  The same text as a file: https://raw.githubusercontent.com/Duet3D/Duet3D-Documentation/main/en/User_manual/Reference/Gcodes.md
+- McMaster-Carr lead screw 7549K75: https://www.mcmaster.com/product/7549K75
+- StepperOnline stepper motor 17HS13-0404S1: https://www.omc-stepperonline.com/nema-17-bipolar-1-8deg-26ncm-36-8oz-in-0-4a-12v-42x42x34mm-4-wires-17hs13-0404s1
+- StepperOnline linear actuator LMD14S13GF15-120: https://www.omc-stepperonline.com/nema-14-stepper-lead-screw-linear-actuator-1-5a-stroke-120mm-0-14nm-19-83oz-in-lead-2-54mm-0-1-with-sensor-lmd14s13gf15-120
+- StepperOnline linear actuator LMD8S11GD05-090: https://www.omc-stepperonline.com/nema-8-stepper-lead-screw-linear-actuator-0-5a-stroke-90mm-0-01nm-1-416oz-in-lead-2-54mm-0-1-with-sensor-lmd8s11gd05-090
+- Lasever LSR532NL series: https://www.lasever.com/productinfo/1253441.html
+- GoPhotonics, Lasever LSR532NL: https://www.gophotonics.com/products/lasers/lasever-inc-/29-746-lsr532nl
+
+Controller and firmware:
+
 - Duet 3 Mini 5+ hardware overview: https://docs.duet3d.com/Duet3D_hardware/Duet_3_family/Duet_3_Mini_5+_Hardware_Overview
 - Connecting a Duet 3 Mini 5+ WiFi: https://docs.duet3d.com/en/User_manual/Connecting_your_Duet/Duet_WiFi_Mini5plus
-- RepRapFirmware source, branch 3.5-dev, for how commands from USB are read and when an emergency stop is acted on:
-  - https://raw.githubusercontent.com/Duet3D/RepRapFirmware/3.5-dev/src/GCodes/GCodes.cpp
-  - https://raw.githubusercontent.com/Duet3D/RepRapFirmware/3.5-dev/src/GCodes/GCodeInput.cpp
-  - https://raw.githubusercontent.com/Duet3D/RepRapFirmware/3.5-dev/src/GCodes/GCodeInput.h
+- Duet3D, Choosing stepper motors: https://docs.duet3d.com/User_manual/Connecting_hardware/Motors_choosing
+- Duet3D G-code dictionary: https://docs.duet3d.com/User_manual/Reference/Gcodes
+- Duet3D G-code dictionary as a file: https://raw.githubusercontent.com/Duet3D/Duet3D-Documentation/main/en/User_manual/Reference/Gcodes.md
+- RepRapFirmware source, GCodes.cpp: https://raw.githubusercontent.com/Duet3D/RepRapFirmware/3.5-dev/src/GCodes/GCodes.cpp
+- RepRapFirmware source, GCodeInput.cpp: https://raw.githubusercontent.com/Duet3D/RepRapFirmware/3.5-dev/src/GCodes/GCodeInput.cpp
+- RepRapFirmware source, GCodeInput.h: https://raw.githubusercontent.com/Duet3D/RepRapFirmware/3.5-dev/src/GCodes/GCodeInput.h
 - RepRapFirmware 3.x changelog: https://github.com/Duet3D/RepRapFirmware/wiki/Changelog-RRF-3.x
 - WiFi module firmware upgrade notes: https://raw.githubusercontent.com/Duet3D/RepRapFirmware/3.5-dev/WiFi%20module%20firmware%20upgrade.md
 
-Duet3D forum threads consulted in earlier work (listed by their titles; I have not re-read them for this file):
+Duet3D forum threads:
 
 - Laser control on a Mini 5+: https://forum.duet3d.com/topic/25062/duet-mini-5-and-co2-50w-laser-guidance
 - `G0` speed: https://forum.duet3d.com/topic/29506/g0-speed-not-as-expected
 - Mini 5+ WiFi connection: https://forum.duet3d.com/topic/23335/unable-to-connect-duet-3-mini-wifi-to-wifi/3
 - Output pin behaviour at power loss: https://forum.duet3d.com/topic/36058/duet3-mini5-fan-pin-behavior-at-power-lost
 - Reading an analog sensor: https://forum.duet3d.com/topic/15693/adding-current-sensor-and-readout-to-dwc/13
-
-In this repository and on the development PC:
-
-- `Drivetrain.Robotics.Control/Settings.cs`: the default of every setting, including the board connections.
-- `Drivetrain.Robotics.Control/Configuration/DeviceConfiguration.cs`: how config.g and the homing files are generated.
-- `Drivetrain.Robotics.Control/Configuration/BoardPort.cs`: how connectors are named.
-- `Drivetrain.Robotics.Control/DeviceControl.cs`: how the program talks to the board.
-- `%LOCALAPPDATA%\Effani\sys\config.g`: the board config generated on 14 November 2026.
-- `%LOCALAPPDATA%\Effani\Log.txt`: the program's log, which shows when a board was connected and on which port.

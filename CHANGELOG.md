@@ -11,10 +11,16 @@ To release a version, say 4.1.2:
 1. Put a heading `## 4.1.2 - 2026-11-17` (the version, then the date) under "Unreleased" and above its entries, so that
    Unreleased is left empty.
 2. Commit, and tag that commit `v4.1.2`.
-3. Push the branch and the tag to GitHub: `git push github develop v4.1.2`.
-
-GitHub then publishes a Release called "Effani 4.1.2" with that section as its notes (`.github/workflows/release.yml`). If
-the tagged version has no section here, no release is made and the run fails saying so.
+3. Push the branch and the tag to GitHub: `git push github develop v4.1.2`. GitHub then drafts a Release called
+   "Effani 4.1.2" with that section as its notes (`.github/workflows/release.yml`). If the tagged version has no section
+   here, no release is drafted and the run fails saying so.
+4. Build `Setup\Effani Installer.aip`, which makes `Effani-Installer-4.1.2.exe`. Then build `Setup\EffaniUpdates.aip`
+   with an entry for 4.1.2 whose URL is
+   `https://github.com/DriveTrain-Systems/EffaniDevice/releases/download/v4.1.2/Effani-Installer-4.1.2.exe`.
+   It writes the update list to `Setup\EffaniUpdates-SetupFiles\EffaniUpdates.txt`.
+5. On GitHub, open the draft release, attach `Effani-Installer-4.1.2.exe` and the update list named `EffaniUpdates.txt`,
+   and publish it. Installed copies look for updates in the latest published release, so they see the new version from
+   that moment.
 
 ## Unreleased
 
@@ -56,6 +62,8 @@ the tagged version has no section here, no release is made and the run fails say
 - Tools: the software version, Check for Updates and what the check reported are in the row of the tabs.
 - Settings: every spin, text and password field takes effect on each typed character and each spin-button click, not when
   the field is left.
+- Settings: every field that takes a decimal number accepts up to five decimal places as it is typed (they took any
+  number before). NADH emission volume is a whole number of microlitres, like the other volumes.
 - Settings: the "Fluid Emission" heading is **Fluid Handling**, and Fluid Handling Locations is a sub-heading of Component
   Locations.
 - Aligning a well uses the well positions from the settings as they are when the button is pressed, so edits to First Well
@@ -68,7 +76,14 @@ the tagged version has no section here, no release is made and the run fails say
   reagent 240,257, KOH 149,261, basal media 240,186; aspiration needle 195,109. The default Biopsy Location is worked out
   from the pump defaults (halfway between the leftmost and rightmost pump, 20 mm below the lowest: 194.5,164). The default
   WiFi SSID and WiFi password are empty. Saved settings keep their own values.
-- Installer: product version 4.1.2.
+- Program and installer are both version 4.1.3 (the program was 4.0.4).
+- Installer: installed copies look for updates in the latest GitHub Release (its `EffaniUpdates.txt`) and download the
+  installer from the release, instead of from Dropbox. The installer file is named `Effani-Installer-4.1.3.exe`, without
+  spaces, so that its name is the same once uploaded, and the updates project writes the update list as
+  `EffaniUpdates.txt` in `Setup\EffaniUpdates-SetupFiles`, no longer into the Dropbox folder. Copies already installed keep looking in Dropbox until they are updated to a version built with
+  this change.
+- Repository: the release workflow drafts the GitHub Release instead of publishing it, so the installer and the update
+  list can be attached before devices see it.
 
 - Tools, Component Control: the ±1, ±10 and ±100 mm buttons in each axis's Commands... list are replaced by **Move...**,
   which asks how far to move the axis and which way. The distance is typed as a positive number and the direction chosen

@@ -50,6 +50,8 @@
             <Setter Property="ItemSpace" Value="10"/>
             <Setter Property="IsCollapsible" Value="True"/>
         </Style>
+        <!-- what can be typed into a field that takes a decimal number: any whole part, and up to five decimal places -->
+        <sys:String x:Key="DecimalMask">#,###,###,##0.#####</sys:String>
         <!-- spin arrows wide enough to hit with a finger -->
         <Style TargetType="dxe:SpinButton"><Setter Property="MinWidth" Value="40"/></Style>
         <Style TargetType="dxe:SpinEdit" >
@@ -247,7 +249,7 @@
                     <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                         <dxlc:LayoutGroup View="GroupBox" Header="Emission Volumes (μl)" local:SettingsControl.Note="The volume of each fluid dispensed into a sample well during an assay." ToolTip="Fluid volume dispensed to a sample well" Orientation="Vertical" >
                             <dxlc:LayoutItem Label="NADH">
-                                <dxe:SpinEdit EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding NadhVolume, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding NadhVolume, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="DNA Reagent">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaVolume, UpdateSourceTrigger=PropertyChanged}" />
@@ -288,41 +290,41 @@
                                     <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryBasalFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Reprime Pump Interval (min)">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="600" EditValue="{Binding ReprimePumpInterval, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="600" EditValue="{Binding ReprimePumpInterval, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Syringe Travel (mm/μl)" local:SettingsControl.Note="How far each pump's syringe moves to dispense one microlitre. Every volume is turned into actuator travel with this, so it sets the accuracy of each dispense." Orientation="Vertical">
                             <dxlc:LayoutItem Label="NADH" ToolTip="">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding NadhTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding NadhTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="DNA Reagent" ToolTip="">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding DnaTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding DnaTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="KOH" ToolTip="">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding KohTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding KohTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Basal Media" ToolTip="">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding BasalTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding BasalTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Syringe Loading Positions (mm from 0)" local:SettingsControl.Note="The position each pump's actuator moves to so that its syringe can be loaded, in mm from the actuator's zero position." Orientation="Vertical">
                             <dxlc:LayoutItem Label="NADH" ToolTip="">
-                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="DNA Reagent" ToolTip="">
-                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding DnaSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding DnaSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="KOH" ToolTip="">
-                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding KohSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding KohSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Basal Media" ToolTip="">
-                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding BasalSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding BasalSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Emission Speed" local:SettingsControl.Note="How fast a syringe moves while it dispenses or primes, and how long the device waits after dispensing before it moves on." Orientation="Vertical">
                             <dxlc:LayoutItem Label="Fluid Syringe Speed (mm/min)" ToolTip="Speed at which a fluid syringe moves while emitting or priming, in mm/min (sent as the F of each emission move; 5 mm/min is about 0.08 mm/s). The board holds it to the pump's Max Speed.">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.5" MinValue="0.1" MaxValue="2000" EditValue="{Binding FluidSyringeSpeed, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="0.5" MinValue="0.1" MaxValue="2000" EditValue="{Binding FluidSyringeSpeed, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Fluid Emission Pause (ms)" ToolTip="Milliseconds to wait before moving after dispensing fluid">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding FluidEmissionDwell, UpdateSourceTrigger=PropertyChanged}" />
@@ -330,16 +332,16 @@
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Aspiration" local:SettingsControl.Note="How the aspiration needle removes fluid from a well: where the needle starts, how far it is from the tray, how far it travels for each microlitre removed, and how fast it moves into position." Orientation="Vertical">
                             <dxlc:LayoutItem Label="Aspirate Needle Start Position" ToolTip="The starting position (mm) of a the KOH aspiration needle">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateActuatorStartPosition, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateActuatorStartPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Aspirate Distrance to Tray" ToolTip="The distance (mm) between the tip of the KOH aspiration needle and the top of the sample tray">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateDistanceToPlate, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateDistanceToPlate, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Aspirate Travel Per Microliter" ToolTip="The distance (mm) the aspiration needle travels in order to remove 1μl">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Aspirate Positioning Speed (mm/min)" ToolTip="Speed (mm/min) at which the aspiration needle moves to the sample tray before aspirating">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspiratePositioningSpeed, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspiratePositioningSpeed, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                     </dxlc:FlowLayoutControl>
@@ -352,10 +354,10 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="DNA" ToolTip="Platform coordinates (mm x mm) of the location at which DNA readings are taken">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaSensorLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaSensorLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaSensorLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaSensorLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -363,10 +365,10 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH readings are taken">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhSensorLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhSensorLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhSensorLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhSensorLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -376,10 +378,10 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH is emitted">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -387,10 +389,10 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="DNA Reagent" ToolTip="Platform coordinates (mm x mm) of the location at which DNA Reagent is emitted">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -398,10 +400,10 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="KOH" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is emitted">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -409,10 +411,10 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="Basal Media" ToolTip="Platform coordinates (mm x mm) of the location at which Basal Media is emitted">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -420,10 +422,10 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="Aspiration" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is aspirated">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -433,30 +435,30 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="First Well Location" ToolTip="Platform coordinates (mm x mm) of the location of the lower left corner of the first sample well">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding FirstWellLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding FirstWellLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding FirstWellLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding FirstWellLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Tray Loading Location" ToolTip="Platform coordinates (mm x mm) of the location at which sample trays are loaded">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TrayLoadingLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TrayLoadingLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TrayLoadingLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TrayLoadingLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Biopsy Location" ToolTip="Platform coordinates (mm x mm) of the location a well is brought to so that its biopsy sample can be loaded into it">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BiopsyLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BiopsyLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BiopsyLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BiopsyLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -464,10 +466,10 @@
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Sizes" local:SettingsControl.Note="The size of the wells, how many wells a tray has, how many trays are on the table, and the spacing between wells and between trays. With the first well location these give the position of every well." Orientation="Vertical">
                         <dxlc:LayoutItem Label="Well Width" ToolTip="Width (mm) of a sample well">
-                            <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellWidth, UpdateSourceTrigger=PropertyChanged}" />
+                            <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellWidth, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Well Depth" ToolTip="Depth (mm) of a sample well">
-                            <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellDepth, UpdateSourceTrigger=PropertyChanged}" />
+                            <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellDepth, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Vertical Well Count" ToolTip="Count of sample wells in a tray in the vertical direction">
                             <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValueType="{x:Type sys:Int32}" EditValue="{Binding VerticalWellCount, UpdateSourceTrigger=PropertyChanged}" />
@@ -484,20 +486,20 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="Tray Offset (mm)" ToolTip="Distance from the first well of a tray to the first well of the next tray: X between trays side by side, Y between rows of trays">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Well Offset (mm)" ToolTip="Distance between sample wells">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -709,7 +711,7 @@
                 <dxlc:LayoutControl Orientation="Horizontal">
                         <dxlc:LayoutGroup View="GroupBox" Header="Aspirate Actuator" local:SettingsControl.Note="The motor that lowers and raises the aspiration needle: its steps per mm, travel, current, speeds, acceleration, direction and which end its endstop is at." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of needle travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the needle actuator in mm. The axis keeps its home coordinate, so this sets how far below it the lower limit (M208) is. The LMD8S11GD05-090 has a 90 mm stroke.">
                                 <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateTravelLength, UpdateSourceTrigger=PropertyChanged}" />
@@ -743,7 +745,7 @@
                             <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                                 <dxlc:LayoutGroup View="GroupBox" Header="Table X" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table X travel. Written to config.g with M92.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
+                                        <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Length of Table X travel in mm (upper limit of M208). Homing distance is based on this.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXTravelLength, UpdateSourceTrigger=PropertyChanged}" />
@@ -781,7 +783,7 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="Table Y" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table Y travel. Written to config.g with M92.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
+                                        <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Length of Table Y travel in mm (upper limit of M208). Homing distance is based on this.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYTravelLength, UpdateSourceTrigger=PropertyChanged}" />
@@ -823,7 +825,7 @@
                             <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                                 <dxlc:LayoutGroup View="GroupBox" Header="DNA Reagent" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of DNA Reagent pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
+                                        <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the DNA Reagent pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentTravelLength, UpdateSourceTrigger=PropertyChanged}" />
@@ -855,7 +857,7 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="KOH" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of KOH pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
+                                        <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the KOH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohTravelLength, UpdateSourceTrigger=PropertyChanged}" />
@@ -887,7 +889,7 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="NADH" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of NADH pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
+                                        <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the NADH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhTravelLength, UpdateSourceTrigger=PropertyChanged}" />
@@ -919,7 +921,7 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="Basal" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Basal pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
+                                        <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the Basal pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
                                         <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalTravelLength, UpdateSourceTrigger=PropertyChanged}" />
@@ -995,10 +997,10 @@
                         <dxlc:LayoutItem LabelPosition="Top" Label="Tray Sterilization Location" ToolTip="Platform coordinates (mm x mm) of the location at which sample trays are sterilized">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TraySterilizationLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TraySterilizationLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TraySterilizationLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TraySterilizationLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>

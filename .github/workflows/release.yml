@@ -1,12 +1,20 @@
-# Publishes a GitHub Release when a version tag is pushed, with that version's section of CHANGELOG.md as the release notes.
+# Drafts a GitHub Release when a version tag is pushed, with that version's section of CHANGELOG.md as the release notes.
+#
+# Installed copies of the program look for updates in the latest published release: they read its EffaniUpdates.txt and
+# download the installer that file names. Both are built on a PC with Advanced Installer, not here, so the release is
+# made as a draft: it becomes the latest release, and devices start to see it, only when it is published with both
+# files attached.
 #
 # To release version 4.1.2:
 #   1. In CHANGELOG.md, move the entries under "Unreleased" to a new heading:  ## 4.1.2 - 2026-11-17
 #   2. Commit, then tag that commit:  git tag v4.1.2
 #   3. Push the branch and the tag to GitHub:  git push github develop v4.1.2
+#   4. Build "Setup\Effani Installer.aip" (Effani-Installer-4.1.2.exe), then "Setup\EffaniUpdates.aip" with an entry for
+#      4.1.2 whose URL is  https://github.com/DriveTrain-Systems/EffaniDevice/releases/download/v4.1.2/Effani-Installer-4.1.2.exe
+#   5. On GitHub, open the draft release, attach Effani-Installer-4.1.2.exe and the update list named EffaniUpdates.txt,
+#      and publish it.
 #
-# The run fails, and no release is made, if CHANGELOG.md has no section for the tagged version.
-# The installer is not built here: add it to the release by hand if it should be downloadable from GitHub.
+# The run fails, and no release is drafted, if CHANGELOG.md has no section for the tagged version.
 name: Release from change log
 
 on:
@@ -45,12 +53,12 @@ jobs:
           fi
           cat release-notes.md
 
-      - name: Create the release, or update its notes if it already exists
+      - name: Draft the release, or update its notes if it already exists
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
             gh release edit "$GITHUB_REF_NAME" --title "Effani $VERSION" --notes-file release-notes.md
           else
-            gh release create "$GITHUB_REF_NAME" --verify-tag --title "Effani $VERSION" --notes-file release-notes.md
+            gh release create "$GITHUB_REF_NAME" --verify-tag --draft --title "Effani $VERSION" --notes-file release-notes.md
           fi

@@ -60,7 +60,17 @@
     <ROW Section="4.0.4" Key="RegistryKey" Value="HKLM\SOFTWARE\WOW6432Node\DriveTrain Systems\Effani" ValueLocId="-"/>
     <ROW Section="4.0.4" Key="Version" Value="4.0.4.0" ValueLocId="-"/>
     <ROW Section="4.0.4" Key="AutoCloseApplication" Value="[APPDIR]Effani Device.exe" ValueLocId="-"/>
-    <ATTRIBUTE name="OutputFileName" value="EffaniUpdates Pre-release.txt"/>
-    <ATTRIBUTE name="OutputFolder" value="C:\Users\rdwhe\Dropbox\Effani\Device Software Updates"/>
+    <ROW Section="4.1.3" Key="Name" Value="Effani"/>
+    <ROW Section="4.1.3" Key="ProductVersion" Value="4.1.3.0" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="URL" Value="https://github.com/DriveTrain-Systems/EffaniDevice/releases/download/v4.1.3/Effani-Installer-4.1.3.exe" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="Size" Value="C:\Users\rdwhe\Dropbox\Effani\Device Software Updates\Effani-Installer-4.1.3.exe" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="SHA256" Value="C:\Users\rdwhe\Dropbox\Effani\Device Software Updates\Effani-Installer-4.1.3.exe" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="MD5" Value="C:\Users\rdwhe\Dropbox\Effani\Device Software Updates\Effani-Installer-4.1.3.exe" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="ServerFileName" Value="Effani-Installer-4.1.3.exe" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="Flags" Value="Critical" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="RegistryKey" Value="HKLM\SOFTWARE\WOW6432Node\DriveTrain Systems\Effani" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="Version" Value="4.1.3.0" ValueLocId="-"/>
+    <ROW Section="4.1.3" Key="AutoCloseApplication" Value="[APPDIR]Effani Device.exe" ValueLocId="-"/>
+    <ATTRIBUTE name="OutputFileName" value="EffaniUpdates.txt"/>
   </COMPONENT>
 </DOCUMENT>
