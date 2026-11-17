@@ -46,4 +46,18 @@ namespace Effani.Device.UI
 			throw new NotSupportedException();
 		}
 	}
+	/// <summary>
+	/// Shows something only once the axes it belongs to are homed, or (<see cref="WhenHomed"/> false) only until then. The values
+	/// and the parameter are those of <see cref="AxisHomedConverter"/>.
+	/// </summary>
+	public class AxisHomedVisibilityConverter : IMultiValueConverter
+	{
+		public bool WhenHomed { get; set; } = true;
+		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) =>
+			AxisHomedConverter.AreHomed(values, parameter) == WhenHomed ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+		{
+			throw new NotSupportedException();
+		}
+	}
 }

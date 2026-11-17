@@ -30,13 +30,6 @@ namespace Effani.Device.UI
 			this.Width = (System.Windows.SystemParameters.PrimaryScreenWidth * 0.90);
 		}
 		private void Close_Click(object sender, System.Windows.RoutedEventArgs e) => Close();
-		/// <summary>Hides the commands panel beside the tabs, or brings it back; the arrow on the button points the way the panel will go.</summary>
-		private void CommandsToggle_Click(object sender, RoutedEventArgs e)
-		{
-			var show = CommandsPanel.Visibility != Visibility.Visible;
-			CommandsPanel.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-			CommandsToggleArrow.Text = show ? "»" : "«";
-		}
 
 		#region Axis position slider
 		// The slider of an axis shows where the axis is. A drag of its handle moves the axis to where the handle is let go; a tap
@@ -44,7 +37,7 @@ namespace Effani.Device.UI
 		// told from a drag, nothing moves until the handle is let go, and a finger's drag is not taken by the list's touch scrolling.
 
 		/// <summary>How far (in the slider's own units) the pointer may wander and still count as a tap.</summary>
-		private const double TapDistance = 5;
+		private const double TapDistance = 9;
 		private Slider? _activeSlider;
 		private double _sliderDownX;
 		private bool _sliderDragged;
@@ -157,7 +150,8 @@ namespace Effani.Device.UI
 		/// </summary>
 		private static decimal PositionAt(Slider slider, double x)
 		{
-			const double handle = 12; // the handle's width: its centre cannot reach the very ends of the slider
+			// the handle's width: its centre cannot reach the very ends of the slider
+			var handle = (slider.Template?.FindName("PART_Track", slider) as Track)?.Thumb?.ActualWidth ?? 12;
 			var usable = Math.Max(1, slider.ActualWidth - handle);
 			var fraction = Math.Clamp((x - (handle / 2)) / usable, 0, 1);
 			var range = slider.Maximum - slider.Minimum;

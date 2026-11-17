@@ -74,9 +74,26 @@ namespace Effani.Device.UI
 			_processEngine.MessageReceived -= ProcessEngine_MessageReceived;
 			_processEngine.BeginExecutingCommand -= ProcessEngine_BeginExecutingCommand;
 			_processEngine.EndExecutingCommand -= ProcessEngine_EndExecutingCommand;
-			_processEngine.Dispose();
+			// Closing: nothing more is started and everything queued is dropped. The command being executed is left to finish (it
+			// may be about to switch a lamp or laser off), but the board is no longer waited for longer than the general board
+			// timeout. The port is closed once that command has finished, on a thread of its own so the window does not wait for
+			// it; the program ends when that thread does. (The port used to be closed under the running command, which then waited
+			// out its whole timeout, after which the engine went on to run the rest of the queue with the window gone.)
+			var engine = _processEngine;
+			var device = _device;
+			engine.Dispose();
+			device.BeginClosing();
+			new System.Threading.Thread(() =>
+			{
+				try { engine.WaitForStop(); }
+				catch (Exception ex) { Log.Warning(ex, "Error waiting for the last command while closing"); }
+				finally
+				{
+					try { device.Dispose(); }
+					catch (Exception ex) { Log.Warning(ex, "Error closing the controller board's port while closing"); }
+				}
+			}) { Name = "Effani closing" }.Start();
 			_processEngine = null;
-			_device.Dispose();
 			_device = null;
 		}
 		/// <summary>

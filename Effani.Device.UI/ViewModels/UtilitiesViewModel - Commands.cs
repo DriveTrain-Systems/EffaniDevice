@@ -38,6 +38,7 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task AlignToFirstWell(object parameter)
 		{
+			RefreshWells();
 			var plate = _config.DeviceSpecification.Plates.First();
 			var well = plate.Wells.First();
 			CurrentWell = well;
@@ -49,6 +50,7 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task AlignToLastWell(object parameter)
 		{
+			RefreshWells();
 			// the last well of the tray the current well is on, so every tray can be reached: Align Next Well steps from here onto the next tray
 			var plates = _config.DeviceSpecification.Plates;
 			var plate = plates.FirstOrDefault(p => p == CurrentWell?.Plate) ?? plates.First();
@@ -58,6 +60,49 @@ namespace Effani.Device.UI
 				_processEngine.QueueCommand(new AlignWellToAxis(axisSpec.Axis, well, _device));
 			else if (parameter is SensorSpec sensorSpec)
 				_processEngine.QueueCommand(new AlignWellToLocation(sensorSpec.Location, well, _device));
+		}
+		/// <summary>
+		/// Works the wells out again from the settings as they are now, before an Align uses them: First Well Location, the well and
+		/// tray offsets and the counts may have been edited on the Settings tab since Tools was opened, and the axis and sensor
+		/// locations an Align also uses are always the current ones. The current well stays the same well of the same tray.
+		/// </summary>
+		private void RefreshWells()
+		{
+			if (IsAssayRunning)
+				return; // the assay holds these wells, and the settings cannot be edited while it runs
+			var current = _currentWell;
+			var tray = current is null ? -1 : _config.DeviceSpecification.Plates.IndexOf(current.Plate);
+			_config.RefreshPlates();
+			if (current is null)
+				return;
+			var plates = _config.DeviceSpecification.Plates;
+			// null (the tray or well no longer exists) makes the first well the current one again
+			CurrentWell = tray >= 0 && tray < plates.Count ? plates[tray].Wells.FirstOrDefault(w => w.X == current.X && w.Y == current.Y) : null;
+		}
+		/// <summary>
+		/// The active settings were replaced by others (a version was activated or saved as new, or the settings were reset): has
+		/// the device and this window work from them. The configuration is rebuilt on the process engine thread, between commands,
+		/// so no command is using it at that moment; until then moves go on using the settings Tools was opened with.
+		/// </summary>
+		private void UseActiveSettings()
+		{
+			if (IsAssayRunning)
+				return;
+			_processEngine.QueueCommand(new NotifyComplete(_ =>
+			{
+				_device.ResetConfiguration();
+				Application.Current?.Dispatcher.BeginInvoke(() =>
+				{
+					// the axis and sensor boxes show and act on the rebuilt configuration
+					Axes.Clear();
+					foreach (var axis in _device.Configuration.DeviceSpecification.Axes)
+						Axes.Add(axis);
+					Sensors.Clear();
+					foreach (var sensor in _device.Configuration.DeviceSpecification.Sensors)
+						Sensors.Add(sensor);
+					CurrentWell = null;
+				});
+			}, "Use the settings now active.", _device));
 		}
 		/// <summary>Reports the outcome of sending the generated files to the controller board; runs on the process engine thread.</summary>
 		private void SendConfigFilesComplete(string? error)
@@ -109,35 +154,47 @@ namespace Effani.Device.UI
 				ConsoleMessages.Insert(0, $"{now} Releasing the COM port failed: {ex.Message}");
 			}
 		}
+		/// <summary>
+		/// Generates config.g and the homing files from the settings as they are now and, unless an assay is running, queues
+		/// sending them to the controller board (which is then rebooted). Returns where the files were written (the error message
+		/// when they could not be generated), whether they were generated and whether sending was queued.
+		/// </summary>
+		private (string Location, bool Generated, bool Sent) GenerateAndSendConfig()
+		{
+			// The active settings object is replaced when a settings version is activated or reset, so point the configuration at the current one.
+			_config.Settings = _settingsService.Settings;
+			_pendingConfigSignature = DeviceConfiguration.GetConfigSignature(_settingsService.Settings);
+			var fileLocation = _config.GenerateConfigFiles(SettingsService.DataFolder);
+			if (!System.IO.File.Exists(fileLocation))
+				return (fileLocation, false, false);
+			if (IsAssayRunning)
+				return (fileLocation, true, false);
+			_processEngine.QueueCommand(new SendConfigFiles(_config.GeneratedFiles, SendConfigFilesComplete, _device));
+			_configGeneratedSinceOpened = true;
+			return (fileLocation, true, true);
+		}
 		[Command]
 		public async Task GenerateConfigFiles()
 		{
 			try
 			{
-				// The active settings object is replaced when a settings version is activated or reset, so point the configuration at the current one.
-				_config.Settings = _settingsService.Settings;
-					_pendingConfigSignature = DeviceConfiguration.GetConfigSignature(_settingsService.Settings);
-				var fileLocation = _config
-					.GenerateConfigFiles(SettingsService.DataFolder);
+				var (fileLocation, generated, sent) = GenerateAndSendConfig();
 				string messageBoxText = $"Config generated at {fileLocation}";
 				var warnings = _config.GetConnectionWarnings();
 				if (warnings.Count > 0)
 					messageBoxText += $"\n\nWARNING - check these settings in Electronic Settings:\n- {string.Join("\n- ", warnings)}";
 				string caption = "Generate Config";
 
-				if (!System.IO.File.Exists(fileLocation))
+				if (!generated)
 				{
 					// generation failed: fileLocation holds the error message
 					DXMessageBox.Show(messageBoxText, caption);
 					return;
 				}
-				if (IsAssayRunning)
-						messageBoxText += "\n\nThe generated files were NOT sent to the controller board because an assay is running.";
-					else
-					{
-						_processEngine.QueueCommand(new SendConfigFiles(_config.GeneratedFiles, SendConfigFilesComplete, _device));
-						messageBoxText += "\n\nSending the generated files to the controller board, which will then be rebooted. The result will appear in the console messages.";
-					}
+				if (!sent)
+					messageBoxText += "\n\nThe generated files were NOT sent to the controller board because an assay is running.";
+				else
+					messageBoxText += "\n\nSending the generated files to the controller board, which will then be rebooted. The result will appear in the console messages.";
 					var openFolder = new UICommand { Id = "open", Caption = "Open Folder", IsDefault = true };
 				var close = new UICommand { Id = "close", Caption = "Close", IsCancel = true };
 				var dialog = new DXDialogWindow(caption, new[] { openFolder, close })
@@ -275,6 +332,7 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task AlignToNextWell(object parameter)
 		{
+			RefreshWells();
 			// across all trays: the well after the last one of a tray is the first one of the next tray
 			var wells = _config.DeviceSpecification.Plates.SelectMany(p => p.Wells).ToList();
 			var nextIndex = wells.IndexOf(CurrentWell) + 1; // the first well when the current well is not on the trays as they are now configured

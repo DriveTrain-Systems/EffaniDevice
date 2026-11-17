@@ -71,6 +71,26 @@
             <Setter Property="MinHeight" Value="48"/>
             <Setter Property="FontSize" Value="17"/>
         </Style>
+        <!-- the caution under a component location to which not every well of every tray can be brought (UtilitiesViewModel.LocationCautions);
+             it takes no room while there is nothing to say -->
+        <Style x:Key="LocationCaution" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="#9A4B00"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MaxWidth" Value="312"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Trigger>
+                <Trigger Property="Text" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <!-- settings the device control reads while running: locked, with an explanation, while an assay is running -->
         <Style x:Key="DeviceControlSetting" TargetType="dxe:SpinEdit" BasedOn="{StaticResource {x:Type dxe:SpinEdit}}">
             <Style.Triggers>
@@ -145,7 +165,7 @@
             <dxwui:WinUIDialogService.ViewTemplate>
                 <DataTemplate>
                     <dxlc:LayoutItem Label="How would you like to describe these settings?" LabelPosition="Top">
-                        <dxe:TextEdit NullText="Settings Description" EditValue="{Binding NewSettingsDescription}"/>
+                        <dxe:TextEdit NullText="Settings Description" EditValue="{Binding NewSettingsDescription, UpdateSourceTrigger=PropertyChanged}"/>
                     </dxlc:LayoutItem>
                 </DataTemplate>
             </dxwui:WinUIDialogService.ViewTemplate>
@@ -191,6 +211,14 @@
                     </dx:SimpleButton.Content>
                 </dx:SimpleButton>
                 <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Reset.svg" CornerRadius="5" Width="52" Padding="4" Background="AliceBlue" Height="52" ToolTip="Reset settings to their default values." Command="{Binding ResetActiveSettingsCommand}"/>
+                <!-- puts every setting back as it was when Tools was opened and closes Tools; it asks first (UtilitiesViewModel.UndoSettingsChanges) -->
+                <dx:SimpleButton Margin="5,0,0,0" CornerRadius="5" Width="52" Padding="4" Background="AliceBlue" Height="52" Click="UndoSettings_Click"
+                                 IsEnabled="{Binding HasSettingsChanges}" ToolTipService.ShowOnDisabled="True"
+                                 ToolTip="{DXBinding 'HasSettingsChanges ? `Undo every settings change made since Tools was opened, then close Tools. You are asked to confirm first.` : `Nothing to undo: no setting has been changed since Tools was opened.`'}">
+                    <dx:SimpleButton.Content>
+                        <Image Source="{dx:DXImage 'SvgImages/Dashboards/Undo.svg'}" />
+                    </dx:SimpleButton.Content>
+                </dx:SimpleButton>
                 <dx:SimpleButton Style="{StaticResource GenerateConfigButton}" Margin="30,0,0,0" CornerRadius="5" Padding="20,0,20,0" Height="52" FontSize="17" Command="{Binding GenerateConfigFilesCommand}"/>
                 <!--<dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Upload.svg" CornerRadius="5" Width="52" Padding="4" Background="AliceBlue" Height="52" ToolTip="Upload these settings to the cloud" Command="{Binding UploadSettingsCommand}"/>
                 <dx:SimpleButton Margin="5,0,0,0" Glyph="../resources/Download.svg" CornerRadius="5" Width="52" Padding="4" Background="AliceBlue" Height="52" ToolTip="Download these settings from the cloud" Command="{Binding DownloadSettingsCommand}"/>-->
@@ -213,248 +241,263 @@
             <dx:DXTabControl.View>
                 <dx:TabControlMultiLineView HeaderLocation="None" />
             </dx:DXTabControl.View>
-            <dx:DXTabItem Header="Fluid Emission" local:SettingsControl.Note="How much of each fluid the pumps dispense, how the pumps are primed, how far a syringe moves per microlitre, and how the aspiration needle removes fluid from a well.">
+            <dx:DXTabItem Header="Fluid Handling" local:SettingsControl.Note="How much of each fluid the pumps dispense, how the pumps are primed, how far a syringe moves per microlitre, and how the aspiration needle removes fluid from a well.">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup>
                     <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                         <dxlc:LayoutGroup View="GroupBox" Header="Emission Volumes (μl)" local:SettingsControl.Note="The volume of each fluid dispensed into a sample well during an assay." ToolTip="Fluid volume dispensed to a sample well" Orientation="Vertical" >
                             <dxlc:LayoutItem Label="NADH">
-                                <dxe:SpinEdit EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding NadhVolume}" />
+                                <dxe:SpinEdit EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="60000" EditValue="{Binding NadhVolume, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="DNA Reagent">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaVolume}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaVolume, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="KOH">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding KohVolume}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding KohVolume, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Basal Media">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding BasalVolume}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding BasalVolume, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Priming Volumes (μl)" local:SettingsControl.Note="The volume each pump pushes out to fill its line before it dispenses into wells: once when the fluids are loaded (initial priming), and again whenever a pump has stood idle for too long (secondary priming)." Orientation="Horizontal">
                             <dxlc:LayoutGroup View="GroupBox" Header="Initial Priming" local:SettingsControl.Note="The volume each pump dispenses to fill its line when the fluids are loaded at the start of an assay." ToolTip="Volume dispensed during first pump priming" Orientation="Vertical" GroupBoxStyle="{StaticResource tertiaryGroupBox}">
                                 <dxlc:LayoutItem Label="NADH">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialNadhFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialNadhFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="DNA Reagent">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialDnaFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialDnaFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="KOH">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialKohFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialKohFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Basal Media">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialBasalFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding InitialBasalFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Secondary Priming" local:SettingsControl.Note="The volume a pump dispenses at the waste location to refresh its line when it has not been used for longer than the Reprime Pump Interval." ToolTip="Volume dispensed during second pump priming" Orientation="Vertical" GroupBoxStyle="{StaticResource tertiaryGroupBox}">
                                 <dxlc:LayoutItem Label="NADH">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryNadhFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryNadhFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="DNA Reagent">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryDnaFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryDnaFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="KOH">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryKohFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryKohFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Basal Media">
-                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryBasalFluidPrimingVolume}" />
+                                    <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SecondaryBasalFluidPrimingVolume, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Reprime Pump Interval (min)">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="600" EditValue="{Binding ReprimePumpInterval}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="600" EditValue="{Binding ReprimePumpInterval, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Syringe Travel (mm/μl)" local:SettingsControl.Note="How far each pump's syringe moves to dispense one microlitre. Every volume is turned into actuator travel with this, so it sets the accuracy of each dispense." Orientation="Vertical">
                             <dxlc:LayoutItem Label="NADH" ToolTip="">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding NadhTravelPerMicroLiter}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding NadhTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="DNA Reagent" ToolTip="">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding DnaTravelPerMicroLiter}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding DnaTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="KOH" ToolTip="">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding KohTravelPerMicroLiter}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding KohTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Basal Media" ToolTip="">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding BasalTravelPerMicroLiter}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.00001" MinValue="0.00001" MaxValue="0.1" EditValue="{Binding BasalTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Syringe Loading Positions (mm from 0)" local:SettingsControl.Note="The position each pump's actuator moves to so that its syringe can be loaded, in mm from the actuator's zero position." Orientation="Vertical">
                             <dxlc:LayoutItem Label="NADH" ToolTip="">
-                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSyringeLoadingPosition}" />
+                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding NadhSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="DNA Reagent" ToolTip="">
-                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding DnaSyringeLoadingPosition}" />
+                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding DnaSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="KOH" ToolTip="">
-                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding KohSyringeLoadingPosition}" />
+                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding KohSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Basal Media" ToolTip="">
-                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding BasalSyringeLoadingPosition}" />
+                                <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="10000" EditValue="{Binding BasalSyringeLoadingPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Emission Speed" local:SettingsControl.Note="How fast a syringe moves while it dispenses or primes, and how long the device waits after dispensing before it moves on." Orientation="Vertical">
                             <dxlc:LayoutItem Label="Fluid Syringe Speed (mm/min)" ToolTip="Speed at which a fluid syringe moves while emitting or priming, in mm/min (sent as the F of each emission move; 5 mm/min is about 0.08 mm/s). The board holds it to the pump's Max Speed.">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.5" MinValue="0.1" MaxValue="2000" EditValue="{Binding FluidSyringeSpeed}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="0.5" MinValue="0.1" MaxValue="2000" EditValue="{Binding FluidSyringeSpeed, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Fluid Emission Pause (ms)" ToolTip="Milliseconds to wait before moving after dispensing fluid">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding FluidEmissionDwell}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding FluidEmissionDwell, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Aspiration" local:SettingsControl.Note="How the aspiration needle removes fluid from a well: where the needle starts, how far it is from the tray, how far it travels for each microlitre removed, and how fast it moves into position." Orientation="Vertical">
                             <dxlc:LayoutItem Label="Aspirate Needle Start Position" ToolTip="The starting position (mm) of a the KOH aspiration needle">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateActuatorStartPosition}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateActuatorStartPosition, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Aspirate Distrance to Tray" ToolTip="The distance (mm) between the tip of the KOH aspiration needle and the top of the sample tray">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateDistanceToPlate}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateDistanceToPlate, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Aspirate Travel Per Microliter" ToolTip="The distance (mm) the aspiration needle travels in order to remove 1μl">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateTravelPerMicroLiter}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100" EditValue="{Binding AspirateTravelPerMicroLiter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Aspirate Positioning Speed (mm/min)" ToolTip="Speed (mm/min) at which the aspiration needle moves to the sample tray before aspirating">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspiratePositioningSpeed}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspiratePositioningSpeed, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                     </dxlc:FlowLayoutControl>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
             </dx:DXTabItem>
-            <dx:DXTabItem Header="Component Locations" local:SettingsControl.Note="Where the sensors and the sample trays are on the table, and the size and spacing of the trays and their wells. The table uses these to bring each well to a sensor or a fluid port.">
+            <dx:DXTabItem Header="Component Locations" local:SettingsControl.Note="Where the sensors, the fluid ports, the aspiration needle and the sample trays are on the table, and the size and spacing of the trays and their wells. The table uses these to bring each well to a sensor or a fluid port.">
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Sensor Locations" local:SettingsControl.Note="The table coordinates of the DNA and NADH sensors. A well is moved to one of these when its reading is taken." Orientation="Vertical">
                         <dxlc:LayoutItem LabelPosition="Top" Label="DNA" ToolTip="Platform coordinates (mm x mm) of the location at which DNA readings are taken">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaSensorLocationX}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaSensorLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaSensorLocationY}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaSensorLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
+                        <TextBlock Style="{StaticResource LocationCaution}" Text="{Binding DataContext.LocationCautions[DnaSensorLocation], RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
                         <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH readings are taken">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhSensorLocationX}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhSensorLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhSensorLocationY}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhSensorLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>                    </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup View="GroupBox" Header="Tray Carrier Locations" local:SettingsControl.Note="Where the first well of the first tray is on the table, and where the table moves to so that trays can be loaded. The position of every other well is worked out from the first well." Orientation="Vertical">
+                        </dxlc:LayoutItem>
+                        <TextBlock Style="{StaticResource LocationCaution}" Text="{Binding DataContext.LocationCautions[NadhSensorLocation], RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
+                    </dxlc:LayoutGroup>
+                    <dxlc:LayoutGroup View="GroupBox" Header="Fluid Handling Locations" local:SettingsControl.Note="The table coordinates of each fluid port and of the aspiration needle. A well is moved to one of these when that fluid is dispensed into it or removed from it." Orientation="Vertical">
+                        <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH is emitted">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <TextBlock Style="{StaticResource LocationCaution}" Text="{Binding DataContext.LocationCautions[NadhLocation], RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
+                        <dxlc:LayoutItem LabelPosition="Top" Label="DNA Reagent" ToolTip="Platform coordinates (mm x mm) of the location at which DNA Reagent is emitted">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <TextBlock Style="{StaticResource LocationCaution}" Text="{Binding DataContext.LocationCautions[DnaLocation], RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
+                        <dxlc:LayoutItem LabelPosition="Top" Label="KOH" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is emitted">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <TextBlock Style="{StaticResource LocationCaution}" Text="{Binding DataContext.LocationCautions[KohLocation], RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
+                        <dxlc:LayoutItem LabelPosition="Top" Label="Basal Media" ToolTip="Platform coordinates (mm x mm) of the location at which Basal Media is emitted">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <TextBlock Style="{StaticResource LocationCaution}" Text="{Binding DataContext.LocationCautions[BasalLocation], RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
+                        <dxlc:LayoutItem LabelPosition="Top" Label="Aspiration" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is aspirated">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <TextBlock Style="{StaticResource LocationCaution}" Text="{Binding DataContext.LocationCautions[AspirateLocation], RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
+                    </dxlc:LayoutGroup>
+                    <dxlc:LayoutGroup View="GroupBox" Header="Tray Carrier Locations" local:SettingsControl.Note="Where the first well of the first tray is on the table, where the table moves to so that trays can be loaded, and where a well is brought to so that its biopsy sample can be loaded. The position of every other well is worked out from the first well." Orientation="Vertical">
                         <dxlc:LayoutItem LabelPosition="Top" Label="First Well Location" ToolTip="Platform coordinates (mm x mm) of the location of the lower left corner of the first sample well">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding FirstWellLocationX}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding FirstWellLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding FirstWellLocationY}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding FirstWellLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Tray Loading Location" ToolTip="Platform coordinates (mm x mm) of the location at which sample trays are loaded">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TrayLoadingLocationX}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TrayLoadingLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TrayLoadingLocationY}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TrayLoadingLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
+                        <dxlc:LayoutItem LabelPosition="Top" Label="Biopsy Location" ToolTip="Platform coordinates (mm x mm) of the location a well is brought to so that its biopsy sample can be loaded into it">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BiopsyLocationX, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BiopsyLocationY, UpdateSourceTrigger=PropertyChanged}" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem>
+                        <TextBlock Style="{StaticResource LocationCaution}" Text="{Binding DataContext.LocationCautions[BiopsyLocation], RelativeSource={RelativeSource AncestorType={x:Type local:SettingsControl}}}" />
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Sizes" local:SettingsControl.Note="The size of the wells, how many wells a tray has, how many trays are on the table, and the spacing between wells and between trays. With the first well location these give the position of every well." Orientation="Vertical">
                         <dxlc:LayoutItem Label="Well Width" ToolTip="Width (mm) of a sample well">
-                            <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellWidth}" />
+                            <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellWidth, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Well Depth" ToolTip="Depth (mm) of a sample well">
-                            <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellDepth}" />
+                            <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0.01" MaxValue="100" EditValue="{Binding WellDepth, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Vertical Well Count" ToolTip="Count of sample wells in a tray in the vertical direction">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValueType="{x:Type sys:Int32}" EditValue="{Binding VerticalWellCount}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValueType="{x:Type sys:Int32}" EditValue="{Binding VerticalWellCount, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Horizontal Well Count" ToolTip="Count of sample wells in a tray in the horizontal direction">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValueType="{x:Type sys:Int32}" EditValue="{Binding HorizontalWellCount}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="100" EditValueType="{x:Type sys:Int32}" EditValue="{Binding HorizontalWellCount, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Horizontal Tray Count" ToolTip="How many sample trays are mounted side by side on the table (along X); each is one Tray Offset X from the one before. Takes effect at the next assay.">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValueType="{x:Type sys:Int32}" EditValue="{Binding HorizontalTrayCount}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValueType="{x:Type sys:Int32}" EditValue="{Binding HorizontalTrayCount, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Vertical Tray Count" ToolTip="How many rows of sample trays are mounted on the table (along Y); each row is one Tray Offset Y from the one before, so set Tray Offset Y when this is more than 1. Takes effect at the next assay.">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValueType="{x:Type sys:Int32}" EditValue="{Binding VerticalTrayCount}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="1" MaxValue="20" EditValueType="{x:Type sys:Int32}" EditValue="{Binding VerticalTrayCount, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Tray Offset (mm)" ToolTip="Distance from the first well of a tray to the first well of the next tray: X between trays side by side, Y between rows of trays">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetX}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetY}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding PlateOffsetY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Well Offset (mm)" ToolTip="Distance between sample wells">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetX}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                    </dxlc:LayoutGroup>
-                </dxlc:LayoutControl>
-            </dx:DXTabItem>
-            <dx:DXTabItem Header="Fluid Handling Locations" local:SettingsControl.Note="The table coordinates of each fluid port and of the aspiration needle. A well is moved to one of these when that fluid is dispensed into it or removed from it.">
-                <dxlc:LayoutControl Orientation="Horizontal">
-                    <dxlc:LayoutGroup View="GroupBox" Header="Fluid Port Locations" Orientation="Vertical">
-                        <dxlc:LayoutItem LabelPosition="Top" Label="NADH" ToolTip="Platform coordinates (mm x mm) of the location at which NADH is emitted">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding NadhLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="DNA Reagent" ToolTip="Platform coordinates (mm x mm) of the location at which DNA Reagent is emitted">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding DnaLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="KOH" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is emitted">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding KohLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="Basal Media" ToolTip="Platform coordinates (mm x mm) of the location at which Basal Media is emitted">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding BasalLocationY}" />
-                                </dxlc:LayoutItem>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem LabelPosition="Top" Label="Aspiration" ToolTip="Platform coordinates (mm x mm) of the location at which KOH is aspirated">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationX}" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding AspirateLocationY}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding WellOffsetY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -466,50 +509,50 @@
                     <dxlc:LayoutControl Orientation="Vertical">
                         <dxlc:LayoutGroup View="GroupBox" Header="Controller Boards" local:SettingsControl.Note="The serial port the main controller board is on, and how many boards and input ports there are. The counts are used to warn about a connection that names a board or port that does not exist." Orientation="Vertical">
                             <dxlc:LayoutItem Label="COM Port Number" ToolTip="Number of the serial (COM) port the main controller board is connected to, e.g. 4 for COM4. See Device Manager under Ports. Not used for now: the board's port is found automatically by sending M115 (firmware version) to each COM port and using the one that answers. The port chosen is shown in the console messages.">
-                                <dxe:SpinEdit IsEnabled="False" IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="256" EditValue="{Binding ComPortNumber}" />
+                                <dxe:SpinEdit IsEnabled="False" IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="256" EditValue="{Binding ComPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Board Count" ToolTip="Number of controller boards installed (board 0 is the main board). Used to warn about connections to boards that do not exist.">
-                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="10" EditValue="{Binding ControllerBoardCount}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="10" EditValue="{Binding ControllerBoardCount, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Input Ports Per Board" ToolTip="Number of IO input ports on each board (io0.in to io{N-1}.in). Used to warn about endstops on ports that do not exist.">
-                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="32" EditValue="{Binding InputPortsPerBoard}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="32" EditValue="{Binding InputPortsPerBoard, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="DNA Sensor" local:SettingsControl.Note="The board and input the DNA sensor is connected to, its index in the board's configuration, and the range of readings it should report." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the DNA sensor is connected">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorBoardNumber}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Temp Input" ToolTip="Temperature input (tempN) to which the DNA sensor is connected">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorPortNumber}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Index" ToolTip="Configuration index of the DNA sensor">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorNumber}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutGroup View="GroupBox" Header="Reading Range" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Upper Limit" ToolTip="Top of the range of values the DNA sensor should report">
-                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorReadHigh}" />
+                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorReadHigh, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Lower Limit" ToolTip="Bottom of the range of values the DNA sensor should report">
-                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorReadLow}" />
+                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorReadLow, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="NADH Sensor" local:SettingsControl.Note="The board and input the NADH sensor is connected to, its index in the board's configuration, and the range of readings it should report." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the NADH sensor is connected">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorBoardNumber}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Temp Input" ToolTip="Temperature input (tempN) to which the NADH sensor is connected">
-                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorPortNumber}" />
+                                <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Index" ToolTip="Configuration index of the NADH sensor">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorNumber}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutGroup View="GroupBox" Header="Reading Range" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Upper Limit" ToolTip="Top of the range of values the NADH sensor should report">
-                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorReadHigh}" />
+                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorReadHigh, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Lower Limit" ToolTip="Bottom of the range of values the NADH sensor should report">
-                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorReadLow}" />
+                                    <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" MinValue="0" MaxValue="10000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorReadLow, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
@@ -519,100 +562,100 @@
                           <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                             <dxlc:LayoutGroup View="GroupBox" Header="Table X" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Table X axis motor driver is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXDriverBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXDriverBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the Table X axis">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXDriverPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXDriverPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the Table X axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXEndstopBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXEndstopBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the Table X axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXEndstopPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableXEndstopPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Table Y" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Table Y axis motor driver is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYDriverBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYDriverBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the Table Y axis">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYDriverPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYDriverPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the Table Y axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYEndstopBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYEndstopBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the Table Y axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYEndstopPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TableYEndstopPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Aspirate" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Aspirate axis motor driver is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateDriverBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateDriverBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the Aspirate axis">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateDriverPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateDriverPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the Aspirate axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateEndstopBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateEndstopBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the Aspirate axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateEndstopPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding AspirateEndstopPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="DNA Reagent" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the DNA Reagent axis motor driver is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentDriverBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentDriverBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the DNA Reagent axis">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentDriverPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentDriverPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the DNA Reagent axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentEndstopBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentEndstopBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the DNA Reagent axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentEndstopPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaReagentEndstopPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="KOH" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the KOH axis motor driver is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohDriverBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohDriverBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the KOH axis">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohDriverPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohDriverPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the KOH axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohEndstopBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohEndstopBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the KOH axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohEndstopPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding KohEndstopPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="NADH" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the NADH axis motor driver is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhDriverBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhDriverBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the NADH axis">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhDriverPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhDriverPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the NADH axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhEndstopBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhEndstopBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the NADH axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhEndstopPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhEndstopPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Basal" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Board" ToolTip="Control board number to which the Basal axis motor driver is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalDriverBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalDriverBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Port" ToolTip="Motor driver port number on the board of the Basal axis">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalDriverPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalDriverPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Board" ToolTip="Control board number to which the Basal axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalEndstopBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalEndstopBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Endstop Port" ToolTip="Input (io) port number at which the Basal axis endstop is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalEndstopPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding BasalEndstopPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                           </dxlc:FlowLayoutControl>
@@ -621,18 +664,18 @@
                           <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                             <dxlc:LayoutGroup View="GroupBox" Header="Tray UV" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the Tray UV output is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TrayUvBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TrayUvBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Output (out) port number at which the Tray UV output is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TrayUvPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding TrayUvPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Chamber UV" Orientation="Vertical">
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the Chamber UV output is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding ChamberUvBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding ChamberUvBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Output (out) port number at which the Chamber UV output is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding ChamberUvPortNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding ChamberUvPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="NADH Laser" Orientation="Vertical">
@@ -640,10 +683,10 @@
                                     <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{StaticResource LaserPortKinds}" EditValue="{Binding NadhLaserPortKind, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the NADH Laser is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Output (out) port number at which the NADH Laser is connected. Not used when the Port Kind is Laser: each board has a single laser output, chosen by the Board Number">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserPortNumber}" IsEnabled="{DXBinding 'NadhLaserPortKind != $control:PortKind.Laser'}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding NadhLaserPortNumber, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{DXBinding 'NadhLaserPortKind != $control:PortKind.Laser'}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="DNA Laser" Orientation="Vertical">
@@ -651,10 +694,10 @@
                                     <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{StaticResource LaserPortKinds}" EditValue="{Binding DnaLaserPortKind, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the DNA Laser is connected">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserBoardNumber}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Output (out) port number at which the DNA Laser is connected. Not used when the Port Kind is Laser: each board has a single laser output, chosen by the Board Number">
-                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserPortNumber}" IsEnabled="{DXBinding 'DnaLaserPortKind != $control:PortKind.Laser'}" />
+                                    <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="10" EditValue="{Binding DnaLaserPortNumber, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{DXBinding 'DnaLaserPortKind != $control:PortKind.Laser'}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                           </dxlc:FlowLayoutControl>
@@ -666,28 +709,28 @@
                 <dxlc:LayoutControl Orientation="Horizontal">
                         <dxlc:LayoutGroup View="GroupBox" Header="Aspirate Actuator" local:SettingsControl.Note="The motor that lowers and raises the aspiration needle: its steps per mm, travel, current, speeds, acceleration, direction and which end its endstop is at." Orientation="Vertical">
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of needle travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateStepsPerMillimeter}" />
+                                <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the needle actuator in mm. The axis keeps its home coordinate, so this sets how far below it the lower limit (M208) is. The LMD8S11GD05-090 has a 90 mm stroke.">
-                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateTravelLength}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateTravelLength, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the aspirate motor in mA (M906). The LMD8S11GD05-090 is rated 0.5 A.">
-                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMotorCurrent}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMotorCurrent, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the aspirate motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                 <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding AspirateDriverMode}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the aspirate axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
-                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMaxSpeed}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMaxSpeed, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the aspirate axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
-                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding AspirateMoveSpeed}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding AspirateMoveSpeed, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the aspirate axis (M201).">
-                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateAcceleration}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateAcceleration, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the aspirate axis (M566).">
-                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMaxInstantaneousSpeedChange}" />
+                                <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding AspirateMaxInstantaneousSpeedChange, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the Aspirate axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                 <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding AspirateDirection}" />
@@ -700,34 +743,34 @@
                             <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                                 <dxlc:LayoutGroup View="GroupBox" Header="Table X" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table X travel. Written to config.g with M92.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXStepsPerMillimeter}" />
+                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Length of Table X travel in mm (upper limit of M208). Homing distance is based on this.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXTravelLength}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXTravelLength, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the Table X motor in mA (M906). The 17HS13-0404S1 motor is rated 0.4 A per phase.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXMotorCurrent}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXMotorCurrent, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the Table X motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding TableXDriverMode}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the Table X axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableXMaxSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableXMaxSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Table X axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableXMoveSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableXMoveSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table X axis (M201).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXAcceleration}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXAcceleration, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Table X axis (M566).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXMaxInstantaneousSpeedChange}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXMaxInstantaneousSpeedChange, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Homing Speed (mm/min)" ToolTip="Speed of the first (coarse) homing pass and of the 5 mm back-off of Table X. If the motor whines but does not move when homing, lower this (and Max Speed Change).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXHomingSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXHomingSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Fine Homing Speed (mm/min)" ToolTip="Speed of the second (slow, accurate) homing pass of Table X.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXFineHomingSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableXFineHomingSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the Table X axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding TableXDirection}" />
@@ -738,34 +781,34 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="Table Y" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Table Y travel. Written to config.g with M92.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYStepsPerMillimeter}" />
+                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Length of Table Y travel in mm (upper limit of M208). Homing distance is based on this.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYTravelLength}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYTravelLength, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the Table Y motor in mA (M906). The 17HS13-0404S1 motor is rated 0.4 A per phase.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYMotorCurrent}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYMotorCurrent, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the Table Y motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding TableYDriverMode}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the Table Y axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableYMaxSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableYMaxSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Table Y axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableYMoveSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding TableYMoveSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Table Y axis (M201).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYAcceleration}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYAcceleration, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Table Y axis (M566).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYMaxInstantaneousSpeedChange}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYMaxInstantaneousSpeedChange, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Homing Speed (mm/min)" ToolTip="Speed of the first (coarse) homing pass and of the 5 mm back-off of Table Y. If the motor whines but does not move when homing, lower this (and Max Speed Change).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYHomingSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYHomingSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Fine Homing Speed (mm/min)" ToolTip="Speed of the second (slow, accurate) homing pass of Table Y.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYFineHomingSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding TableYFineHomingSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the Table Y axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding TableYDirection}" />
@@ -780,28 +823,28 @@
                             <dxlc:FlowLayoutControl Orientation="Horizontal" ItemSpace="10">
                                 <dxlc:LayoutGroup View="GroupBox" Header="DNA Reagent" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of DNA Reagent pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentStepsPerMillimeter}" />
+                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the DNA Reagent pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentTravelLength}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentTravelLength, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the DNA Reagent pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMotorCurrent}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMotorCurrent, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the DNA Reagent pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding DnaReagentDriverMode}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the DNA Reagent pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMaxSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMaxSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the DNA Reagent pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding DnaReagentMoveSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding DnaReagentMoveSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the DNA Reagent pump axis (M201).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentAcceleration}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentAcceleration, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the DNA Reagent pump axis (M566).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMaxInstantaneousSpeedChange}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding DnaReagentMaxInstantaneousSpeedChange, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the DNA Reagent axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding DnaReagentDirection}" />
@@ -812,28 +855,28 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="KOH" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of KOH pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohStepsPerMillimeter}" />
+                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the KOH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohTravelLength}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohTravelLength, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the KOH pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMotorCurrent}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMotorCurrent, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the KOH pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding KohDriverMode}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the KOH pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMaxSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMaxSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the KOH pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding KohMoveSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding KohMoveSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the KOH pump axis (M201).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohAcceleration}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohAcceleration, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the KOH pump axis (M566).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMaxInstantaneousSpeedChange}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding KohMaxInstantaneousSpeedChange, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the KOH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding KohDirection}" />
@@ -844,28 +887,28 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="NADH" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of NADH pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhStepsPerMillimeter}" />
+                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the NADH pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhTravelLength}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhTravelLength, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the NADH pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMotorCurrent}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMotorCurrent, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the NADH pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding NadhDriverMode}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the NADH pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMaxSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMaxSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the NADH pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding NadhMoveSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding NadhMoveSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the NADH pump axis (M201).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhAcceleration}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhAcceleration, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the NADH pump axis (M566).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMaxInstantaneousSpeedChange}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding NadhMaxInstantaneousSpeedChange, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the NADH axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding NadhDirection}" />
@@ -876,28 +919,28 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup View="GroupBox" Header="Basal" Orientation="Vertical">
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Steps per mm" ToolTip="Motor steps (including 16x microstepping) per mm of Basal pump travel. Written to config.g with M92. For a 1.8 degree motor with a 2.54 mm lead screw: 200 x 16 / 2.54 = 1259.84.">
-                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalStepsPerMillimeter}" />
+                                        <dxe:SpinEdit IsFloatValue="True" EditValueType="{x:Type sys:Decimal}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalStepsPerMillimeter, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Travel (mm)" ToolTip="Usable travel of the Basal pump actuator in mm (upper limit of M208). Homing distance is based on this, so keep it below the actuator's stroke.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalTravelLength}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalTravelLength, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Current (mA)" ToolTip="RMS motor current for the Basal pump motor in mA (M906). The LMD14S13GF15-120 actuator is rated 1.5 A per phase; 60-85% of that (900-1275 mA) runs cooler if it gives enough thrust.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMotorCurrent}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMotorCurrent, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Driver Mode" ToolTip="How the Basal pump motor's driver regulates its current (M569 D). StealthChop (D3) is near silent, including while the motor holds still; SpreadCycle (D2) gives full torque at all speeds but can whine or squeal while the motor stands still. Takes effect when the config is generated and sent to the board.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:DriverMode}}" EditValue="{Binding BasalDriverMode}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed (mm/min)" ToolTip="The fastest the Basal pump axis may go (M203 in config.g): the board holds every move to this, and homing too. Generate and send the config after changing it.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMaxSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMaxSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Move Speed (mm/min)" ToolTip="The speed of the Basal pump axis's moves, sent with each move, so a change takes effect without sending the config. It cannot go above the Max Speed: a higher value runs at the Max Speed (Generate Config warns about it). Pumping and aspirating use their own speeds.">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding BasalMoveSpeed}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="100" MinValue="1" MaxValue="100000" EditValue="{Binding BasalMoveSpeed, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Acceleration (mm/s²)" ToolTip="Acceleration of the Basal pump axis (M201).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalAcceleration}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalAcceleration, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Max Speed Change (mm/min)" ToolTip="Maximum instantaneous speed change (jerk) of the Basal pump axis (M566).">
-                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMaxInstantaneousSpeedChange}" />
+                                        <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="0" MaxValue="100000" EditValue="{Binding BasalMaxInstantaneousSpeedChange, UpdateSourceTrigger=PropertyChanged}" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Direction" ToolTip="Direction the Basal axis motor turns for positive movement. Change this if the axis moves the wrong way.">
                                         <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:Direction}}" EditValue="{Binding BasalDirection}" />
@@ -914,31 +957,31 @@
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Assay Timing (ms)" Orientation="Vertical">
                         <dxlc:LayoutItem Label="Basal Media Incubation (ms)" ToolTip="Milliseconds sample stays in Basal media incubation">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding BasalIncubationTimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding BasalIncubationTimerPeriod, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="NADH-Basal Mixing Period (ms)" ToolTip="Milliseconds to wait for NADH to mix with Basal Media">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhReading1TimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhReading1TimerPeriod, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="NADH Readings Interval (ms)" ToolTip="Milliseconds between NADH readings">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhReadingsTimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhReadingsTimerPeriod, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="NADH Timer Period (ms)" ToolTip="Milliseconds sample stays in NADH solution">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhIncubationDwell}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhIncubationDwell, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="KOH Timer Period (ms)" ToolTip="Milliseconds sample stays in KOH solution">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding KohTimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding KohTimerPeriod, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="DNA Reagent Timer Period (ms)" ToolTip="Milliseconds sample stays in DNA reagent">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaTimerPeriod}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaTimerPeriod, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Standards Establishment Period (seconds)" ToolTip="Milliseconds taken for establishing standards">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding StandardsProcessingDwell}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding StandardsProcessingDwell, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Aspiration Dwell (ms)" ToolTip="Milliseconds to wait after lowering the aspiration needle into the sample">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding AspirationDwell}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding AspirationDwell, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Sensor Read Pause (ms)" ToolTip="Milliseconds to wait before taking a DNA or NADH sensor reading">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SensorReadDwell}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding SensorReadDwell, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
@@ -947,15 +990,15 @@
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Sample Tray Sterilization" Orientation="Vertical">
                         <dxlc:LayoutItem Label="Tray Sterilization Time (seconds)" ToolTip="Number of seconds tray will be UV sterilized">
-                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding TraySterilizationTime}" />
+                            <dxe:SpinEdit IsFloatValue="False" Increment="1" MinValue="0" MaxValue="60000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding TraySterilizationTime, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem LabelPosition="Top" Label="Tray Sterilization Location" ToolTip="Platform coordinates (mm x mm) of the location at which sample trays are sterilized">
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem LabelPosition="Left" Label="X">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TraySterilizationLocationX}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TraySterilizationLocationX, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelPosition="Left" Label="Y">
-                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TraySterilizationLocationY}" />
+                                    <dxe:SpinEdit IsFloatValue="True" Increment="1" MinValue="0" MaxValue="1000" EditValue="{Binding TraySterilizationLocationY, UpdateSourceTrigger=PropertyChanged}" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
@@ -966,28 +1009,28 @@
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Command Timeouts (seconds)" Orientation="Vertical">
                         <dxlc:LayoutItem Label="General" ToolTip="How long to wait for the controller board to report that it has finished a command before giving up on it (an error is logged and the next command runs). Used for every command that has no longer timeout below; the longer timeouts are never shorter than this.">
-                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding BoardReadyTimeoutSeconds}" />
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding BoardReadyTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Home One Axis" ToolTip="Homing one axis. The table axes are the slowest: the full 505 mm of travel at the coarse homing speed (600 mm/min is about 50 s), plus the back-off and the fine pass. Lower homing speeds need more time.">
-                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding HomeAxisTimeoutSeconds}" />
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding HomeAxisTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Home All Axes" ToolTip="Homing every axis one after another (G28): both table axes, the aspirate needle and the four pumps. About 135 s at the default homing speeds.">
-                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding HomeAllTimeoutSeconds}" />
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding HomeAllTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Moves" ToolTip="Moving the table or an axis, including aligning wells and moving to starting positions. A full 500 mm table move at 4000 mm/min is about 8 s.">
-                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding MoveTimeoutSeconds}" />
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding MoveTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Fluid Emission" ToolTip="A pump emitting fluid, including priming. The syringe moves slowly (Fluid Syringe Speed, 5 mm/min by default), so priming 1000 μl of DNA reagent or basal media takes about 18 s. The emission dwell is added automatically if it is longer.">
-                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding FluidEmissionTimeoutSeconds}" />
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding FluidEmissionTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Aspirate" ToolTip="The aspiration needle moving down to the plate and back. 90 mm at the 200 mm/min positioning speed is about 27 s. The aspiration dwell is added automatically if it is longer.">
-                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding AspirateTimeoutSeconds}" />
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding AspirateTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Apply Config" ToolTip="Running config.g on the board. It waits 4 s for the expansion boards and then sets up WiFi.">
-                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding ApplyConfigTimeoutSeconds}" />
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding ApplyConfigTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="WiFi" ToolTip="Switching WiFi on or off, or setting the network. Starting the WiFi module can take several seconds.">
-                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding WifiTimeoutSeconds}" />
+                            <dxe:SpinEdit IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400" EditValue="{Binding WifiTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutControl>
@@ -996,27 +1039,27 @@
                 <dxlc:LayoutControl Orientation="Horizontal">
                     <dxlc:LayoutGroup View="GroupBox" Header="Connectivity" local:SettingsControl.Note="The address of the Effani online service and the account used to upload assay results to it." Orientation="Vertical">
                         <dxlc:LayoutItem Label="Effani API URL" ToolTip="Internet location of the Effani API endpoint.">
-                            <dxe:TextEdit MinWidth="300" EditValue="{Binding EffaniApiUrl}" />
+                            <dxe:TextEdit MinWidth="300" EditValue="{Binding EffaniApiUrl, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Effani Username" ToolTip="Username (email address) of your Effani account.">
-                            <dxe:TextEdit MinWidth="300" EditValue="{Binding EffaniUsername}" />
+                            <dxe:TextEdit MinWidth="300" EditValue="{Binding EffaniUsername, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Effani Password" ToolTip="Password of your Effani account.">
-                            <dxe:PasswordBoxEdit ShowPasswordButtonVisibility="Auto" MinWidth="300" EditValue="{Binding EffaniPassword}"  />
+                            <dxe:PasswordBoxEdit ShowPasswordButtonVisibility="Auto" MinWidth="300" EditValue="{Binding EffaniPassword, UpdateSourceTrigger=PropertyChanged}"  />
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup View="GroupBox" Header="Controller WiFi" local:SettingsControl.Note="The WiFi network the controller board connects to: its name, how it signs in, and the username and password. Send WiFi Settings sends them to the board." Orientation="Vertical">
-                        <dxlc:LayoutItem Label="WiFi SSID" ToolTip="Name of the WiFi network the controller board is configured with (M587).">
-                            <dxe:TextEdit MinWidth="300" EditValue="{Binding WifiSsid}" />
+                        <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="WiFi SSID" ToolTip="Name of the WiFi network the controller board is configured with (M587). While this is empty, the board's config turns its WiFi off (M552 S0); with a name here it turns it on.">
+                            <dxe:TextEdit MinWidth="300" EditValue="{Binding WifiSsid, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Authentication" ToolTip="Password only (WPA2-PSK), or WPA2-Enterprise with a username and password (EAP-PEAP-MSCHAPv2 or EAP-TTLS-MSCHAPv2). Enterprise is experimental and needs RRF 3.5.1 or later with WiFi module firmware 2.1.0 or later (M587 X).">
                             <dxe:ComboBoxEdit MinWidth="300" MaxWidth="300" IsTextEditable="False" ItemsSource="{dxe:EnumItemsSource EnumType={x:Type control:WifiAuthentication}}" EditValue="{Binding WifiAuthentication}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="WiFi Username" ToolTip="Username for WPA2-Enterprise networks (M587 U). Not used with password-only authentication.">
-                            <dxe:TextEdit MinWidth="300" EditValue="{Binding WifiUsername}" />
+                            <dxe:TextEdit MinWidth="300" EditValue="{Binding WifiUsername, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="WiFi Password" ToolTip="Password of the WiFi network the controller board is configured with (M587). Stored as plain text.">
-                            <dxe:PasswordBoxEdit ShowPasswordButtonVisibility="Auto" MinWidth="300" EditValue="{Binding WifiPassword}" />
+                            <dxe:PasswordBoxEdit ShowPasswordButtonVisibility="Auto" MinWidth="300" EditValue="{Binding WifiPassword, UpdateSourceTrigger=PropertyChanged}" />
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem>
                             <StackPanel Orientation="Horizontal">

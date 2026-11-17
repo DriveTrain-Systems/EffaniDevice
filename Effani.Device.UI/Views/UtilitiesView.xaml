@@ -39,6 +39,45 @@
 			<local:AxisPositionValueConverter x:Key="AxisPositionValueConverter"/>
 			<local:AxisHomedConverter x:Key="AxisHomedConverter"/>
 			<local:AxisHomedBrushConverter x:Key="AxisHomedBrushConverter"/>
+			<local:AxisHomedVisibilityConverter x:Key="AxisHomedVisible" />
+			<local:AxisHomedVisibilityConverter x:Key="AxisNotHomedVisible" WhenHomed="False" />
+			<!-- the position slider of an axis, with a handle big enough for a finger. The pointer is handled in the code-behind
+			     (AxisSlider_...), not by the handle, so the template is only what is seen. -->
+			<Style x:Key="AxisSlider" TargetType="Slider">
+				<Setter Property="Focusable" Value="False" />
+				<Setter Property="Height" Value="44" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="Slider">
+							<Grid Background="Transparent">
+								<Border Height="8" CornerRadius="4" Background="#CFCFCF" VerticalAlignment="Center" />
+								<Track x:Name="PART_Track">
+									<Track.Thumb>
+										<Thumb x:Name="handle" Width="24" Height="38">
+											<Thumb.Template>
+												<ControlTemplate TargetType="Thumb">
+													<Border CornerRadius="5" Background="#2F7FD0" BorderBrush="#1F5FA5" BorderThickness="1">
+														<!-- two grip lines -->
+														<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+															<Border Width="2" Height="16" Margin="2,0,2,0" CornerRadius="1" Background="#D9FFFFFF" />
+															<Border Width="2" Height="16" Margin="2,0,2,0" CornerRadius="1" Background="#D9FFFFFF" />
+														</StackPanel>
+													</Border>
+												</ControlTemplate>
+											</Thumb.Template>
+										</Thumb>
+									</Track.Thumb>
+								</Track>
+							</Grid>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsEnabled" Value="False">
+									<Setter TargetName="handle" Property="Opacity" Value="0.4" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
 			<!-- an on/off switch: blue with the knob on the right when on, grey with the knob on the left when off -->
 			<Style x:Key="UvSwitch" TargetType="ToggleButton">
 				<Setter Property="Width" Value="72" />
@@ -142,22 +181,146 @@
 					</StackPanel>
 						<StackPanel>
 							<StackPanel Orientation="Horizontal">
-								<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.HomeCommand}" CommandParameter="{Binding}" Content="Home"
-										ToolTip="Home this axis. Yellow until the axis is homed, green once it is.">
+								<!-- an axis that is not homed cannot be moved: until it is, the row has this button and nothing else -->
+								<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.HomeCommand}" CommandParameter="{Binding}" Content="Home to enable axis movement"
+										ToolTip="Home this axis. Its slider, jog buttons and commands take this button's place once it is homed.">
 									<dx:SimpleButton.Background>
 										<MultiBinding Converter="{StaticResource AxisHomedBrushConverter}">
 											<Binding Path="Designation" />
 											<Binding ElementName="axesList" Path="DataContext.Homed" />
 										</MultiBinding>
 									</dx:SimpleButton.Background>
+									<dx:SimpleButton.Visibility>
+										<MultiBinding Converter="{StaticResource AxisNotHomedVisible}">
+											<Binding Path="Designation" />
+											<Binding ElementName="axesList" Path="DataContext.Homed" />
+										</MultiBinding>
+									</dx:SimpleButton.Visibility>
 								</dx:SimpleButton>
-									<!-- every move of the axis other than homing: to its start position, to a well, or by a distance. The list stays open after a
+									<!-- once the axis is homed: its jog buttons and slider, then the list of its other commands -->
+									<StackPanel Orientation="Horizontal">
+										<StackPanel.Visibility>
+											<MultiBinding Converter="{StaticResource AxisHomedVisible}">
+												<Binding Path="Designation" />
+												<Binding ElementName="axesList" Path="DataContext.Homed" />
+											</MultiBinding>
+										</StackPanel.Visibility>
+									<!-- jog back: small moves of the axis from where it is, 5 mm and 1 mm, beside the slider that shows where that is -->
+									<dx:SimpleButton CornerRadius="3" Padding="0" MinWidth="50" MinHeight="52" Margin="8,4,2,4" FontSize="16" VerticalAlignment="Center" Content="&#8722;5"
+											Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" ToolTipService.ShowOnDisabled="True" ToolTip="Jog: move this axis 5 mm back, toward 0. Available once the axis is homed.">
+										<dx:SimpleButton.IsEnabled>
+											<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+												<Binding Path="Designation" />
+												<Binding ElementName="axesList" Path="DataContext.Homed" />
+											</MultiBinding>
+										</dx:SimpleButton.IsEnabled>
+										<Button.CommandParameter>
+											<MultiBinding Converter="{StaticResource PassThroughConverter}">
+												<Binding/>
+												<Binding>
+													<Binding.Source>
+														<sys:Single>-5</sys:Single>
+													</Binding.Source>
+												</Binding>
+											</MultiBinding>
+										</Button.CommandParameter>
+									</dx:SimpleButton>
+									<dx:SimpleButton CornerRadius="3" Padding="0" MinWidth="50" MinHeight="52" Margin="2,4,0,4" FontSize="16" VerticalAlignment="Center" Content="&#8722;1"
+											Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" ToolTipService.ShowOnDisabled="True" ToolTip="Jog: move this axis 1 mm back, toward 0. Available once the axis is homed.">
+										<dx:SimpleButton.IsEnabled>
+											<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+												<Binding Path="Designation" />
+												<Binding ElementName="axesList" Path="DataContext.Homed" />
+											</MultiBinding>
+										</dx:SimpleButton.IsEnabled>
+										<Button.CommandParameter>
+											<MultiBinding Converter="{StaticResource PassThroughConverter}">
+												<Binding/>
+												<Binding>
+													<Binding.Source>
+														<sys:Single>-1</sys:Single>
+													</Binding.Source>
+												</Binding>
+											</MultiBinding>
+										</Button.CommandParameter>
+									</dx:SimpleButton>
+									<!-- the axis's position along its travel: dragging the handle moves the axis there when it is let go, a tap opens a window to
+									     type a position. Only positions on the travel can be chosen. The handling is in the code-behind (AxisSlider_...), which
+									     takes the touch itself so that the list's touch scrolling does not swallow a drag. -->
+									<Border Margin="4,4,4,4" Padding="10,0,10,0" MinHeight="52" CornerRadius="3" BorderThickness="1" BorderBrush="#C8C8C8" Background="Transparent" VerticalAlignment="Center"
+											ToolTipService.ShowOnDisabled="True" ToolTip="Drag the handle to move this axis to a position, or tap to type one. Available once the axis is homed.">
+										<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+											<TextBlock VerticalAlignment="Center" FontSize="15" Opacity="0.75" Text="{Binding Minimum}" Margin="0,0,8,0" />
+											<Slider Style="{StaticResource AxisSlider}" Width="288" VerticalAlignment="Center" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
+													Stylus.IsPressAndHoldEnabled="False"
+													PreviewMouseLeftButtonDown="AxisSlider_MouseDown" PreviewMouseMove="AxisSlider_MouseMove" PreviewMouseLeftButtonUp="AxisSlider_MouseUp" LostMouseCapture="AxisSlider_LostCapture"
+													PreviewTouchDown="AxisSlider_TouchDown" PreviewTouchMove="AxisSlider_TouchMove" PreviewTouchUp="AxisSlider_TouchUp" LostTouchCapture="AxisSlider_LostCapture">
+												<Slider.Value>
+													<MultiBinding Converter="{StaticResource AxisPositionValueConverter}" Mode="OneWay">
+														<Binding Path="Designation" />
+														<Binding ElementName="axesList" Path="DataContext.Positions" />
+													</MultiBinding>
+												</Slider.Value>
+												<Slider.IsEnabled>
+													<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+														<Binding Path="Designation" />
+														<Binding ElementName="axesList" Path="DataContext.Homed" />
+													</MultiBinding>
+												</Slider.IsEnabled>
+											</Slider>
+											<TextBlock VerticalAlignment="Center" FontSize="15" Opacity="0.75" Text="{Binding Maximum, StringFormat={}{0} mm}" Margin="8,0,0,0" />
+											<!-- where the axis will go, shown while the handle is being dragged -->
+											<TextBlock Tag="target" VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" MinWidth="64" Margin="12,0,0,0" />
+										</StackPanel>
+									</Border>
+									<!-- jog forward: the same small moves on the other side of the slider -->
+									<dx:SimpleButton CornerRadius="3" Padding="0" MinWidth="50" MinHeight="52" Margin="0,4,2,4" FontSize="16" VerticalAlignment="Center" Content="+1"
+											Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" ToolTipService.ShowOnDisabled="True" ToolTip="Jog: move this axis 1 mm forward, away from 0. Available once the axis is homed.">
+										<dx:SimpleButton.IsEnabled>
+											<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+												<Binding Path="Designation" />
+												<Binding ElementName="axesList" Path="DataContext.Homed" />
+											</MultiBinding>
+										</dx:SimpleButton.IsEnabled>
+										<Button.CommandParameter>
+											<MultiBinding Converter="{StaticResource PassThroughConverter}">
+												<Binding/>
+												<Binding>
+													<Binding.Source>
+														<sys:Single>1</sys:Single>
+													</Binding.Source>
+												</Binding>
+											</MultiBinding>
+										</Button.CommandParameter>
+									</dx:SimpleButton>
+									<dx:SimpleButton CornerRadius="3" Padding="0" MinWidth="50" MinHeight="52" Margin="2,4,4,4" FontSize="16" VerticalAlignment="Center" Content="+5"
+											Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" ToolTipService.ShowOnDisabled="True" ToolTip="Jog: move this axis 5 mm forward, away from 0. Available once the axis is homed.">
+										<dx:SimpleButton.IsEnabled>
+											<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+												<Binding Path="Designation" />
+												<Binding ElementName="axesList" Path="DataContext.Homed" />
+											</MultiBinding>
+										</dx:SimpleButton.IsEnabled>
+										<Button.CommandParameter>
+											<MultiBinding Converter="{StaticResource PassThroughConverter}">
+												<Binding/>
+												<Binding>
+													<Binding.Source>
+														<sys:Single>5</sys:Single>
+													</Binding.Source>
+												</Binding>
+											</MultiBinding>
+										</Button.CommandParameter>
+									</dx:SimpleButton>
+									<!-- every other move of the axis, and homing it again: to its start position, to a well, or by a distance. The list stays open after a
 									     move, so the axis can be stepped several times; touching anywhere else closes it. -->
-									<dx:DropDownButton CornerRadius="3" Padding="16,12,16,12" Margin="4" MinHeight="52" FontSize="16" Content="Send Command"
-											ToolTip="Moves for this axis: to its start position, to a well, or by a distance.">
+									<dx:DropDownButton CornerRadius="3" Padding="16,12,16,12" Margin="4" MinHeight="52" FontSize="16" Content="Commands..."
+											ToolTip="More for this axis: home it again, move it to its start position, to a well, or by a distance.">
 										<Border Padding="8">
 											<StackPanel>
 												<StackPanel Orientation="Horizontal">
+												<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.HomeCommand}" CommandParameter="{Binding}" Content="Home"
+														ToolTip="Home this axis again." />
 												<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.MoveToStartCommand}" CommandParameter="{Binding}" Content="Move To Start">
 													<dx:SimpleButton.IsEnabled>
 														<MultiBinding Converter="{StaticResource AxisHomedConverter}">
@@ -339,35 +502,7 @@
 											</StackPanel>
 										</Border>
 									</dx:DropDownButton>
-									<!-- the axis's position along its travel: dragging the handle moves the axis there when it is let go, a tap opens a window to
-									     type a position. Only positions on the travel can be chosen. The handling is in the code-behind (AxisSlider_...), which
-									     takes the touch itself so that the list's touch scrolling does not swallow a drag. -->
-									<Border Margin="10,4,10,4" Padding="10,0,10,0" MinHeight="52" CornerRadius="3" BorderThickness="1" BorderBrush="#C8C8C8" Background="Transparent" VerticalAlignment="Center"
-											ToolTipService.ShowOnDisabled="True" ToolTip="Drag the handle to move this axis to a position, or tap to type one. Available once the axis is homed.">
-										<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-											<TextBlock VerticalAlignment="Center" FontSize="15" Opacity="0.75" Text="{Binding Minimum}" Margin="0,0,8,0" />
-											<Slider Width="200" VerticalAlignment="Center" LayoutTransform="1.8,0,0,1.8,0,0" Focusable="False" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
-													Stylus.IsPressAndHoldEnabled="False"
-													PreviewMouseLeftButtonDown="AxisSlider_MouseDown" PreviewMouseMove="AxisSlider_MouseMove" PreviewMouseLeftButtonUp="AxisSlider_MouseUp" LostMouseCapture="AxisSlider_LostCapture"
-													PreviewTouchDown="AxisSlider_TouchDown" PreviewTouchMove="AxisSlider_TouchMove" PreviewTouchUp="AxisSlider_TouchUp" LostTouchCapture="AxisSlider_LostCapture">
-												<Slider.Value>
-													<MultiBinding Converter="{StaticResource AxisPositionValueConverter}" Mode="OneWay">
-														<Binding Path="Designation" />
-														<Binding ElementName="axesList" Path="DataContext.Positions" />
-													</MultiBinding>
-												</Slider.Value>
-												<Slider.IsEnabled>
-													<MultiBinding Converter="{StaticResource AxisHomedConverter}">
-														<Binding Path="Designation" />
-														<Binding ElementName="axesList" Path="DataContext.Homed" />
-													</MultiBinding>
-												</Slider.IsEnabled>
-											</Slider>
-											<TextBlock VerticalAlignment="Center" FontSize="15" Opacity="0.75" Text="{Binding Maximum, StringFormat={}{0} mm}" Margin="8,0,0,0" />
-											<!-- where the axis will go, shown while the handle is being dragged -->
-											<TextBlock Tag="target" VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" MinWidth="86" Margin="12,0,0,0" />
-										</StackPanel>
-									</Border>
+									</StackPanel>
 							</StackPanel>
 						</StackPanel>
 					</StackPanel>
@@ -412,7 +547,7 @@
 									ToolTip="Takes a reading from this sensor. The reading is shown on this button and in Messages." />
 							<!-- the moves that bring a well under this sensor, in a list like the one each axis has. The list stays open after a move, so the
 							     tray can be stepped from well to well; touching anywhere else closes it. -->
-							<dx:DropDownButton CornerRadius="3" Padding="16,12,16,12" Margin="4" MinHeight="52" FontSize="16" Content="Send Command"
+							<dx:DropDownButton CornerRadius="3" Padding="16,12,16,12" Margin="4" MinHeight="52" FontSize="16" Content="Commands..."
 									ToolTip="Moves the tray to bring a well under this sensor.">
 								<Border Padding="8">
 									<StackPanel Orientation="Horizontal">
@@ -441,6 +576,20 @@
 							ToolTip="Close Tools and go back to the main screen" Click="Close_Click" />
 				</DataTemplate>
 			</dx:DXTabControl.ControlBoxLeftTemplate>
+			<!-- at the other end of the row of tabs: the software version, checking for updates and what the check reported -->
+			<dx:DXTabControl.ControlBoxRightTemplate>
+				<DataTemplate>
+					<StackPanel Orientation="Horizontal" Margin="14,4,6,4" VerticalAlignment="Center"
+							DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=dx:DXTabControl}}">
+						<TextBlock VerticalAlignment="Center" Margin="0,0,18,0" MaxWidth="460" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Right" Text="{Binding UpdateStatus}"
+								Visibility="{DXBinding 'UpdateStatus == null or UpdateStatus == `` ? `Collapsed` : `Visible`'}" />
+						<TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0" Text="Software" />
+						<TextBlock VerticalAlignment="Center" Opacity="0.7" Margin="0,0,14,0" Text="{Binding SoftwareVersion, StringFormat=Version {0}}" />
+						<dx:SimpleButton CornerRadius="3" Padding="16,0,16,0" MinHeight="54" VerticalAlignment="Center" Command="{Binding CheckForUpdatesCommand}" Content="Check for Updates"
+								ToolTipService.ShowOnDisabled="True" ToolTip="{DXBinding 'IsAssayRunning ? `Not available while an assay is running` : `Check whether a newer version of this software is available`'}" />
+					</StackPanel>
+				</DataTemplate>
+			</dx:DXTabControl.ControlBoxRightTemplate>
 			<dx:DXTabItem Header="Component Control">
 				<DockPanel LastChildFill="True">
 						<dxlc:LayoutControl DockPanel.Dock="Left" Orientation="Vertical">
@@ -501,20 +650,6 @@
 								</StackPanel>
 							</dxlc:LayoutGroup>
 						</dxlc:LayoutControl>
-						<!-- what the buttons on this tab have issued: queued and executing commands -->
-							<StackPanel DockPanel.Dock="Top" Margin="12,6,12,8">
-								<!-- discards what is waiting to run; the command being executed always finishes (the board reads nothing more over USB until it has) -->
-								<DockPanel Margin="0,0,0,4">
-									<dx:SimpleButton DockPanel.Dock="Right" CornerRadius="3" Padding="16,12,16,12" Command="{Binding ClearCommandQueueCommand}" Content="Clear Command Queue"
-											ToolTipService.ShowOnDisabled="True"
-											ToolTip="{DXBinding 'IsAssayRunning ? `Not available while an assay is running; cancel the assay from the assay screen instead` : `Discards every command that is waiting to run. The command being executed is not interrupted: a move or homing already under way finishes.`'}" />
-									<TextBlock VerticalAlignment="Bottom" FontWeight="SemiBold" Text="Command queue" />
-								</DockPanel>
-								<TextBlock Opacity="0.7" Text="Nothing queued" Visibility="{DXBinding 'CommandQueue.Items.Count == 0 ? $Visibility.Visible : $Visibility.Collapsed'}" />
-								<local:LiveListBox ItemsSource="{Binding CommandQueue.Items}" ItemTemplate="{StaticResource QueuedCommandTemplate}" FontSize="15" MaxHeight="160"
-										Background="Transparent" BorderThickness="1" IsTabStop="False"
-										Visibility="{DXBinding 'CommandQueue.Items.Count == 0 ? $Visibility.Collapsed : $Visibility.Visible'}" />
-							</StackPanel>
 							<!-- scrolls vertically and horizontally, and by touch panning, when the axes and sensors do not fit the window -->
 						<ScrollViewer DockPanel.Dock="Left" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" PanningMode="Both">
 						<StackPanel Orientation="Vertical">
@@ -529,22 +664,9 @@
 			</dx:DXTabItem>
 		</dx:DXTabControl>
 		<!-- the commands panel: sending a command to the board, board and software management, the command queue and the messages.
-		     It is beside the tabs rather than on one of them, so it stays in view whichever tab is open; the strip on its left edge
-		     hides it and brings it back. -->
+		     It is beside the tabs rather than on one of them, so it stays in view whichever tab is open. -->
 		<DockPanel Grid.Column="1" Margin="0,2,2,4">
-			<DockPanel DockPanel.Dock="Left" Width="58" Margin="10,0,0,0">
-				<dx:SimpleButton x:Name="CommandsToggle" Padding="0" CornerRadius="3" Click="CommandsToggle_Click" ToolTip="Hide or show the commands panel">
-					<StackPanel>
-						<TextBlock x:Name="CommandsToggleArrow" HorizontalAlignment="Center" FontSize="26" FontWeight="Bold" Text="&#187;" />
-						<TextBlock HorizontalAlignment="Center" Margin="0,16,0,0" FontSize="17" Text="Commands">
-							<TextBlock.LayoutTransform>
-								<RotateTransform Angle="90" />
-							</TextBlock.LayoutTransform>
-						</TextBlock>
-					</StackPanel>
-				</dx:SimpleButton>
-			</DockPanel>
-			<Border x:Name="CommandsPanel" Width="480" Padding="14,8,10,6">
+			<Border Width="480" Padding="14,8,10,6">
 				<DockPanel LastChildFill="True">
 					<TextBlock DockPanel.Dock="Top" FontSize="22" FontWeight="Bold" Margin="0,0,0,10" Text="Commands" />
 					<DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
@@ -582,31 +704,23 @@
 					<dx:SimpleButton DockPanel.Dock="Top" HorizontalAlignment="Left" CornerRadius="3" Padding="16,12,16,12" Margin="0,0,0,14" Command="{Binding ReleaseComPortCommand}" Content="Release COM Port"
 							IsEnabled="{DXBinding '!IsCommandQueueBusy'}" ToolTipService.ShowOnDisabled="True"
 							ToolTip="Close the controller board's COM port so a terminal program can open it (only one program can have it open at a time). The next command sent from here reopens it, so close the terminal first. Unavailable while commands are queued or executing." />
-					<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,4">
-						<TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0" Text="Software" />
-						<TextBlock VerticalAlignment="Center" Opacity="0.7" Margin="0,0,14,0" Text="{Binding SoftwareVersion, StringFormat=Version {0}}" />
-						<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Command="{Binding CheckForUpdatesCommand}" Content="Check for Updates"
-								ToolTipService.ShowOnDisabled="True" ToolTip="{DXBinding 'IsAssayRunning ? `Not available while an assay is running` : `Check whether a newer version of this software is available`'}" />
-					</StackPanel>
-					<TextBlock DockPanel.Dock="Top" Margin="0,0,0,4" Opacity="0.7" TextWrapping="Wrap" Text="{Binding UpdateStatus}"
-							Visibility="{DXBinding 'UpdateStatus == null or UpdateStatus == `` ? `Collapsed` : `Visible`'}" />
-					<StackPanel DockPanel.Dock="Top" Margin="0,10,0,10">
-						<!-- discards what is waiting to run; the command being executed always finishes (the board reads nothing more over USB until it has) -->
-						<DockPanel Margin="0,0,0,4">
-							<dx:SimpleButton DockPanel.Dock="Right" CornerRadius="3" Padding="16,12,16,12" Command="{Binding ClearCommandQueueCommand}" Content="Clear Command Queue"
-									ToolTipService.ShowOnDisabled="True"
-									ToolTip="{DXBinding 'IsAssayRunning ? `Not available while an assay is running; cancel the assay from the assay screen instead` : `Discards every command that is waiting to run. The command being executed is not interrupted: a move or homing already under way finishes.`'}" />
-							<TextBlock VerticalAlignment="Bottom" FontWeight="SemiBold" Text="Command queue" />
-						</DockPanel>
+					<!-- the two clear buttons share a row. Clear Command Queue discards what is waiting to run; the command being executed always
+					     finishes (the board reads nothing more over USB until it has) -->
+					<UniformGrid DockPanel.Dock="Top" Columns="2" Margin="0,10,0,8">
+						<dx:SimpleButton CornerRadius="3" Padding="8,12,8,12" Margin="0,0,3,0" Command="{Binding ClearCommandQueueCommand}" Content="Clear Command Queue"
+								ToolTipService.ShowOnDisabled="True"
+								ToolTip="{DXBinding 'IsAssayRunning ? `Not available while an assay is running; cancel the assay from the assay screen instead` : `Discards every command that is waiting to run. The command being executed is not interrupted: a move or homing already under way finishes.`'}" />
+						<dx:SimpleButton CornerRadius="3" Padding="8,12,8,12" Margin="3,0,0,0" Command="{Binding ClearMessagesCommand}" Content="Clear Messages"
+								ToolTip="Empties the Messages list." />
+					</UniformGrid>
+					<StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+						<TextBlock FontWeight="SemiBold" Margin="0,0,0,4" Text="Command queue" />
 						<TextBlock Opacity="0.7" Text="Nothing queued" Visibility="{DXBinding 'CommandQueue.Items.Count == 0 ? $Visibility.Visible : $Visibility.Collapsed'}" />
 						<local:LiveListBox ItemsSource="{Binding CommandQueue.Items}" ItemTemplate="{StaticResource QueuedCommandTemplate}" FontSize="15" MaxHeight="200"
 								Background="Transparent" BorderThickness="1" IsTabStop="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
 								Visibility="{DXBinding 'CommandQueue.Items.Count == 0 ? $Visibility.Collapsed : $Visibility.Visible'}" />
 					</StackPanel>
-					<DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
-						<dx:SimpleButton DockPanel.Dock="Right" CornerRadius="3" Padding="16,12,16,12" Command="{Binding ClearMessagesCommand}" Content="Clear Messages" />
-						<TextBlock VerticalAlignment="Bottom" FontWeight="SemiBold" Text="Messages" />
-					</DockPanel>
+					<TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Margin="0,0,0,6" Text="Messages" />
 					<local:LiveListBox FontSize="15" ItemsSource="{Binding ConsoleMessages}" Background="Transparent" BorderThickness="1" IsTabStop="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 						<ListBox.ItemTemplate>
 							<DataTemplate>

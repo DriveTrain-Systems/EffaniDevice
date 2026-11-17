@@ -117,8 +117,15 @@ namespace Drivetrain.Robotics.Control
 			_serialPort.Close();
 			return name;
 		}
+		/// <summary>
+		/// Call when the program is closing, before <see cref="Dispose"/>. From then on the board is not waited for longer than the
+		/// general board timeout, whatever timeout a command asked for: a homing or a long move that is under way is no longer
+		/// waited out (the board finishes it on its own), while short commands, such as switching an output off, still complete.
+		/// </summary>
+		public void BeginClosing() => _closing.Set();
 		public virtual void Dispose()
 		{
+			_closing.Set();
 			_disposing = true;
 			if (_initialized)
 				_serialPort.Close();
@@ -603,8 +610,7 @@ namespace Drivetrain.Robotics.Control
 				throw;
 			}
 
-			var wait = deadline - DateTime.UtcNow;
-			if (pending.Done.Wait(wait > TimeSpan.Zero ? wait : TimeSpan.Zero))
+			if (WaitForReply(pending, deadline))
 				return pending.Lines;
 
 			lock (_pendingLock)
@@ -616,9 +622,28 @@ namespace Drivetrain.Robotics.Control
 				if (marker is not null)
 					_staleMarkers.Enqueue(marker);
 			}
-			throw new BoardNotReadyException(behind
+			throw new BoardNotReadyException(_closing.IsSet
+				? $"The controller board had not finished \"{lines[0]}\" when the program was closed."
+				: behind
 				? $"The controller board did not finish \"{lines[0]}\" within {timeout.TotalSeconds:0} seconds; it was still busy with an earlier command that ran past its timeout."
 				: $"The controller board did not finish \"{lines[0]}\" within {timeout.TotalSeconds:0} seconds.");
+		}
+		/// <summary>
+		/// Waits for the end of a reply until <paramref name="deadline"/>; true if it arrived. Once the program is closing
+		/// (<see cref="BeginClosing"/>), also when that happens during the wait, no longer than the general board timeout from then.
+		/// </summary>
+		private bool WaitForReply(PendingReply pending, DateTime deadline)
+		{
+			TimeSpan Left() => deadline > DateTime.UtcNow ? deadline - DateTime.UtcNow : TimeSpan.Zero;
+			if (!_closing.IsSet)
+			{
+				var signalled = WaitHandle.WaitAny([pending.Done.WaitHandle, _closing.WaitHandle], Left());
+				if (signalled != 1)
+					return pending.Done.IsSet;
+			}
+			var left = Left();
+			var grace = ReadyTimeout;
+			return pending.Done.Wait(left < grace ? left : grace);
 		}
 		/// <summary>
 		/// Handles one complete line from the board. In PanelDue mode (M575 S0/S1) the board wraps each reply in JSON,
@@ -1162,6 +1187,8 @@ namespace Drivetrain.Robotics.Control
 		Thread? _publishThread;
 		SerialPort _serialPort = null!; // created by Initialize()
 		bool _disposing;
+		/// <summary>Set once the program is closing (<see cref="BeginClosing"/>): waits for the board are then cut short.</summary>
+		readonly ManualResetEventSlim _closing = new(false);
 		long _readyDeadlineTicks;
 		readonly ThreadLocal<TimeSpan?> _timeoutOverride = new();
 

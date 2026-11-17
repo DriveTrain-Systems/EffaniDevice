@@ -29,6 +29,12 @@ namespace Effani.Device.UI
 			};
 		}
 
+		/// <summary>Undo: once the view model has put the settings back (it asks first), the window is closed.</summary>
+		private void UndoSettings_Click(object sender, RoutedEventArgs e)
+		{
+			if (DataContext is UtilitiesViewModel viewModel && viewModel.UndoSettingsChanges())
+				Window.GetWindow(this)?.Close();
+		}
 		private void ComboBoxEdit_SelectedIndexChanged(object sender, System.Windows.RoutedEventArgs e)
 		{
 			var settingsVersion = ((ComboBoxEdit)e.Source).SelectedItem as SettingsVersion;

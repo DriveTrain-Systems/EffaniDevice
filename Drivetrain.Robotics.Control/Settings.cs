@@ -11,6 +11,17 @@ namespace Drivetrain.Robotics.Control
     [Owned]
     public class Settings : INotifyPropertyChanged
     {
+        #region Constructors
+        public Settings()
+        {
+            // The default biopsy location is worked out from the default locations of the four fluid pumps (NADH, DNA reagent, KOH
+            // and basal media): halfway between the leftmost and the rightmost of them, and 20 mm below the lowest. Saved settings
+            // carry their own value, which replaces this one when they are loaded.
+            var pumps = new[] { _nadhLocation, _dnaLocation, _kohLocation, _basalLocation };
+            _biopsyLocation = new((pumps.Min(p => p.X) + pumps.Max(p => p.X)) / 2, pumps.Min(p => p.Y) - 20);
+        }
+        #endregion
+
         #region Properties
         public decimal AspirateActuatorStartPosition
         {
@@ -3249,17 +3260,17 @@ namespace Drivetrain.Robotics.Control
 
         decimal _aspirateActuatorStartPosition = 0m;
         decimal _aspirateDistanceToPlate = 11m;
-        Coordinate _aspirateLocation = new(330, 203);
+        Coordinate _aspirateLocation = new(195, 109);
         decimal _aspiratePositioningSpeed = 200m;
         decimal _aspirateStirSpeed = 200m;
         decimal _aspirateTravelPerMicroLiter = 0.013m;
         int _aspirationDwell = 8000;
         int _basalIncubationTimerPeriod = 900000;
-        Coordinate _basalLocation = new(165, 257);
+        Coordinate _basalLocation = new(240, 186);
         decimal _basalSyringeLoadingPosition = 0m;
         decimal _basalTravelPerMicroLiter = 0.00153m;
         int _basalVolume = 300;
-        Coordinate _biopsyLocation = new(245, 110);
+        Coordinate _biopsyLocation; // its default follows the pumps' default locations: see the constructor
         int _comPortNumber = 4;
         int _boardReadyTimeoutSeconds = 5;
         int _homeAxisTimeoutSeconds = 120;
@@ -3343,8 +3354,8 @@ namespace Drivetrain.Robotics.Control
         int _tableYFineHomingSpeed = 300;
         bool _debug;
         int _dnaAspirationVolume = 50;
-        Coordinate _dnaLocation = new(331, 304);
-        Coordinate _dnaSensorLocation = new(329, 379);
+        Coordinate _dnaLocation = new(240, 257);
+        Coordinate _dnaSensorLocation = new(240, 385);
         int _dnaSensorNumber = 0;
         int _dnaSensorReadHigh = 4095;
         int _dnaSensorReadLow = 0;
@@ -3355,8 +3366,8 @@ namespace Drivetrain.Robotics.Control
         string _effaniApiUrl = "https://www.effani.com/umbraco/api";
         string _effaniPassword;
         string _effaniUsername;
-        string _wifiSsid = "effani_device";
-        string _wifiPassword = "Effani1!";
+        string _wifiSsid = "";
+        string _wifiPassword = "";
         WifiAuthentication _wifiAuthentication = WifiAuthentication.Personal;
         string _wifiUsername = "";
         Coordinate _firstWellLocation = new(0, 0);
@@ -3369,16 +3380,16 @@ namespace Drivetrain.Robotics.Control
         int _initialKohFluidPrimingVolume = 100;
         int _initialNadhFluidPrimingVolume = 100;
         int _kohAspirationVolume = 50;
-        Coordinate _kohLocation = new(331, 256);
+        Coordinate _kohLocation = new(149, 261);
         decimal _kohSyringeLoadingPosition = 0m;
         int _kohTimerPeriod = 480000;
         decimal _kohTravelPerMicroLiter = 0.00897m;
         int _kohVolume = 20;
         int _nadhIncubationDwell = 120000;
-        Coordinate _nadhLocation = new(166, 304);
+        Coordinate _nadhLocation = new(150, 184);
         int _nadhBasalMixingTimerPeriod = 360000;
         int _nadhReadingsTimerPeriod = 480000;
-        Coordinate _nadhSensorLocation = new(168, 382.5m);
+        Coordinate _nadhSensorLocation = new(150, 386);
         int _nadhSensorNumber = 1;
         int _nadhSensorReadHigh = 4095;
         int _nadhSensorReadLow = 0;
@@ -3402,7 +3413,7 @@ namespace Drivetrain.Robotics.Control
         int _tableYMoveSpeed = 600;
         int _testMediaAspirationVolume = 50;
         int _timerDescriptionUpdateInterval = 1000;
-        Coordinate _trayLoadingLocation = new(0, 0);
+        Coordinate _trayLoadingLocation = new(154, 4);
         Coordinate _traySterilizationLocation = new(320, 20);
         int _traySterilizationTime = 6;
         decimal _trayTemperature = 38.777778m;

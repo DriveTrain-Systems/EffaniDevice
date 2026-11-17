@@ -30,6 +30,57 @@ namespace Drivetrain.Robotics.Control
 			AddPlates(spec);
 			DeviceSpecification = spec;
 		}
+		/// <summary>
+		/// Checks that every well of every tray can be brought to an item at <paramref name="location"/> (a fluid port, the
+		/// aspiration needle or a sensor). The trays are taken to fill the carrier as the settings lay them out: the first tray at
+		/// the lower left, the others one tray offset on from it across and up, for the full number of trays across and up. A well
+		/// is brought to the item by moving the table to the item's location less the well's, which must lie on the table's travel.
+		/// Returns null when every well can be reached, otherwise a sentence saying which values would work and why this one does not.
+		/// </summary>
+		public static string? GetWellReachCaution(Settings settings, Coordinate location)
+		{
+			var across = Math.Max(1, settings.HorizontalTrayCount);
+			var up = Math.Max(1, settings.VerticalTrayCount);
+			// the wells nearest to and farthest from the table's origin, along each axis
+			static (decimal Nearest, decimal Farthest) Extent(decimal first, decimal trayOffset, int trays, decimal wellOffset, int wells)
+			{
+				var ends = new[] { first, first + trayOffset * (trays - 1), first + wellOffset * (wells - 1), first + trayOffset * (trays - 1) + wellOffset * (wells - 1) };
+				return (ends.Min(), ends.Max());
+			}
+			var x = Extent(settings.FirstWellLocation.X, settings.PlateOffset.X, across, settings.WellOffset.X, Math.Max(1, settings.HorizontalWellCount));
+			var y = Extent(settings.FirstWellLocation.Y, settings.PlateOffset.Y, up, settings.WellOffset.Y, Math.Max(1, settings.VerticalWellCount));
+
+			static string Number(decimal value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+			static string? Check(string axis, decimal value, (decimal Nearest, decimal Farthest) wells, int travel)
+			{
+				// the table goes to value - well: at least 0 for the farthest well, at most the travel for the nearest
+				var least = wells.Farthest;
+				var most = wells.Nearest + travel;
+				if (least > most)
+					return $"No {axis} can work: the wells span {Number(wells.Farthest - wells.Nearest)} mm along {axis}, more than the table's travel of {travel} mm.";
+				if (value < least)
+					return $"{axis} must be {Number(least)} to {Number(most)} (it is {Number(value)}): the wells farthest along {axis} would need the table at {axis}{Number(value - wells.Farthest)}, below 0.";
+				if (value > most)
+					return $"{axis} must be {Number(least)} to {Number(most)} (it is {Number(value)}): the wells nearest along {axis} would need the table at {axis}{Number(value - wells.Nearest)}, past its travel of {travel} mm.";
+				return null;
+			}
+			var problems = new[] { Check("X", location.X, x, settings.TableXTravelLength), Check("Y", location.Y, y, settings.TableYTravelLength) }.Where(p => p is not null).ToList();
+			if (problems.Count == 0)
+				return null;
+			var trays = across * up;
+			return $"Caution: cannot reach every well of {(trays == 1 ? "the tray" : $"the {trays} trays ({across} across, {up} up)")}. {String.Join(" ", problems)}";
+		}
+		/// <summary>
+		/// Works the trays and their wells out again from the settings as they are now. The wells are otherwise only worked out when
+		/// the configuration is built, while the locations of the axes and sensors are the settings' own and so always current:
+		/// after First Well Location, an offset or a count was edited, the two were out of step until the configuration was rebuilt.
+		/// </summary>
+		public void RefreshPlates()
+		{
+			var fresh = new DeviceSpecification();
+			AddPlates(fresh);
+			DeviceSpecification.Plates = fresh.Plates;
+		}
 		// when set, generated files are collected here instead of being written to disk (see GetConfigSignature)
 		private SortedDictionary<string, string>? _capture;
 		private DeviceConfiguration(Settings settings, bool withoutPlates)
@@ -175,8 +226,12 @@ M575 P1 S2
 
 ; Network
 ");
-			configTextBuilder.Append(@"M552 S1 ; configure WiFi adapter
-M586 P0 S1 ; configure HTTP
+			// WiFi is only switched on when there is a network for the board to join: with no WiFi SSID in the settings it is switched
+			// off, so the board neither waits for a network at startup nor keeps reporting failed network scans
+			configTextBuilder.AppendLine(String.IsNullOrWhiteSpace(Settings.WifiSsid)
+				? "M552 S0 ; WiFi off: no WiFi SSID is set"
+				: "M552 S1 ; configure WiFi adapter");
+			configTextBuilder.Append(@"M586 P0 S1 ; configure HTTP
 M586 P1 S1 ; configure FTP
 M586 P2 S1 ; configure Telnet
 

@@ -30,6 +30,7 @@ namespace Effani.Device.UI
 			_settingsService = settingsService;
 			_sendTimeoutSeconds = Math.Max(1, _device.Settings.BoardReadyTimeoutSeconds);
 			AttachSettings();
+			RememberSettings();
 
 			Axes = new ObservableCollection<AxisSpec>(_device.Configuration.DeviceSpecification.Axes);
 			Sensors = new ObservableCollection<SensorSpec>(_device.Configuration.DeviceSpecification.Sensors);
@@ -73,8 +74,50 @@ namespace Effani.Device.UI
 			_attachedSettings = _settingsService.Settings;
 			_attachedSettings.PropertyChanged += Settings_PropertyChanged;
 			UpdateConfigNeedsGenerating();
+			UpdateLocationCautions();
+			UpdateHasSettingsChanges();
 		}
-		private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e) => UpdateConfigNeedsGenerating();
+		private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			UpdateConfigNeedsGenerating();
+			UpdateLocationCautions();
+			UpdateHasSettingsChanges();
+		}
+		/// <summary>
+		/// Checks each component location (the fluid ports, the needle, the sensors and the biopsy location) against the trays, their wells and the
+		/// table's travel as the settings now have them; the Settings pages show what <see cref="LocationCautions"/> holds under
+		/// the location's fields. Any of those settings can cause a caution, so all are checked whenever one changes.
+		/// </summary>
+		private void UpdateLocationCautions()
+		{
+			var settings = _settingsService.Settings;
+			var cautions = new Dictionary<string, string?>();
+			foreach (var (name, location) in new (string, Coordinate)[]
+			{
+				(nameof(Settings.DnaSensorLocation), settings.DnaSensorLocation),
+				(nameof(Settings.NadhSensorLocation), settings.NadhSensorLocation),
+				(nameof(Settings.NadhLocation), settings.NadhLocation),
+				(nameof(Settings.DnaLocation), settings.DnaLocation),
+				(nameof(Settings.KohLocation), settings.KohLocation),
+				(nameof(Settings.BasalLocation), settings.BasalLocation),
+				(nameof(Settings.AspirateLocation), settings.AspirateLocation),
+				(nameof(Settings.BiopsyLocation), settings.BiopsyLocation),
+			})
+			{
+				try { cautions[name] = location is null ? null : DeviceConfiguration.GetWellReachCaution(settings, location); }
+				catch { cautions[name] = null; } // half-edited settings: no caution rather than an error
+			}
+			if (_locationCautions.Count == cautions.Count && cautions.All(c => _locationCautions.TryGetValue(c.Key, out var was) && was == c.Value))
+				return;
+			_locationCautions = cautions;
+			RaisePropertyChanged(nameof(LocationCautions));
+		}
+		/// <summary>
+		/// For each component location setting (by the setting's name): null when every well of every tray can be brought to it,
+		/// otherwise the caution to show under its fields.
+		/// </summary>
+		public IReadOnlyDictionary<string, string?> LocationCautions => _locationCautions;
+		private Dictionary<string, string?> _locationCautions = new();
 		private void UpdateConfigNeedsGenerating()
 		{
 			string current;
@@ -303,6 +346,7 @@ namespace Effani.Device.UI
 
 			_settingsService.ActivateSettingsVersion(settingsVersion.Id);
 			AttachSettings();
+			UseActiveSettings();
 
 			RaisePropertyChanged(nameof(Settings));
 			RaisePropertyChanged(nameof(ActiveSettingsVersion));
@@ -324,6 +368,7 @@ namespace Effani.Device.UI
 
 			_settingsService.SaveAcitveSettingsAsNew(NewSettingsDescription);
 			AttachSettings();
+			UseActiveSettings();
 			NewSettingsDescription = null;
 
 			RaisePropertyChanged(nameof(Settings));
@@ -338,6 +383,7 @@ namespace Effani.Device.UI
 
             _settingsService.ResetSettings();
             AttachSettings();
+            UseActiveSettings();
 
             RaisePropertyChanged(nameof(Settings));
             RaisePropertyChanged(nameof(ActiveSettingsVersion));

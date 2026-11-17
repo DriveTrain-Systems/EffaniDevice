@@ -20,8 +20,15 @@ namespace Drivetrain.Robotics.Process
 		public void Dispose()
 		{
 			TerminateProcess();
-			_publishThread = null;
-			_processThread = null;
+		}
+		/// <summary>
+		/// Waits until the engine's thread has ended: after <see cref="Dispose"/> or <see cref="TerminateProcess"/>, that is as soon
+		/// as the command that was being executed has finished.
+		/// </summary>
+		public void WaitForStop()
+		{
+			if (Thread.CurrentThread != _processThread)
+				_processThread.Join();
 		}
 		public void QueueCommand(Command command)
 		{
@@ -69,9 +76,15 @@ namespace Drivetrain.Robotics.Process
 			}
 			return discarded;
 		}
+		/// <summary>
+		/// Stops the engine for good. Nothing more is started: every queued job is discarded and the job being run stops after the
+		/// command it is executing, which is left to finish. (The queue used to be run to its end first, which kept the program
+		/// alive, and the device working, after its window had closed.)
+		/// </summary>
 		public void TerminateProcess()
 		{
 			_stopEngine = true;
+			ClearPendingJobs();
 		}
 		#endregion
 
@@ -113,7 +126,7 @@ namespace Drivetrain.Robotics.Process
 			{
 				for (var index = 0; index < job.Commands.Count; index++)
 				{
-					if (_abortCurrentJob)
+					if (_abortCurrentJob || _stopEngine)
 						break;
 
 					var command = job.Commands[index];
@@ -170,11 +183,11 @@ namespace Drivetrain.Robotics.Process
 			{
 				while (!_stopEngine)
 				{
-					while (PriorityJobQueue.TryDequeue(out var job))
+					while (!_stopEngine && PriorityJobQueue.TryDequeue(out var job))
 					{
 						TryDoJob(job);
 					}
-					while (!HoldQueueForHighPriorityJob && JobQueue.TryDequeue(out var job))
+					while (!_stopEngine && !HoldQueueForHighPriorityJob && JobQueue.TryDequeue(out var job))
 					{
 						TryDoJob(job);
 						if (PriorityJobQueue.Any())
@@ -302,7 +315,7 @@ namespace Drivetrain.Robotics.Process
 		#region Fields
 		Thread? _processThread;
 		Thread? _publishThread;
-		private bool _stopEngine;
+		private volatile bool _stopEngine;
 		private int _unfinishedJobs;
 		private volatile bool _executingJob;
 		private volatile Command? _executingCommand;
