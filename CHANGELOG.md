@@ -35,6 +35,8 @@ the tagged version has no section here, no release is made and the run fails say
   well of the full set of trays could be brought to it, saying which values would work.
 - Settings: the **Biopsy Location** can be edited (Component Locations, Tray Carrier Locations).
 - Repository: pushing a version tag to GitHub publishes a GitHub Release whose notes are that version's section of this file.
+- Repository: `hardware.md` records what is known of the machine's hardware (boards, axes, screws, outputs, sensors,
+  trays), how sure each fact is and where it came from. It is listed in the solution under Solution Items.
 - Settings record the version of the program they were created with or last brought up to date by (not shown anywhere).
   When the program starts, saved settings from an older version are brought up to date by the migrations defined for the
   versions in between, then marked with the running version. No migrations are defined yet. A debug build asks first,
