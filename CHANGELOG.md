@@ -62,6 +62,10 @@ the tagged version has no section here, no release is made and the run fails say
   WiFi SSID and WiFi password are empty. Saved settings keep their own values.
 - Installer: product version 4.1.2.
 
+- Tools, Component Control: the ±1, ±10 and ±100 mm buttons in each axis's Commands... list are replaced by **Move...**,
+  which asks how far to move the axis and which way. The distance is typed as a positive number and the direction chosen
+  with a button; a direction is only offered when the axis has that much room left on its travel.
+
 ### Fixed
 
 - The program kept running after its window was closed. On closing, everything queued is now discarded, the command in

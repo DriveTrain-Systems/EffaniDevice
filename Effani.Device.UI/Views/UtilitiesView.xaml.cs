@@ -30,6 +30,25 @@ namespace Effani.Device.UI
 			this.Width = (System.Windows.SystemParameters.PrimaryScreenWidth * 0.90);
 		}
 		private void Close_Click(object sender, System.Windows.RoutedEventArgs e) => Close();
+		/// <summary>Move... in an axis's list of commands: asks how far to move the axis and which way, then queues the move.</summary>
+		private void MoveBy_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is not FrameworkElement { DataContext: AxisSpec axis } button || DataContext is not UtilitiesViewModel viewModel)
+				return;
+			// the list the button is in is closed first, so it is not left open behind the question
+			for (DependencyObject? parent = button; parent is not null; parent = LogicalTreeHelper.GetParent(parent))
+			{
+				if (parent is DevExpress.Xpf.Core.DropDownButton list)
+				{
+					list.IsPopupOpen = false;
+					break;
+				}
+			}
+			decimal? current = axis.Designation is not null && viewModel.Positions.TryGetValue(axis.Designation, out var now) ? now : null;
+			var dialog = new MoveByView(axis.Label, axis.Minimum, axis.Maximum, current) { Owner = this };
+			if (dialog.ShowDialog() == true && dialog.Distance is decimal distance)
+				viewModel.MoveAxisBy(axis, distance);
+		}
 
 		#region Axis position slider
 		// The slider of an axis shows where the axis is. A drag of its handle moves the axis to where the handle is let go; a tap

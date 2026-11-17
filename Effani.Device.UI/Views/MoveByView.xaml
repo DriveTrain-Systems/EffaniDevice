@@ -1,0 +1,32 @@
+﻿<dx:ThemedWindow
+    x:Class="Effani.Device.UI.MoveByView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+    xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+    Title="Move Axis" WindowStyle="ToolWindow" ResizeMode="NoResize" ShowInTaskbar="False"
+    WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" FontSize="18">
+    <dx:ThemedWindow.Resources>
+        <!-- spin arrows wide enough to hit with a finger -->
+        <Style TargetType="dxe:SpinButton"><Setter Property="MinWidth" Value="56"/></Style>
+    </dx:ThemedWindow.Resources>
+    <StackPanel Margin="30" Width="760">
+        <TextBlock x:Name="Heading" FontSize="30" FontWeight="Bold" TextWrapping="Wrap" />
+        <!-- what to do, and how far the axis can go each way -->
+        <TextBlock x:Name="Note" Margin="0,14,0,0" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+            <dxe:SpinEdit x:Name="DistanceEdit" Width="280" MinHeight="68" FontSize="28" IsFloatValue="True" Increment="1" AllowNullInput="False"
+                          EditValueChanged="DistanceEdit_EditValueChanged" />
+            <TextBlock Text="mm" VerticalAlignment="Center" Margin="14,0,0,0" FontSize="24" />
+        </StackPanel>
+        <TextBlock x:Name="Problem" Margin="0,12,0,0" TextWrapping="Wrap" Foreground="#C62828" FontWeight="SemiBold" Visibility="Collapsed" />
+        <!-- the direction is chosen with the button, so a minus sign never has to be typed -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,30,0,0">
+            <dx:SimpleButton x:Name="BackButton" MinWidth="230" MinHeight="68" FontSize="22" CornerRadius="5" Click="Back_Click"
+                             ToolTipService.ShowOnDisabled="True" ToolTip="Move the axis this far back, toward 0." />
+            <dx:SimpleButton x:Name="ForwardButton" MinWidth="230" MinHeight="68" FontSize="22" CornerRadius="5" Margin="16,0,0,0" Click="Forward_Click"
+                             ToolTipService.ShowOnDisabled="True" ToolTip="Move the axis this far forward, away from 0." />
+            <dx:SimpleButton Content="Cancel" IsCancel="True" MinWidth="170" MinHeight="68" FontSize="22" CornerRadius="5" Margin="16,0,0,0" />
+        </StackPanel>
+    </StackPanel>
+</dx:ThemedWindow>

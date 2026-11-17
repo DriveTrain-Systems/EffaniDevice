@@ -235,6 +235,12 @@ namespace Effani.Device.UI
 			_processEngine.QueueCommand(new MoveAbsolute(position, _device, axisSpec));
 			return true;
 		}
+		/// <summary>Queues a move of an axis by a distance (mm) from where it is: negative is back, toward 0.</summary>
+		public void MoveAxisBy(AxisSpec axisSpec, decimal distance)
+		{
+			if (distance != 0)
+				_processEngine.QueueCommand(new MoveRelative(distance, _device, axisSpec));
+		}
 		[Command]
 		public async Task MoveRapid(List<object> parameters)
 		{

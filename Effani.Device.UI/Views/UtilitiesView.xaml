@@ -313,7 +313,7 @@
 										</Button.CommandParameter>
 									</dx:SimpleButton>
 									<!-- every other move of the axis, and homing it again: to its start position, to a well, or by a distance. The list stays open after a
-									     move, so the axis can be stepped several times; touching anywhere else closes it. -->
+									     move to a well, so the wells can be stepped through; touching anywhere else closes it. -->
 									<dx:DropDownButton CornerRadius="3" Padding="16,12,16,12" Margin="4" MinHeight="52" FontSize="16" Content="Commands..."
 											ToolTip="More for this axis: home it again, move it to its start position, to a well, or by a distance.">
 										<Border Padding="8">
@@ -322,6 +322,16 @@
 												<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.HomeCommand}" CommandParameter="{Binding}" Content="Home"
 														ToolTip="Home this axis again." />
 												<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.MoveToStartCommand}" CommandParameter="{Binding}" Content="Move To Start">
+													<dx:SimpleButton.IsEnabled>
+														<MultiBinding Converter="{StaticResource AxisHomedConverter}">
+															<Binding Path="Designation" />
+															<Binding ElementName="axesList" Path="DataContext.Homed" />
+														</MultiBinding>
+													</dx:SimpleButton.IsEnabled>
+												</dx:SimpleButton>
+												<!-- a move by a distance: asks how far and which way (MoveBy_Click, MoveByView) -->
+												<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Click="MoveBy_Click" Content="Move..."
+														ToolTipService.ShowOnDisabled="True" ToolTip="Move this axis by a distance you type, back or forward. Available once the axis is homed.">
 													<dx:SimpleButton.IsEnabled>
 														<MultiBinding Converter="{StaticResource AxisHomedConverter}">
 															<Binding Path="Designation" />
@@ -389,116 +399,6 @@
 													</dx:SimpleButton.Content>
 												</dx:SimpleButton>
 												</StackPanel>
-										<StackPanel Orientation="Horizontal">
-											<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="&lt;&lt;&lt; -100">
-												<dx:SimpleButton.IsEnabled>
-													<MultiBinding Converter="{StaticResource AxisHomedConverter}">
-														<Binding Path="Designation" />
-														<Binding ElementName="axesList" Path="DataContext.Homed" />
-													</MultiBinding>
-												</dx:SimpleButton.IsEnabled>
-												<Button.CommandParameter>
-													<MultiBinding Converter="{StaticResource PassThroughConverter}">
-														<Binding/>
-														<Binding>
-															<Binding.Source>
-																<sys:Single>-100</sys:Single>
-															</Binding.Source>
-														</Binding>
-													</MultiBinding>
-												</Button.CommandParameter>
-											</dx:SimpleButton>
-											<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="&lt;&lt; -10">
-												<dx:SimpleButton.IsEnabled>
-													<MultiBinding Converter="{StaticResource AxisHomedConverter}">
-														<Binding Path="Designation" />
-														<Binding ElementName="axesList" Path="DataContext.Homed" />
-													</MultiBinding>
-												</dx:SimpleButton.IsEnabled>
-												<Button.CommandParameter>
-													<MultiBinding Converter="{StaticResource PassThroughConverter}">
-														<Binding/>
-														<Binding>
-															<Binding.Source>
-																<sys:Single>-10</sys:Single>
-															</Binding.Source>
-														</Binding>
-													</MultiBinding>
-												</Button.CommandParameter>
-											</dx:SimpleButton>
-											<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="&lt; -1">
-												<dx:SimpleButton.IsEnabled>
-													<MultiBinding Converter="{StaticResource AxisHomedConverter}">
-														<Binding Path="Designation" />
-														<Binding ElementName="axesList" Path="DataContext.Homed" />
-													</MultiBinding>
-												</dx:SimpleButton.IsEnabled>
-												<Button.CommandParameter>
-													<MultiBinding Converter="{StaticResource PassThroughConverter}">
-														<Binding/>
-														<Binding>
-															<Binding.Source>
-																<sys:Single>-1</sys:Single>
-															</Binding.Source>
-														</Binding>
-													</MultiBinding>
-												</Button.CommandParameter>
-											</dx:SimpleButton>
-											<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+1 &gt;">
-												<dx:SimpleButton.IsEnabled>
-													<MultiBinding Converter="{StaticResource AxisHomedConverter}">
-														<Binding Path="Designation" />
-														<Binding ElementName="axesList" Path="DataContext.Homed" />
-													</MultiBinding>
-												</dx:SimpleButton.IsEnabled>
-												<Button.CommandParameter>
-													<MultiBinding Converter="{StaticResource PassThroughConverter}">
-														<Binding/>
-														<Binding>
-															<Binding.Source>
-																<sys:Single>1</sys:Single>
-															</Binding.Source>
-														</Binding>
-													</MultiBinding>
-												</Button.CommandParameter>
-											</dx:SimpleButton>
-											<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+10 &gt;&gt;">
-												<dx:SimpleButton.IsEnabled>
-													<MultiBinding Converter="{StaticResource AxisHomedConverter}">
-														<Binding Path="Designation" />
-														<Binding ElementName="axesList" Path="DataContext.Homed" />
-													</MultiBinding>
-												</dx:SimpleButton.IsEnabled>
-												<Button.CommandParameter>
-													<MultiBinding Converter="{StaticResource PassThroughConverter}">
-														<Binding/>
-														<Binding>
-															<Binding.Source>
-																<sys:Single>10</sys:Single>
-															</Binding.Source>
-														</Binding>
-													</MultiBinding>
-												</Button.CommandParameter>
-											</dx:SimpleButton>
-											<dx:SimpleButton CornerRadius="3" Padding="16,12,16,12" Margin="4" Command="{Binding ElementName=axesList, Path=DataContext.MoveRapidCommand}" Content="+100 &gt;&gt;&gt;">
-												<dx:SimpleButton.IsEnabled>
-													<MultiBinding Converter="{StaticResource AxisHomedConverter}">
-														<Binding Path="Designation" />
-														<Binding ElementName="axesList" Path="DataContext.Homed" />
-													</MultiBinding>
-												</dx:SimpleButton.IsEnabled>
-												<Button.CommandParameter>
-													<MultiBinding Converter="{StaticResource PassThroughConverter}">
-														<Binding/>
-														<Binding>
-															<Binding.Source>
-																<sys:Single>100</sys:Single>
-															</Binding.Source>
-														</Binding>
-													</MultiBinding>
-												</Button.CommandParameter>
-											</dx:SimpleButton>
-										</StackPanel>
 											</StackPanel>
 										</Border>
 									</dx:DropDownButton>
