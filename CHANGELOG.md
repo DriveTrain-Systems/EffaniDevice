@@ -24,6 +24,16 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+## 4.1.6 - 2026-11-18
+
+### Fixed
+
+- The installer now removes an installed 4.0.5 or earlier before it installs. Since 4.1.2 the installer has carried
+  a different upgrade code from those versions, so it did not recognise them as an old version of Effani: it
+  installed over them, left them registered, and kept every one of their files that had the same version number as
+  the new one. That is how 4.1.4 came to run with old libraries. An installed 4.1.2 or later was, and is, removed
+  completely before the new version's files are put in place. Program and installer are version 4.1.6.
+
 ## 4.1.5 - 2026-11-17
 
 ### Added
