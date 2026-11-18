@@ -22,7 +22,7 @@
 		<UseWindowsForms>False</UseWindowsForms>
 		<ApplicationIcon>Resources\effanicow.ico</ApplicationIcon>
 		<AssemblyName>Effani Device</AssemblyName>
-		<Version>4.1.4</Version> <!-- keep in step with ProductVersion in Setup\Effani Installer.aip -->
+		<!-- the version is set for every project in Directory.Build.props -->
 	</PropertyGroup>
 
 	<ItemGroup>

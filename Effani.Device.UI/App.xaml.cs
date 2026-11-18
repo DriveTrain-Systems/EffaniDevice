@@ -51,6 +51,14 @@ namespace Effani.Device.UI
 		{
 			await AppHost!.StopAsync();
 
+			// An error nothing handled ends the program. It is written to the log first, with where it happened, so that a crash on
+			// a machine in use can be read from its Log.txt instead of from Windows' event log.
+			AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+			{
+				Log.Fatal(args.ExceptionObject as Exception, "The program ended because of an error that was not handled");
+				Log.CloseAndFlush();
+			};
+
 			// typing on the touchscreen: a touched field opens the on-screen keyboard and a copy of the field above it
 			OnScreenInput.Register();
 

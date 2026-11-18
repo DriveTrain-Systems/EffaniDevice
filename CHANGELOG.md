@@ -24,6 +24,8 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+## 4.1.5 - 2026-11-17
+
 ### Added
 
 - Board emulator: a new project, Drivetrain.Robotics.Emulator, stands in for the controller board so the program can
@@ -43,6 +45,13 @@ To release a version, say 4.1.2:
 
 ### Fixed
 
+- Upgrading an installed copy left the program's own libraries at their old version, so the new program ran with old
+  libraries. With 4.1.4 this ended the program, with "Method not found", shortly after a command such as Home All
+  was issued from Tools; in earlier upgrades it will have left fixes in those libraries out without any sign. The
+  libraries always carried the version 1.0.0.0, and Windows Installer does not replace a file with one of the same
+  version. Every project now carries the program's version (set in one place, Directory.Build.props), so each
+  release replaces every library. Program and installer are version 4.1.5.
+- A crash is now written to the program's log (Log.txt) with where it happened, before the program ends.
 - The generated homeall.g no longer starts with a check that raises a homed needle before the table homes: the board
   marks every axis as not homed before it runs that file, so the check could never apply. The program itself still
   raises the needle before it homes all axes, and homeX.g and homeY.g keep the check, which does apply there. A G28

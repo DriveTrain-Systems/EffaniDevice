@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    The version of every project in the solution: the program and its libraries carry the same number.
+
+    The libraries must change version with every release. Windows Installer, upgrading an installed copy, keeps a file
+    already on the machine when the new file has the same version number, so a library left at 1.0.0.0 was not replaced
+    by an upgrade: the new program then ran with old libraries (4.1.4 ended with "Method not found" on Home All).
+
+    Keep in step with ProductVersion in Setup\Effani Installer.aip.
+  -->
+  <PropertyGroup>
+    <Version>4.1.5</Version>
+  </PropertyGroup>
+</Project>
