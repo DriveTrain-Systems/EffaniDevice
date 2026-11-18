@@ -67,6 +67,10 @@ namespace Effani.Device.UI
 			var emulatorVariable = Environment.GetEnvironmentVariable("EFFANI_EMULATOR")?.Trim();
 			DeviceService.UseEmulator = Array.Exists(e.Args, a => String.Equals(a, "--emulator", StringComparison.OrdinalIgnoreCase))
 				|| emulatorVariable == "1" || String.Equals(emulatorVariable, "true", StringComparison.OrdinalIgnoreCase);
+#if EMULATOR
+			// the Emulator build configuration always runs against the emulated board
+			DeviceService.UseEmulator = true;
+#endif
 			var startupForm = AppHost.Services.GetRequiredService<MainWindow>();
 			startupForm.Show();
 			if (DeviceService.UseEmulator)

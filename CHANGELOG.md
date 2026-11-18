@@ -37,6 +37,10 @@ To release a version, say 4.1.2:
   kept in the "Board Emulator" folder beside the program's data, and its record of which config it was sent is kept
   apart from the real board's. It moves nothing, so it shows what the program does, not what the hardware will do.
 
+- Board emulator: a build configuration, Emulator, beside Debug and Release. It is a debug build of the program that
+  always runs against the board emulator, so debugging with the emulator is a matter of picking Emulator in Visual
+  Studio's configuration box. The other projects are built as Debug in it.
+
 ### Fixed
 
 - The generated homeall.g no longer starts with a check that raises a homed needle before the table homes: the board

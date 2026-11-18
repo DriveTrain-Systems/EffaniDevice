@@ -3,6 +3,16 @@
 	<PropertyGroup>
 		<IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
 		<Platforms>AnyCPU;x64</Platforms>
+		<Configurations>Debug;Release;Emulator</Configurations>
+	</PropertyGroup>
+
+	<!-- Emulator: a debug build that always runs against the board emulator (Drivetrain.Robotics.Emulator), never a COM port.
+	     Pick it in the configuration box beside Debug and Release. -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Emulator'">
+		<DefineConstants>$(DefineConstants);DEBUG;TRACE;EMULATOR</DefineConstants>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>portable</DebugType>
+		<Optimize>false</Optimize>
 	</PropertyGroup>
 
 	<PropertyGroup>
