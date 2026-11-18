@@ -61,9 +61,12 @@ namespace Effani.Device.UI
 			SettingsService.ConfirmMigration = question =>
 				MessageBox.Show(question, "Migrate Settings", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.Yes;
 #endif
-			// started with --emulator, the program runs against an emulated controller board: nothing is sent to a COM port. This is
-			// decided before the device is first used, which creating the main window does.
-			DeviceService.UseEmulator = Array.Exists(e.Args, a => String.Equals(a, "--emulator", StringComparison.OrdinalIgnoreCase));
+			// started with --emulator, or with the environment variable EFFANI_EMULATOR set to 1 or true, the program runs against
+			// an emulated controller board: nothing is sent to a COM port. This is decided before the device is first used, which
+			// creating the main window does.
+			var emulatorVariable = Environment.GetEnvironmentVariable("EFFANI_EMULATOR")?.Trim();
+			DeviceService.UseEmulator = Array.Exists(e.Args, a => String.Equals(a, "--emulator", StringComparison.OrdinalIgnoreCase))
+				|| emulatorVariable == "1" || String.Equals(emulatorVariable, "true", StringComparison.OrdinalIgnoreCase);
 			var startupForm = AppHost.Services.GetRequiredService<MainWindow>();
 			startupForm.Show();
 			if (DeviceService.UseEmulator)

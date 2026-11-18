@@ -27,7 +27,8 @@ To release a version, say 4.1.2:
 ### Added
 
 - Board emulator: a new project, Drivetrain.Robotics.Emulator, stands in for the controller board so the program can
-  be run and tried with no board connected. Start the program with `--emulator` (in Visual Studio, the launch profile
+  be run and tried with no board connected. Start the program with `--emulator`, or with the environment variable
+  `EFFANI_EMULATOR` set to `1` (in Visual Studio, which sets it for you, the launch profile
   "Effani Device (board emulator)"): nothing is then sent to a COM port. The emulated board answers the G-code the
   program sends the way the board does: it runs config.g and the homing files, keeps where each axis is and whether
   it is homed, takes as long over a move as the move would take, refuses to move an axis that is not homed, switches

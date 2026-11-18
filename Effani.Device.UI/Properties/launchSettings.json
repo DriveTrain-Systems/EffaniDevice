@@ -5,7 +5,9 @@
     },
     "Effani Device (board emulator)": {
       "commandName": "Project",
-      "commandLineArgs": "--emulator"
+      "environmentVariables": {
+        "EFFANI_EMULATOR": "1"
+      }
     }
   }
 }
