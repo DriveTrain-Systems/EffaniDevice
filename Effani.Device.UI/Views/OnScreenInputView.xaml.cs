@@ -26,8 +26,6 @@ namespace Effani.Device.UI
 
 			Caption.Text = OnScreenInput.LabelFor(field) ?? "Type a value";
 			var hint = OnScreenInput.HintFor(field);
-			if (field is SpinEdit { MinValue: decimal minimum, MaxValue: decimal maximum })
-				hint = (hint is null ? String.Empty : hint.TrimEnd().TrimEnd('.') + ". ") + $"A valid value is from {minimum:0.###} to {maximum:0.###}.";
 			Hint.Text = hint ?? String.Empty;
 			Hint.Visibility = String.IsNullOrEmpty(hint) ? Visibility.Collapsed : Visibility.Visible;
 
@@ -78,7 +76,7 @@ namespace Effani.Device.UI
 		}
 		private void Cancel_Click(object sender, RoutedEventArgs e) => Close();
 
-		/// <summary>An editor of the same kind as a field, with the same limits and the same value.</summary>
+		/// <summary>An editor of the same kind as a field, with the same value. A number field is made without limits of its own, like every spin field: what a setting allows is checked by the program, not by the field.</summary>
 		private static BaseEdit CopyOf(BaseEdit field)
 		{
 			switch (field)
@@ -86,8 +84,6 @@ namespace Effani.Device.UI
 				case SpinEdit spin:
 					var number = new SpinEdit
 					{
-						MinValue = spin.MinValue,
-						MaxValue = spin.MaxValue,
 						IsFloatValue = spin.IsFloatValue,
 						Increment = spin.Increment,
 						EditValueType = spin.EditValueType,

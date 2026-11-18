@@ -339,6 +339,25 @@ M669 K0 ; configure Cartesian kinematics
 			File.WriteAllBytes(path, Encoding.ASCII.GetBytes(text));
 			_generatedFiles.Add(path);
 		}
+		/// <summary>
+		/// G-code for the start of a homing file that moves the table: raises the aspiration needle to its starting position when
+		/// the board knows it is below it (the needle is homed), so the table does not run into it. Nothing when the needle is
+		/// not homed: the board does not then know where it is and will not move it to a position. Empty when the needle is not
+		/// one of the board's X, Y, Z axes, whose places in the board's object model are fixed.
+		/// </summary>
+		private string RaiseNeedleFirst(DeviceSpecification spec)
+		{
+			var needle = spec.Axes.OfType<AspirateZAxis>().FirstOrDefault();
+			var index = needle?.Designation is { Length: 1 } letter ? "XYZ".IndexOf(letter, StringComparison.Ordinal) : -1;
+			if (needle is null || index < 0)
+				return String.Empty;
+			return @$"
+; raise the needle out of the table's path first, when the board knows where it is
+if move.axes[{index}].homed && move.axes[{index}].machinePosition > {needle.StartingPosition}
+  G90 ; absolute positioning
+  G1 {needle.Designation}{needle.StartingPosition} F{Math.Min(Settings.AspirateMoveSpeed, needle.MaxSpeed)} ; needle to its starting position
+";
+		}
 		private void WriteHome(string folder, DeviceSpecification spec)
 		{
 			for (int i = 0; i < spec.Axes.Count; i++)
@@ -349,6 +368,8 @@ M669 K0 ; configure Cartesian kinematics
 "
 				);
 				var x = spec.Axes[i];
+				if (x is TableAxis)
+					homeTextBuilder.Append(RaiseNeedleFirst(spec));
 				var direction = x.Driver.Endstop.Location == EndstopLocation.HighEnd ? null : "-";
 				// backing off the endstop moves the other way: down from a high-end endstop, up from a low-end one
 				var backOff = x.Driver.Endstop.Location == EndstopLocation.HighEnd ? "-" : null;
@@ -360,9 +381,16 @@ G1 {x.Designation}{backOff}5 F{Math.Min(x.Driver.Endstop.FirstHomingSpeed, x.Max
 G1 H1 {x.Designation}{direction}{distance} F{Math.Min(x.Driver.Endstop.SecondHomingSpeed, x.MaxSpeed)} ; fine home
 G90 ; absolute positioning
 				");
+				// the needle homes at the bottom of its travel, where the table would run into it: its homing ends with a move to
+				// its starting position, so it is never left down after a G28, whoever sent it
+				if (x is AspirateZAxis)
+					homeTextBuilder.Append(@$"
+G1 {x.Designation}{x.StartingPosition} F{Math.Min(Settings.AspirateMoveSpeed, x.MaxSpeed)} ; to the starting position, clear of the table
+				");
 				WriteGeneratedFile(Path.Combine(folder, $"home{x.Designation}.g"), homeTextBuilder.ToString());
 			}
-			var homeAllBuilder = new StringBuilder();
+			// the table is homed first: the needle is raised before it starts, when the board knows where the needle is
+			var homeAllBuilder = new StringBuilder(RaiseNeedleFirst(spec).TrimStart('\r', '\n'));
 			foreach (var x in spec.Axes)
 			{
 				homeAllBuilder.AppendLine($"M98 P\"home{x.Designation}.g\" ; home {x.Label} axis");

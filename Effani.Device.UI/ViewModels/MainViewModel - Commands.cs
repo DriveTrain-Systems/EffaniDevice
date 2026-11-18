@@ -103,6 +103,7 @@ namespace Effani.Device.UI
 			var toolsWindow = new UtilitiesView(_settingsService, _processEngine, _device, ConsoleMessages, Assay != null) { Title = "Tools" };
 			toolsWindow.ShowDialog();
 			RaisePropertyChanged(nameof(MaxNumberOfSamples)); // the tray and well counts may have been changed
+			RaisePropertyChanged(nameof(HerdIdAndNumberOfTestsComplete));
 		}
 		[Command]
 		public void ShowUpload()

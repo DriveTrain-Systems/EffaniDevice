@@ -21,6 +21,7 @@ namespace Effani.Device.UI
 		{
 			InitializeComponent();
 			BuildContents();
+			StartRules();
 			// a group shown on its own is kept within the width of the page, so that width is worked out again when the page is resized
 			SettingsPages.SizeChanged += (s, e) =>
 			{
@@ -41,6 +42,117 @@ namespace Effani.Device.UI
 			_viewModel.ActivateSettingsVersion(settingsVersion);
 
 		}
+
+		#region Rules
+		// What a setting allows is a rule the program checks, not a limit of the field: a field with a limit objects to a value
+		// while it is still being typed ("0." on the way to "0.00153"), and refuses to take it. The fields therefore accept
+		// anything, and what is wrong with the settings as they stand is listed under the pages, a moment after the last change.
+
+		/// <summary>The least a setting may be; set on its field in the XAML. Checked by <see cref="CheckRules"/>, not by the field.</summary>
+		public static readonly DependencyProperty LeastProperty =
+			DependencyProperty.RegisterAttached("Least", typeof(double), typeof(SettingsControl), new PropertyMetadata(double.NaN));
+		public static double GetLeast(DependencyObject element) => (double)element.GetValue(LeastProperty);
+		public static void SetLeast(DependencyObject element, double value) => element.SetValue(LeastProperty, value);
+		/// <summary>The most a setting may be; set on its field in the XAML. Checked by <see cref="CheckRules"/>, not by the field.</summary>
+		public static readonly DependencyProperty MostProperty =
+			DependencyProperty.RegisterAttached("Most", typeof(double), typeof(SettingsControl), new PropertyMetadata(double.NaN));
+		public static double GetMost(DependencyObject element) => (double)element.GetValue(MostProperty);
+		public static void SetMost(DependencyObject element, double value) => element.SetValue(MostProperty, value);
+
+		/// <summary>
+		/// Checks a value against the rule its field carries (<see cref="LeastProperty"/>, <see cref="MostProperty"/>): null when
+		/// the value is allowed, otherwise what is wrong with it. Used for the settings pages and by any other window whose
+		/// number field has limits (the move windows, the number of samples), so every limit is checked and worded the same way.
+		/// </summary>
+		public static string? RuleProblem(DependencyObject field, string name, double value) => RuleProblem(name, value, GetLeast(field), GetMost(field));
+		private static string? RuleProblem(string name, double value, double least, double most)
+		{
+			static string Number(double number) => number.ToString("0.#####", System.Globalization.CultureInfo.CurrentCulture);
+			if (!double.IsNaN(least) && value < least)
+				return $"{name} is {Number(value)}: it should be at least {Number(least)}.";
+			if (!double.IsNaN(most) && value > most)
+				return $"{name} is {Number(value)}: it should be at most {Number(most)}.";
+			return null;
+		}
+		/// <summary>A setting with a rule: its name on the pages, the setting it is, and what it allows.</summary>
+		private sealed record Rule(string Name, string Setting, double Least, double Most);
+
+		/// <summary>Finds the rules on the pages and has them checked whenever a setting changes, or other settings become the active ones.</summary>
+		private void StartRules()
+		{
+			foreach (var page in SettingsPages.Items.OfType<DXTabItem>())
+			{
+				if (page.Content is not LayoutControlBase root)
+					continue;
+				foreach (var item in Descendants<LayoutItem>(root))
+				{
+					if (item.Content is not SpinEdit field || BindingOperations.GetBinding(field, BaseEdit.EditValueProperty)?.Path?.Path is not string setting)
+						continue;
+					var least = GetLeast(field);
+					var most = GetMost(field);
+					if (!double.IsNaN(least) || !double.IsNaN(most))
+						_rules.Add(new Rule(RuleName(page, item), setting, least, most));
+				}
+			}
+			_rulesTimer.Tick += (s, e) =>
+			{
+				_rulesTimer.Stop();
+				CheckRules();
+			};
+			SettingsPages.DataContextChanged += (s, e) =>
+			{
+				if (e.OldValue is System.ComponentModel.INotifyPropertyChanged before)
+					before.PropertyChanged -= Settings_Changed;
+				if (e.NewValue is System.ComponentModel.INotifyPropertyChanged now)
+					now.PropertyChanged += Settings_Changed;
+				CheckRules();
+			};
+			Unloaded += (s, e) => _rulesTimer.Stop();
+		}
+		/// <summary>A setting changed: the rules are checked once the changes stop, so a value is not reported on while it is being typed.</summary>
+		private void Settings_Changed(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			_rulesTimer.Stop();
+			_rulesTimer.Start();
+		}
+		/// <summary>What a field is called in the list of problems: its page, the groups it is in, and its own label (a location's X or Y with the location's name).</summary>
+		private static string RuleName(DXTabItem page, LayoutItem item)
+		{
+			var names = new List<string>();
+			for (DependencyObject? element = item; element is not null && !ReferenceEquals(element, page); element = LogicalTreeHelper.GetParent(element))
+			{
+				if (element is LayoutItem { Label: string label } && !String.IsNullOrWhiteSpace(label))
+					names.Insert(0, label.Trim());
+				else if (element is LayoutGroup { View: LayoutGroupView.GroupBox, Header: string header } && !String.IsNullOrWhiteSpace(header))
+					names.Insert(0, HeadingText(header));
+			}
+			names.Insert(0, page.Header?.ToString() ?? String.Empty);
+			return String.Join(" \u2013 ", names.Where(n => n.Length > 0));
+		}
+		/// <summary>Checks every setting that has a rule against the settings as they are now, and lists what is wrong under the pages.</summary>
+		private void CheckRules()
+		{
+			var problems = new List<string>();
+			if (SettingsPages.DataContext is object settings)
+			{
+				foreach (var rule in _rules)
+				{
+					if (settings.GetType().GetProperty(rule.Setting)?.GetValue(settings) is not IConvertible raw)
+						continue;
+					double value;
+					try { value = raw.ToDouble(System.Globalization.CultureInfo.InvariantCulture); }
+					catch { continue; }
+					if (RuleProblem(rule.Name, value, rule.Least, rule.Most) is string problem)
+						problems.Add(problem);
+				}
+			}
+			ProblemsList.ItemsSource = problems;
+			ProblemsTitle.Text = problems.Count == 1 ? "1 setting is outside what it allows" : $"{problems.Count} settings are outside what they allow";
+			ProblemsPanel.Visibility = problems.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+		}
+		private readonly List<Rule> _rules = new();
+		private readonly System.Windows.Threading.DispatcherTimer _rulesTimer = new() { Interval = TimeSpan.FromMilliseconds(900) };
+		#endregion
 
 		#region The settings of one axis
 		/// <summary>One field of an axis's settings: what it is called, its description, and the editor on these pages it is a copy of.</summary>
@@ -217,7 +329,7 @@ namespace Effani.Device.UI
 				return null;
 			BaseEdit copy;
 			if (source is SpinEdit spin)
-				copy = new SpinEdit { IsFloatValue = spin.IsFloatValue, Increment = spin.Increment, MinValue = spin.MinValue, MaxValue = spin.MaxValue, EditValueType = spin.EditValueType, Mask = spin.Mask };
+				copy = new SpinEdit { IsFloatValue = spin.IsFloatValue, Increment = spin.Increment, EditValueType = spin.EditValueType, Mask = spin.Mask };
 			else if (source is ComboBoxEdit combo)
 				copy = new ComboBoxEdit { ItemsSource = combo.ItemsSource, ValueMember = combo.ValueMember, DisplayMember = combo.DisplayMember, IsTextEditable = combo.IsTextEditable, MinWidth = 160 };
 			else

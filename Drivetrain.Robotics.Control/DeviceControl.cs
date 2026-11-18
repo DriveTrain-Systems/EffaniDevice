@@ -186,13 +186,58 @@ namespace Drivetrain.Robotics.Control
 		}
 		public void Home(AxisSpec axisSpec)
 		{
-			WriteMotion($"G28 {axisSpec.Designation}");
+			// the table moves to home: not while the needle is known to be down in its path
+			if (axisSpec is TableAxis && !RaiseNeedleBeforeTableHomes())
+			{
+				UpdatePositions();
+				return;
+			}
+			if (WriteMotion($"G28 {axisSpec.Designation}"))
+				RaiseNeedleAfterHoming(axisSpec);
 			UpdatePositions();
 		}
 		public void HomeAll()
 		{
-			WriteMotion($"G28");
+			// the table is homed first, so the needle is raised before it starts whenever that can be done
+			if (!RaiseNeedleBeforeTableHomes())
+			{
+				UpdatePositions();
+				return;
+			}
+			if (WriteMotion($"G28"))
+			{
+				foreach (var axisSpec in Configuration.DeviceSpecification.Axes)
+					RaiseNeedleAfterHoming(axisSpec);
+			}
 			UpdatePositions();
+		}
+		/// <summary>
+		/// The aspiration needle homes at the bottom of its travel, where the table would run into it. Whenever it has been homed
+		/// it is therefore moved straight to its starting position, before anything else can move. (The generated homing file of
+		/// the needle does the same on the board, for a G28 that does not come from here.) Nothing is done for any other axis,
+		/// nor when homing failed: the needle's position is then not known.
+		/// </summary>
+		/// <summary>
+		/// Before the table is homed: raises the aspiration needle to its starting position when it is known to be below it, so
+		/// the table does not run into it. That is only possible while the needle is homed: until then the board does not know
+		/// where the needle is and cannot move it to a position, and the table is homed as things are. Returns false, and the
+		/// table must then not be homed, only when the needle is known to be down and could not be raised.
+		/// </summary>
+		private bool RaiseNeedleBeforeTableHomes()
+		{
+			var needle = Configuration.DeviceSpecification.Axes.OfType<AspirateZAxis>().FirstOrDefault();
+			if (needle?.Designation is null || !Homed.TryGetValue(needle.Designation, out var homed) || !homed)
+				return true; // where the needle is is not known
+			if (Positions.TryGetValue(needle.Designation, out var at) && at <= needle.StartingPosition)
+				return true; // already raised (down is the positive direction)
+			var speed = MoveSpeedFor(needle);
+			return WriteMotion("G90")
+				&& WriteMove($"G1 {needle.Designation}{needle.StartingPosition} F{speed}", speed, [(needle, TravelTo(needle, needle.StartingPosition))]);
+		}
+		private void RaiseNeedleAfterHoming(AxisSpec axisSpec)
+		{
+			if (axisSpec is AspirateZAxis)
+				MoveToStarting(axisSpec);
 		}
 		public void Move(List<MoveSpec> moveSpecs, decimal speed)
 		{

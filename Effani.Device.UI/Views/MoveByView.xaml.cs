@@ -30,8 +30,8 @@ namespace Effani.Device.UI
 					? $"The axis is at {now:0.###} mm on a travel of {minimum:0.###} to {maximum:0.###} mm, so it can go up to {_back:0.###} mm back and {_forward:0.###} mm forward."
 					: $"Where the axis is has not been read, so the distance is only held to the length of its travel, {travel:0.###} mm.")
 				+ " The move is added to the command queue.";
-			DistanceEdit.MinValue = 0;
-			DistanceEdit.MaxValue = travel;
+			// the field has no limits of its own: the most room the axis has either way is its rule, which Validate has checked
+			SettingsControl.SetMost(DistanceEdit, (double)Math.Max(_back, _forward));
 			DistanceEdit.EditValue = Math.Min(10m, Math.Max(_back, _forward));
 			Validate(out _);
 			Loaded += (s, e) =>
@@ -75,7 +75,8 @@ namespace Effani.Device.UI
 			ForwardButton.Content = forward && _current is decimal at ? $"Forward to {at + distance:0.###} mm \u2192" : "Forward \u2192";
 			Problem.Text = back || forward ? String.Empty
 				: !positive ? "Enter a distance greater than 0."
-				: $"The axis has room for {_back:0.###} mm back and {_forward:0.###} mm forward.";
+				: (SettingsControl.RuleProblem(DistanceEdit, "The distance", (double)distance) is string problem ? problem + " " : String.Empty)
+					+ $"The axis has room for {_back:0.###} mm back and {_forward:0.###} mm forward.";
 			Problem.Visibility = back || forward ? Visibility.Collapsed : Visibility.Visible;
 			return back || forward;
 		}

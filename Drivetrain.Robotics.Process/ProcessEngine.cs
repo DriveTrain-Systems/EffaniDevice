@@ -60,11 +60,13 @@ namespace Drivetrain.Robotics.Process
 			{
 				discarded += CommandsOf(job).Length;
 				Interlocked.Decrement(ref _unfinishedJobs);
+				job.Finish();
 			}
 			while (PriorityJobQueue.TryDequeue(out var job))
 			{
 				discarded += CommandsOf(job).Length;
 				Interlocked.Decrement(ref _unfinishedJobs);
+				job.Finish();
 			}
 			var current = _currentJob;
 			if (_executingJob)
@@ -112,6 +114,7 @@ namespace Drivetrain.Robotics.Process
 			{
 				// only now is the job no longer pending: this covers the moment between taking it off its queue and starting it
 				Interlocked.Decrement(ref _unfinishedJobs);
+				job.Finish();
 			}
 		}
 		private void RunJob(Job job)

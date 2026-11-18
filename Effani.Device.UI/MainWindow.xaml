@@ -31,12 +31,12 @@
 		</Grid.RowDefinitions>
 		<!-- a toolbar of its own rather than title bar items, so the buttons can be big enough for a small touchscreen -->
 		<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Background="Transparent">
-			<dx:SimpleButton Command="{Binding ShowUploadCommand}" BorderThickness="0" Margin="4,4,4,4" MinWidth="84" MinHeight="76" ToolTip="Upload">
+			<dx:SimpleButton Command="{Binding ShowUploadCommand}" Background="Transparent" BorderThickness="0" Margin="4,4,4,4" MinWidth="84" MinHeight="76" ToolTip="Upload">
 				<dx:SimpleButton.Content>
 					<Image Width="52" Height="52" Source="{dx:DXImage 'SvgImages/Icon Builder/Weather_Cloudy.svg'}" />
 				</dx:SimpleButton.Content>
 			</dx:SimpleButton>
-			<dx:SimpleButton Command="{Binding ShowToolsCommand}" BorderThickness="0" Margin="4,4,4,4" MinWidth="84" MinHeight="76" ToolTip="Tools">
+			<dx:SimpleButton Command="{Binding ShowToolsCommand}" Background="Transparent" BorderThickness="0" Margin="4,4,4,4" MinWidth="84" MinHeight="76" ToolTip="Tools">
 				<dx:SimpleButton.Content>
 					<Image Width="52" Height="52" Source="{dx:DXImage 'SvgImages/Icon Builder/Actions_Settings.svg'}" />
 				</dx:SimpleButton.Content>

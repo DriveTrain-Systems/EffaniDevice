@@ -14,6 +14,8 @@
 			 mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="1200">
     <UserControl.Resources>
+        <!-- an empty number field reaches the view model as 0 instead of failing to convert -->
+        <local:WholeNumberConverter x:Key="WholeNumber" />
         <Style TargetType="{x:Type dxe:TextEdit}">
             <Setter Property="Margin" Value="0,10,0,0" />
             <Setter Property="MinHeight" Value="56" />
@@ -77,8 +79,11 @@
                                 <TextBlock TextWrapping="WrapWithOverflow" Text="Herd ID" Margin="0,15,0,0"/>
                                 <dxe:TextEdit x:Name="HerdIdTextEdit" NullText="Enter the identifier of the herd being tested." Text="{Binding HerdId, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" IsVisibleChanged="GetFocus"/>
                                 <TextBlock TextWrapping="WrapWithOverflow" Text="Number of animals to be tested" Margin="0,15,0,0"/>
-                                <dxe:SpinEdit x:Name="NumberOfSamplesEdit" Width="200" EditValue="{Binding NumberOfSamples, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" Text="0"
-								EditValueType="{x:Type sys:Int32}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" IsFloatValue="False" Mask="d0" MinValue="1" MaxValue="{Binding MaxNumberOfSamples}" AllowSpinOnMouseWheel="True" />
+                                <dxe:SpinEdit x:Name="NumberOfSamplesEdit" Width="200" EditValue="{Binding NumberOfSamples, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource WholeNumber}}" Text="0"
+								EditValueType="{x:Type sys:Int32}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" IsFloatValue="False" Mask="d0" AllowSpinOnMouseWheel="True"
+								local:SettingsControl.Least="1" local:SettingsControl.Most="{Binding MaxNumberOfSamples}" EditValueChanged="NumberOfSamplesEdit_EditValueChanged" />
+                                <!-- the field has no limits of its own: its rule (Least, Most) is checked by the program, which says what is wrong here and keeps Next off until the number is right -->
+                                <TextBlock TextWrapping="Wrap" Margin="0,6,0,0" FontSize="16" FontWeight="SemiBold" Foreground="#C62828" x:Name="NumberOfSamplesProblem" Visibility="Collapsed" />
                                 <dx:SimpleButton Margin="0,20,0,0" HorizontalAlignment="Stretch" Command="{Binding NextPageCommand}" IsEnabled="{Binding HerdIdAndNumberOfTestsComplete}">
                                     <dx:SimpleButton.Content>
                                         <StackPanel>

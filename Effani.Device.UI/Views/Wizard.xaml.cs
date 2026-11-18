@@ -44,6 +44,22 @@ namespace Effani.Device.UI
 			ViewModel.PageStartCleanUp();
 			wizard.SelectedItem = CleanUpPage;
 		}
+		/// <summary>Checks the number of animals against the field's rule (at least 1, at most what the trays hold) and says what is wrong with it.</summary>
+		private void NumberOfSamplesEdit_EditValueChanged(object sender, EditValueChangedEventArgs e)
+		{
+			string? problem = null;
+			try
+			{
+				if (NumberOfSamplesEdit.EditValue is IConvertible number)
+					problem = SettingsControl.RuleProblem(NumberOfSamplesEdit, "The number of animals", number.ToDouble(System.Globalization.CultureInfo.CurrentCulture));
+			}
+			catch (Exception)
+			{
+				// not a number yet: nothing to check
+			}
+			NumberOfSamplesProblem.Text = problem ?? String.Empty;
+			NumberOfSamplesProblem.Visibility = problem is null ? Visibility.Collapsed : Visibility.Visible;
+		}
 		private void ViewModel_ResetWizardPage(object sender, EventArgs e)
 		{
 			// the first page's editors only push their values to the view model, so clear them here

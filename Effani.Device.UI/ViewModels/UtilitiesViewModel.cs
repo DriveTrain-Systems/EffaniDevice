@@ -42,7 +42,7 @@ namespace Effani.Device.UI
 			_device.PositionsChanged += Device_PositionsChanged;
 			_device.OutputsChanged += Device_OutputsChanged;
 			// find out which axes are homed, so the move buttons of the others can be disabled
-			_processEngine.QueueCommand(new ReadPositions(_device));
+			Queue(new ReadPositions(_device));
 		}
 		#endregion
 
@@ -160,6 +160,17 @@ namespace Effani.Device.UI
 				RaisePropertyChanged(nameof(Positions));
 				RaisePropertyChanged(nameof(Homed));
 			});
+		/// <summary>
+		/// Raised, on the thread that queued it, for every job this window queues. The window uses it to mark the control the
+		/// job was issued from until the job is over (<see cref="Job.IsFinished"/>).
+		/// </summary>
+		public event Action<Job>? JobQueued;
+		private void Queue(Drivetrain.Robotics.Process.Command command) => Queue(new Job(null!, [command]));
+		private void Queue(Job job)
+		{
+			_processEngine.QueueJob(job);
+			JobQueued?.Invoke(job);
+		}
 		private void RefreshCommandQueue()
 		{
 			CommandQueue.Refresh(_processEngine);
@@ -221,7 +232,7 @@ namespace Effani.Device.UI
 			set
 			{
 				if (value != IsOutputOn(0))
-					_processEngine.QueueCommand(value ? new TrayUvOn(_device) : new TrayUvOff(_device));
+					Queue(value ? new TrayUvOn(_device) : new TrayUvOff(_device));
 			}
 		}
 		/// <summary>Whether the chamber UV light (output port 1) is on, as the board last reported it; setting it switches the light.</summary>
@@ -231,7 +242,7 @@ namespace Effani.Device.UI
 			set
 			{
 				if (value != IsOutputOn(1))
-					_processEngine.QueueCommand(value ? new ChamberUvOn(_device) : new ChamberUvOff(_device));
+					Queue(value ? new ChamberUvOn(_device) : new ChamberUvOff(_device));
 			}
 		}
 		/// <summary>Whether the NADH laser (output port 2) is on, as the board last reported it; setting it switches the laser.</summary>
@@ -241,7 +252,7 @@ namespace Effani.Device.UI
 			set
 			{
 				if (value != IsOutputOn(2))
-					_processEngine.QueueCommand(new SwitchLaser(dna: false, on: value, _device));
+					Queue(new SwitchLaser(dna: false, on: value, _device));
 			}
 		}
 		/// <summary>Whether the DNA laser (output port 3) is on, as the board last reported it; setting it switches the laser.</summary>
@@ -251,7 +262,7 @@ namespace Effani.Device.UI
 			set
 			{
 				if (value != IsOutputOn(3))
-					_processEngine.QueueCommand(new SwitchLaser(dna: true, on: value, _device));
+					Queue(new SwitchLaser(dna: true, on: value, _device));
 			}
 		}
 		/// <summary>True while any command is queued or executing (checked every second); settings such as the COM port are locked while it is.</summary>

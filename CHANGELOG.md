@@ -24,16 +24,49 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+## 4.1.4 - 2026-11-17
+
+### Added
+
+- Tools: a control that issues a command to the device carries a small spinner from the moment the command is queued
+  until it is over (it ran, failed, or was cleared from the queue). This covers the buttons, the switches, the axis
+  sliders, the Send button (also when Enter sends the command) and the buttons on the Settings tab. A command chosen
+  from a Commands... list also marks the Commands... button, which stays in view when the list closes. The spinner
+  has no background of its own: the control shows through it.
+
 ### Changed
 
+- Program and installer are both version 4.1.4.
+- Aspiration needle: whenever the needle is homed it is now moved straight to its starting position, so it is not
+  left down at its home position where the table would crash into it. This applies to homing the needle alone, to
+  Home All, and to the homing at the start of an assay. The needle's generated homing file (homeZ.g) ends with the
+  same move, so a G28 typed in the command box or sent from a terminal also raises it: press Generate Config to send
+  the new file to the board.
+- Homing the table: the table is still homed before the needle, but the needle is raised to its starting position
+  first whenever it is homed and known to be below it, so the table does not run into it. The program does this
+  before it homes Table X, Table Y or all axes, and does not home the table if the needle could not be raised; the
+  generated homeX.g, homeY.g and homeall.g start with the same check. A needle that has not been homed since the
+  board was switched on cannot be raised this way: the board does not know where it is.
+- Main screen: the Upload and Tools buttons in the upper right corner have a transparent background.
 - Default settings: the table is set to 1600 steps/mm, up from 1066.67. The table was found to move exactly two thirds
   of the distance commanded, because it travels 2 mm per motor turn and not 3. Every default that was set on the old
-  scale is multiplied by 2/3 so that it means the same place or speed in real millimetres: the table's travel (X 240,
-  Y 370), its move, maximum and homing speeds, its acceleration and speed change, and the default locations of the tray
-  loading and sterilization positions, the sensors, the fluid ports and the aspiration needle. Saved settings keep
-  their own values.
+  scale is multiplied by 2/3 so that it means the same place in real millimetres: the table's travel (X 240, Y 370)
+  and the default locations of the tray
+  loading and sterilization positions, the sensors, the fluid ports and the aspiration needle. The table's speed, acceleration and
+  speed-change defaults are unchanged, so the table now moves at the speeds they state, half as fast again as before. Saved settings keep their own values.
 - Updates: the update list no longer has an entry for 4.0.4, whose installer file no longer exists, and has been
   rebuilt with the entry for 4.1.3.
+- Settings: the number fields no longer have limits of their own, so they no longer show "Value is out of range"
+  or refuse a value while it is being typed. The program checks the settings itself instead: a moment after the last
+  change, any setting outside what it allows is listed under the settings pages, with the value it should be at
+  least or at most. The Timeout field beside the command box has no limit either, nor does the number field of the
+  on-screen input window.
+- The Move To and Move... windows and the wizard's Number of animals field have no limits on the field either. Their
+  limits (the axis's travel, the room the axis has, 1 to the number of samples the trays hold) are rules checked by
+  the same rule check as the settings: the window says what is wrong with the value, and its Move, direction or Next
+  button stays off until the value is allowed.
+- The wizard's Number of animals field no longer shows "Value '' could not be converted" when it is first displayed
+  or emptied: an empty field now counts as 0, which keeps Next off.
 
 ## 4.1.3 - 2026-11-17
 

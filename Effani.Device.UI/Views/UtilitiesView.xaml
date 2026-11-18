@@ -579,8 +579,8 @@
 				<DockPanel LastChildFill="True">
 					<TextBlock DockPanel.Dock="Top" FontSize="22" FontWeight="Bold" Margin="0,0,0,10" Text="Commands" />
 					<DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-						<dx:SimpleButton DockPanel.Dock="Right" CornerRadius="3" Padding="18,12,18,12" Margin="6,0,0,0" Command="{Binding SendCommand}" Content="Send" />
-						<dxe:TextEdit CornerRadius="3" Padding="8,6,8,6" NullText="Command..." EditValue="{Binding SendCommandText, UpdateSourceTrigger=PropertyChanged}">
+						<dx:SimpleButton DockPanel.Dock="Right" CornerRadius="3" Padding="18,12,18,12" Margin="6,0,0,0" x:Name="SendButton" Command="{Binding SendCommand}" Content="Send" />
+						<dxe:TextEdit x:Name="SendText" CornerRadius="3" Padding="8,6,8,6" NullText="Command..." EditValue="{Binding SendCommandText, UpdateSourceTrigger=PropertyChanged}">
 							<dxe:TextEdit.InputBindings>
 								<!-- Enter sends the command, the same as the Send button -->
 								<KeyBinding Key="Return" Command="{Binding SendCommand}" />
@@ -591,7 +591,7 @@
 						<dxe:CheckEdit VerticalAlignment="Center" Margin="0,0,24,0" FontSize="11" LayoutTransform="1.5,0,0,1.5,0,0" Content="Show response" IsChecked="{Binding ReportSendResponse}"
 								ToolTip="Wait for the board to finish the command and show what it replies in the messages. Don't use this for commands that stop the board, such as M112." />
 						<TextBlock VerticalAlignment="Center" Margin="0,0,6,0" Text="Timeout (s)" />
-						<dxe:SpinEdit Width="120" VerticalAlignment="Center" IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1" MinValue="1" MaxValue="86400"
+						<dxe:SpinEdit Width="120" VerticalAlignment="Center" IsFloatValue="False" EditValueType="{x:Type sys:Int32}" Increment="1"
 								EditValue="{Binding SendTimeoutSeconds}"
 								ToolTip="How long to wait for the board to finish the command and reply, when Show response is ticked. Starts as the general board timeout from Settings." />
 					</StackPanel>

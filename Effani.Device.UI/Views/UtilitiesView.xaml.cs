@@ -26,6 +26,7 @@ namespace Effani.Device.UI
 				device.RefreshSettings();
 			DataContext = new UtilitiesViewModel(settingsService, processEngine, device, consoleMessages) { IsAssayRunning = isAssayRunning };
 			Closed += (s, e) => (DataContext as IDisposable)?.Dispose();
+			StartSpinners();
 			this.Height = (System.Windows.SystemParameters.PrimaryScreenHeight * 0.90);
 			this.Width = (System.Windows.SystemParameters.PrimaryScreenWidth * 0.90);
 #if DEBUG
@@ -123,8 +124,145 @@ namespace Effani.Device.UI
 			decimal? current = axis.Designation is not null && viewModel.Positions.TryGetValue(axis.Designation, out var now) ? now : null;
 			var dialog = new MoveByView(axis.Label, axis.Minimum, axis.Maximum, current) { Owner = this };
 			if (dialog.ShowDialog() == true && dialog.Distance is decimal distance)
-				viewModel.MoveAxisBy(axis, distance);
+				Issue(button, () => viewModel.MoveAxisBy(axis, distance));
 		}
+
+		#region Spinners
+		// A control that issues a command to the device carries a spinner from then until the command is over: it ran, failed,
+		// or was cleared from the queue. The view model says what it queues (JobQueued); which control that was for is worked
+		// out here, from the button being clicked at that moment or from the control named by the code that asked (Issue).
+
+		static UtilitiesView()
+		{
+			// every button, also the ones in the lists that drop down (which are not under the window in the visual tree)
+			EventManager.RegisterClassHandler(typeof(ButtonBase), ButtonBase.ClickEvent, new RoutedEventHandler(AnyButton_Click), true);
+		}
+		private static void AnyButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is not ButtonBase button || !ReferenceEquals(e.OriginalSource, sender) || Application.Current is null)
+				return;
+			foreach (var tools in Application.Current.Windows.OfType<UtilitiesView>())
+				tools.ButtonClicked(button);
+		}
+		private void StartSpinners()
+		{
+			if (DataContext is not UtilitiesViewModel viewModel)
+				return;
+			viewModel.JobQueued += Job_Queued;
+			_busyTimer.Tick += (s, e) => CheckSpinners();
+			Closed += (s, e) =>
+			{
+				viewModel.JobQueued -= Job_Queued;
+				_busyTimer.Stop();
+			};
+		}
+		/// <summary>
+		/// A button was clicked. What it queues while the click is handled is its own; so is what was queued just before, which
+		/// is how a switch works (its value is set, queuing the command, before its click is announced).
+		/// </summary>
+		private void ButtonClicked(ButtonBase button)
+		{
+			foreach (var job in _unclaimed)
+				Attach(button, job);
+			_unclaimed.Clear();
+			_issuer = button;
+			Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+			{
+				if (ReferenceEquals(_issuer, button))
+					_issuer = null;
+			});
+		}
+		/// <summary>Runs something that queues commands on behalf of a control that is not a button being clicked (a slider, a dialog's answer).</summary>
+		private void Issue(FrameworkElement control, Action action)
+		{
+			var before = _issuer;
+			_issuer = control;
+			try
+			{
+				action();
+			}
+			finally
+			{
+				_issuer = before;
+			}
+		}
+		private void Job_Queued(Job job)
+		{
+			if (!Dispatcher.CheckAccess())
+				return;
+			// Enter in the command box sends the command, the same as the Send button, which then carries the spinner
+			var issuer = _issuer ?? (SendText.IsKeyboardFocusWithin && Keyboard.IsKeyDown(Key.Return) ? SendButton : null);
+			if (issuer is not null)
+			{
+				Attach(issuer, job);
+				return;
+			}
+			// no control yet: a click announced within this same input claims it, otherwise it was not issued from a control
+			_unclaimed.Add(job);
+			Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () => _unclaimed.Remove(job));
+		}
+		/// <summary>Marks a control as waiting for a job; a button in a list that drops down also marks the button that opens the list, which stays in view when the list closes.</summary>
+		private void Attach(FrameworkElement control, Job job)
+		{
+			Track(control, job);
+			for (var parent = ParentOf(control); parent is not null; parent = ParentOf(parent))
+			{
+				if (parent is DevExpress.Xpf.Core.DropDownButton list)
+				{
+					Track(list, job);
+					break;
+				}
+			}
+		}
+		private static DependencyObject? ParentOf(DependencyObject element) =>
+			LogicalTreeHelper.GetParent(element) ?? (element is System.Windows.Media.Visual ? System.Windows.Media.VisualTreeHelper.GetParent(element) : null);
+		private void Track(FrameworkElement control, Job job)
+		{
+			if (!_busy.TryGetValue(control, out var spinner))
+				_busy[control] = spinner = new Spinner(new BusyAdorner(control, centred: control is ToggleButton));
+			spinner.Jobs.Add(job);
+			Show(control, spinner);
+			_busyTimer.Start();
+		}
+		/// <summary>Puts a control's spinner on the layer the control is now shown on (a list that drops down has a new one each time it opens).</summary>
+		private static void Show(FrameworkElement control, Spinner spinner)
+		{
+			var layer = control.IsVisible ? System.Windows.Documents.AdornerLayer.GetAdornerLayer(control) : null;
+			if (ReferenceEquals(layer, spinner.Layer))
+				return;
+			spinner.Layer?.Remove(spinner.Adorner);
+			layer?.Add(spinner.Adorner);
+			spinner.Layer = layer;
+		}
+		/// <summary>Takes the spinner off every control whose jobs are all over.</summary>
+		private void CheckSpinners()
+		{
+			foreach (var (control, spinner) in _busy.ToList())
+			{
+				spinner.Jobs.RemoveAll(job => job.IsFinished);
+				if (spinner.Jobs.Count > 0)
+				{
+					Show(control, spinner);
+					continue;
+				}
+				spinner.Layer?.Remove(spinner.Adorner);
+				spinner.Adorner.Stop();
+				_busy.Remove(control);
+			}
+			if (_busy.Count == 0)
+				_busyTimer.Stop();
+		}
+		private sealed class Spinner(BusyAdorner adorner)
+		{
+			public BusyAdorner Adorner { get; } = adorner;
+			public System.Windows.Documents.AdornerLayer? Layer { get; set; }
+			public System.Collections.Generic.List<Job> Jobs { get; } = new();
+		}
+		private readonly System.Collections.Generic.Dictionary<FrameworkElement, Spinner> _busy = new();
+		private readonly System.Collections.Generic.List<Job> _unclaimed = new();
+		private readonly System.Windows.Threading.DispatcherTimer _busyTimer = new() { Interval = TimeSpan.FromMilliseconds(150) };
+		private FrameworkElement? _issuer;
+		#endregion
 
 		#region Axis position slider
 		// The slider of an axis shows where the axis is. A drag of its handle moves the axis to where the handle is let go; a tap
@@ -217,9 +355,11 @@ namespace Effani.Device.UI
 			if (slider.DataContext is not AxisSpec axis || DataContext is not UtilitiesViewModel viewModel)
 				return;
 
+			// the box around the slider carries the spinner while the move it asked for is under way
+			var box = (slider.Parent as FrameworkElement)?.Parent as FrameworkElement ?? slider;
 			if (dragged)
 			{
-				viewModel.MoveAxisTo(axis, position);
+				Issue(box, () => viewModel.MoveAxisTo(axis, position));
 				return;
 			}
 			// a tap: ask for the position, once this press is over
@@ -228,7 +368,7 @@ namespace Effani.Device.UI
 				decimal? current = axis.Designation is not null && viewModel.Positions.TryGetValue(axis.Designation, out var now) ? now : null;
 				var dialog = new MoveAxisView(axis.Label, axis.Minimum, axis.Maximum, current) { Owner = this };
 				if (dialog.ShowDialog() == true && dialog.Position is decimal typed)
-					viewModel.MoveAxisTo(axis, typed);
+					Issue(box, () => viewModel.MoveAxisTo(axis, typed));
 			});
 		}
 		/// <summary>Ends a slide without moving the axis: the handle goes back to where the axis is.</summary>

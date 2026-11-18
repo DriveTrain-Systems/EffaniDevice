@@ -5,8 +5,8 @@ using System.Windows;
 namespace Effani.Device.UI
 {
 	/// <summary>
-	/// Asks for the position to move an axis to. Only a position on the axis's travel is accepted: the editor holds what is typed
-	/// to the travel, and Move stays off until the value is valid.
+	/// Asks for the position to move an axis to. Only a position on the axis's travel is accepted: the field takes any
+	/// number, and Move stays off, with the reason shown, until the position is on the travel.
 	/// </summary>
 	public partial class MoveAxisView : ThemedWindow
 	{
@@ -25,8 +25,9 @@ namespace Effani.Device.UI
 				+ $"A valid position is from {minimum:0.###} to {maximum:0.###} mm"
 				+ (current is decimal now ? $"; the axis is at {now:0.###} mm now." : ".")
 				+ " The move is added to the command queue.";
-			PositionEdit.MinValue = minimum;
-			PositionEdit.MaxValue = maximum;
+			// the field has no limits of its own: the travel is its rule, which Validate has checked
+			SettingsControl.SetLeast(PositionEdit, (double)minimum);
+			SettingsControl.SetMost(PositionEdit, (double)maximum);
 			PositionEdit.EditValue = Math.Clamp(current ?? minimum, minimum, maximum);
 			Loaded += (s, e) =>
 			{
@@ -52,10 +53,11 @@ namespace Effani.Device.UI
 		private bool Validate(out decimal position)
 		{
 			position = 0;
-			var valid = PositionEdit.EditValue is not null
-				&& decimal.TryParse(Convert.ToString(PositionEdit.EditValue, System.Globalization.CultureInfo.CurrentCulture), out position)
-				&& position >= _minimum && position <= _maximum;
-			Problem.Text = valid ? String.Empty : $"Enter a number from {_minimum:0.###} to {_maximum:0.###}.";
+			var number = PositionEdit.EditValue is not null
+				&& decimal.TryParse(Convert.ToString(PositionEdit.EditValue, System.Globalization.CultureInfo.CurrentCulture), out position);
+			var problem = number ? SettingsControl.RuleProblem(PositionEdit, "The position", (double)position) : $"Enter a number from {_minimum:0.###} to {_maximum:0.###}.";
+			var valid = problem is null;
+			Problem.Text = problem ?? String.Empty;
 			Problem.Visibility = valid ? Visibility.Collapsed : Visibility.Visible;
 			if (MoveButton is not null)
 				MoveButton.IsEnabled = valid;

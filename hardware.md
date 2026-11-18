@@ -29,20 +29,19 @@ Seven axes. Microstepping is x16 with interpolation on every axis.
 
 | Axis | Letter | Driver | Endstop input | Endstop end | Travel (mm) | Steps/mm | Current (mA) | Driver mode | Max speed (mm/min) |
 |---|---|---|---|---|---|---|---|---|---|
-| Table X | X | 1.0 | 1.io0.in | Low | 240 | 1600 | 400 | StealthChop | 600 |
-| Table Y | Y | 1.2 | 1.io1.in | High | 370 | 1600 | 400 | StealthChop | 600 |
+| Table X | X | 1.0 | 1.io0.in | Low | 240 | 1600 | 400 | StealthChop | 900 |
+| Table Y | Y | 1.2 | 1.io1.in | High | 370 | 1600 | 400 | StealthChop | 900 |
 | Aspirate (needle) | Z | 0.0 | io0.in | High | 90 | 1259.84 | 500 | SpreadCycle | 500 |
 | DNA Reagent pump | V | 0.4 | io4.in | High | 117 | 1259.84 | 1500 | SpreadCycle | 2000 |
 | KOH pump | W | 0.2 | io2.in | High | 117 | 1259.84 | 1500 | SpreadCycle | 2000 |
 | NADH pump | A | 0.1 | io1.in | High | 117 | 1259.84 | 1500 | SpreadCycle | 2000 |
 | Basal pump | B | 0.3 | io3.in | High | 117 | 1259.84 | 1500 | SpreadCycle | 2000 |
 
-Other motion settings: acceleration 333 mm/s² for the table and 500 for the other axes; move speeds Table X 467 and
-Table Y 400 mm/min; homing at 400 then 200 mm/min for the table; fluid is dispensed at 5 mm/min of syringe travel.
+Other motion settings: acceleration 500 mm/s² on every axis; move speeds Table X 700 and
+Table Y 600 mm/min; homing at 600 then 300 mm/min for the table; fluid is dispensed at 5 mm/min of syringe travel.
 
 The table's figures above are the program's defaults. Settings saved before the table's scale was corrected (see Table
-lead screws) still hold the old ones: 1066.67 steps/mm, travel 360 (or 364) and 555, speeds 700, 600 and 900, homing
-600 then 300, acceleration 500.
+lead screws) still hold the old ones: 1066.67 steps/mm and travel 360 (or 364) and 555.
 
 ### Table lead screws (X and Y)
 
@@ -63,9 +62,16 @@ therefore travels 2 mm for each turn of the motor, not 3, and the setting that m
 agree is 1600 steps/mm (3200 ÷ 2). This disagrees with the 3 mm lead of the 7549K75: either the screw fitted has a 2 mm
 lead, or the motor turns three times for every two turns of the screw.
 
-The program's defaults now use 1600 steps/mm. Every table position, location, travel length, speed and acceleration
-set while the scale was 1066.67 was in units of two thirds of a millimetre, so the defaults for all of them were
-multiplied by 2/3: the same places, and the motors turning as fast as before, in real millimetres. Settings saved before
+In McMaster-Carr's metric trapezoidal lead screws, 2 mm of travel per turn is the M10 × 2 mm size; its M12 screws are
+3 mm per turn. Measuring the outside diameter of the screw fitted (10 mm or 12 mm) therefore tells which of the two
+explanations holds. The screw's diameter has not been measured.
+
+The program's defaults now use 1600 steps/mm. Every table position, location and travel length set while the scale
+was 1066.67 was in units of two thirds of a millimetre, so the defaults for all of them were multiplied by 2/3: the
+same places in real millimetres. The speed, acceleration and speed-change defaults were left as they were (move 700
+and 600, maximum 900, homing 600 then 300 mm/min, acceleration 500 mm/s², speed change 120 mm/min): they are now in
+real millimetres, so the table moves and accelerates, and its motors turn, half as fast again as they did on the old
+scale. Settings saved before
 the change keep the old scale until they are changed the same way.
 
 ### Table motors (X and Y)
@@ -93,8 +99,8 @@ What follows from that:
   inductance × current), its torque starts to fall at about 2.6 turns per second on a 12 V supply and 5.2 on 24 V. On the
   measured 2 mm of travel per turn that is about 310 mm/min at 12 V and 620 mm/min at 24 V. The formula leaves out the
   motor's resistance and its back emf from turning, both large for this motor, so the real figures are lower. The
-  table's move speeds are 467 (X) and 400 (Y) mm/min and its maximum 600, so the table is run at or beyond the speed
-  where this motor loses torque.
+  table's move speeds are 700 (X) and 600 (Y) mm/min and its maximum 900, so the table is run beyond the speed where
+  this motor loses torque. On the old scale those settings were really 467, 400 and 600 mm/min.
 
 Not known: whether anything (a belt or gears) sits between a motor and its screw, and the supply voltage.
 
@@ -158,6 +164,14 @@ sizes of roughly a 50 to 60 ml and a 5 ml syringe. The syringes fitted are not k
 The program's settings against it: 1259.84 steps/mm is 200 steps at 16 microsteps on a 2.54 mm lead; the travel of
 90 mm is the whole stroke; the current of 500 mA is the rated current; the maximum and move speeds of 500 mm/min are
 well under the actuator's 2286. The program moves the needle 0.013 mm per microlitre aspirated.
+
+The needle homes at the bottom of its travel (90 mm, the high end), where it is down in the path of the table: the
+table crashes into it if it moves while the needle is there. Every homing of the needle must therefore be followed at
+once by a move to its starting position (0 by default, fully raised). The program does this after each homing it
+asks for, and the needle's generated homing file ends with the same move. The table is homed before the needle; before
+the table is homed the needle is raised to its starting position when it is homed and below it. Until the needle has
+been homed the board does not know where it is and cannot raise it, and the needle has no sensor at the top of its
+travel to raise it against.
 
 ## Switched outputs
 
@@ -258,6 +272,7 @@ parts are not known.
 Parts:
 
 - McMaster-Carr lead screw 7549K75: https://www.mcmaster.com/product/7549K75
+- McMaster-Carr metric trapezoidal lead screws: https://www.mcmaster.com/products/lead-screws/thread-type~metric-trapezoidal/
 - StepperOnline stepper motor 17HS13-0404S1: https://www.omc-stepperonline.com/nema-17-bipolar-1-8deg-26ncm-36-8oz-in-0-4a-12v-42x42x34mm-4-wires-17hs13-0404s1
 - StepperOnline linear actuator LMD14S13GF15-120: https://www.omc-stepperonline.com/nema-14-stepper-lead-screw-linear-actuator-1-5a-stroke-120mm-0-14nm-19-83oz-in-lead-2-54mm-0-1-with-sensor-lmd14s13gf15-120
 - StepperOnline linear actuator LMD8S11GD05-090: https://www.omc-stepperonline.com/nema-8-stepper-lead-screw-linear-actuator-0-5a-stroke-90mm-0-01nm-1-416oz-in-lead-2-54mm-0-1-with-sensor-lmd8s11gd05-090

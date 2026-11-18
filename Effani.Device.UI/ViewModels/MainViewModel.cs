@@ -474,7 +474,7 @@ namespace Effani.Device.UI
 				RaisePropertyChanged(nameof(AssayFullName));
 			}
 		}
-		public bool HerdIdAndNumberOfTestsComplete => !String.IsNullOrEmpty(HerdId) && NumberOfSamples != 0;
+		public bool HerdIdAndNumberOfTestsComplete => !String.IsNullOrEmpty(HerdId) && NumberOfSamples >= 1 && NumberOfSamples <= MaxNumberOfSamples;
 		public bool UsernameAndPasswordComplete => !String.IsNullOrEmpty(Username) && !String.IsNullOrEmpty(Password);
 		public string HerdId
 		{

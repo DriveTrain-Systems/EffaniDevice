@@ -23,17 +23,17 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task AlignForSterilization()
 		{
-			_processEngine.QueueCommand(new TableToTraySterilizationLocation(_device));
+			Queue(new TableToTraySterilizationLocation(_device));
 		}
 		[Command]
 		public async Task AlignForTrayLoading()
 		{
-			_processEngine.QueueCommand(new TableToTrayLoadingLocation(_device));
+			Queue(new TableToTrayLoadingLocation(_device));
 		}
 		[Command]
 		public async Task AlignForWaste()
 		{
-			_processEngine.QueueCommand(new AlignTableForWaste(_device));
+			Queue(new AlignTableForWaste(_device));
 		}
 		[Command]
 		public async Task AlignToFirstWell(object parameter)
@@ -43,9 +43,9 @@ namespace Effani.Device.UI
 			var well = plate.Wells.First();
 			CurrentWell = well;
 			if (parameter is AxisSpec axisSpec)
-				_processEngine.QueueCommand(new AlignWellToAxis(axisSpec.Axis, well, _device));
+				Queue(new AlignWellToAxis(axisSpec.Axis, well, _device));
 			else if (parameter is SensorSpec sensorSpec)
-				_processEngine.QueueCommand(new AlignWellToLocation(sensorSpec.Location, well, _device));
+				Queue(new AlignWellToLocation(sensorSpec.Location, well, _device));
 		}
 		[Command]
 		public async Task AlignToLastWell(object parameter)
@@ -57,9 +57,9 @@ namespace Effani.Device.UI
 			var well = plate.Wells.Last();
 			CurrentWell = well;
 			if (parameter is AxisSpec axisSpec)
-				_processEngine.QueueCommand(new AlignWellToAxis(axisSpec.Axis, well, _device));
+				Queue(new AlignWellToAxis(axisSpec.Axis, well, _device));
 			else if (parameter is SensorSpec sensorSpec)
-				_processEngine.QueueCommand(new AlignWellToLocation(sensorSpec.Location, well, _device));
+				Queue(new AlignWellToLocation(sensorSpec.Location, well, _device));
 		}
 		/// <summary>
 		/// Works the wells out again from the settings as they are now, before an Align uses them: First Well Location, the well and
@@ -88,7 +88,7 @@ namespace Effani.Device.UI
 		{
 			if (IsAssayRunning)
 				return;
-			_processEngine.QueueCommand(new NotifyComplete(_ =>
+			Queue(new NotifyComplete(_ =>
 			{
 				_device.ResetConfiguration();
 				Application.Current?.Dispatcher.BeginInvoke(() =>
@@ -169,7 +169,7 @@ namespace Effani.Device.UI
 				return (fileLocation, false, false);
 			if (IsAssayRunning)
 				return (fileLocation, true, false);
-			_processEngine.QueueCommand(new SendConfigFiles(_config.GeneratedFiles, SendConfigFilesComplete, _device));
+			Queue(new SendConfigFiles(_config.GeneratedFiles, SendConfigFilesComplete, _device));
 			_configGeneratedSinceOpened = true;
 			return (fileLocation, true, true);
 		}
@@ -216,13 +216,13 @@ namespace Effani.Device.UI
 		public async Task LaserOff(SensorSpec sensor)
 		{
 			if (sensor is DnaSensorSpec or NadhSensorSpec)
-				_processEngine.QueueCommand(new SwitchLaser(sensor is DnaSensorSpec, on: false, _device));
+				Queue(new SwitchLaser(sensor is DnaSensorSpec, on: false, _device));
 		}
 		[Command]
 		public async Task LaserOn(SensorSpec sensor)
 		{
 			if (sensor is DnaSensorSpec or NadhSensorSpec)
-				_processEngine.QueueCommand(new SwitchLaser(sensor is DnaSensorSpec, on: true, _device));
+				Queue(new SwitchLaser(sensor is DnaSensorSpec, on: true, _device));
 		}
 		/// <summary>
 		/// Queues a move of an axis to a position (mm) on its travel. Returns false, queuing nothing, when the position is outside
@@ -232,41 +232,41 @@ namespace Effani.Device.UI
 		{
 			if (position < axisSpec.Minimum || position > axisSpec.Maximum)
 				return false;
-			_processEngine.QueueCommand(new MoveAbsolute(position, _device, axisSpec));
+			Queue(new MoveAbsolute(position, _device, axisSpec));
 			return true;
 		}
 		/// <summary>Queues a move of an axis by a distance (mm) from where it is: negative is back, toward 0.</summary>
 		public void MoveAxisBy(AxisSpec axisSpec, decimal distance)
 		{
 			if (distance != 0)
-				_processEngine.QueueCommand(new MoveRelative(distance, _device, axisSpec));
+				Queue(new MoveRelative(distance, _device, axisSpec));
 		}
 		[Command]
 		public async Task MoveRapid(List<object> parameters)
 		{
 			var axisSpec = (AxisSpec)parameters[0];
 			var distance = Convert.ToDecimal(parameters[1]);
-			_processEngine.QueueCommand(new MoveRelative(distance, _device, axisSpec));
+			Queue(new MoveRelative(distance, _device, axisSpec));
 		}
 		[Command]
 		public async Task MoveToStart(AxisSpec axisSpec)
 		{
-			_processEngine.QueueCommand(new MoveToStartingLocation(axisSpec.Axis, _device));
+			Queue(new MoveToStartingLocation(axisSpec.Axis, _device));
 		}
 		[Command]
 		public async Task MoveToStartingLocations()
 		{
-			_processEngine.QueueCommand(new MoveToStartingLocations(_device));
+			Queue(new MoveToStartingLocations(_device));
 		}
 		[Command]
 		public async Task TrayUvOff()
 		{
-			_processEngine.QueueCommand(new TrayUvOff(_device));
+			Queue(new TrayUvOff(_device));
 		}
 		[Command]
 		public async Task TrayUvOn()
 		{
-			_processEngine.QueueCommand(new TrayUvOn(_device));
+			Queue(new TrayUvOn(_device));
 		}
 		[Command]
 		public void PrimeFluid()
@@ -276,12 +276,12 @@ namespace Effani.Device.UI
 			job.Commands.Add(new EmitFluid(Axis.Koh, _config.Settings.InitialKohFluidPrimingVolume, _device));
 			job.Commands.Add(new EmitFluid(Axis.Nadh, _config.Settings.InitialNadhFluidPrimingVolume, _device));
 			job.Commands.Add(new EmitFluid(Axis.Basal, _config.Settings.InitialBasalFluidPrimingVolume, _device));
-			_processEngine.QueueJob(job);
+			Queue(job);
 		}
 		[Command]
 		public async Task GetBoardDiagnostics(int boardNumber)
 		{
-			_processEngine.QueueCommand(new GetBoardDiagnostics(boardNumber, _device, ShowBoardDiagnostics));
+			Queue(new GetBoardDiagnostics(boardNumber, _device, ShowBoardDiagnostics));
 		}
 		/// <summary>Shows a board's diagnostics in a window of their own; called on the process engine thread.</summary>
 		private void ShowBoardDiagnostics(GetBoardDiagnostics command)
@@ -323,17 +323,17 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task Home(AxisSpec axisSpec)
 		{
-			_processEngine.QueueCommand(new Home(_device, axisSpec));
+			Queue(new Home(_device, axisSpec));
 		}
 		//[Command]
 		//public async Task AspirateFluid(AxisSpec axisSpec)
 		//{
-		//	_processEngine.QueueCommand(new AspirateFluid(_config.TestMediaAspirationVolume, _device));
+		//	Queue(new AspirateFluid(_config.TestMediaAspirationVolume, _device));
 		//}
 		[Command]
 		public async Task HomeAll()
 		{
-			_processEngine.QueueCommand(new HomeAll(_device));
+			Queue(new HomeAll(_device));
 		}
 		[Command]
 		public async Task AlignToNextWell(object parameter)
@@ -347,19 +347,19 @@ namespace Effani.Device.UI
 			var well = wells[nextIndex];
 			CurrentWell = well;
 			if (parameter is AxisSpec axisSpec)
-				_processEngine.QueueCommand(new AlignWellToAxis(axisSpec.Axis, well, _device));
+				Queue(new AlignWellToAxis(axisSpec.Axis, well, _device));
 			else if (parameter is SensorSpec sensorSpec)
-				_processEngine.QueueCommand(new AlignWellToLocation(sensorSpec.Location, well, _device));
+				Queue(new AlignWellToLocation(sensorSpec.Location, well, _device));
 		}
 		[Command]
 		public async Task ChamberUvOff()
 		{
-			_processEngine.QueueCommand(new ChamberUvOff(_device));
+			Queue(new ChamberUvOff(_device));
 		}
 		[Command]
 		public async Task ChamberUvOn()
 		{
-			_processEngine.QueueCommand(new ChamberUvOn(_device));
+			Queue(new ChamberUvOn(_device));
 		}
 		[Command]
 		public async Task ClearMessages()
@@ -395,12 +395,12 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task EmitFluid(AxisSpec axisSpec)
 		{
-			_processEngine.QueueCommand(new EmitFluid(axisSpec.Axis, EmitFluidVolume, _device));
+			Queue(new EmitFluid(axisSpec.Axis, EmitFluidVolume, _device));
 		}
 		[Command]
 		public async Task ReprimeIfNeeded(AxisSpec axisSpec)
 		{
-			_processEngine.QueueCommand(new ReprimeIfNeeded(axisSpec.Axis, _device));
+			Queue(new ReprimeIfNeeded(axisSpec.Axis, _device));
 		}
 		[Command]
 		public async Task ApplyConfig()
@@ -410,7 +410,7 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task Aspirate(AxisSpec axisSpec)
 		{
-			_processEngine.QueueCommand(new Aspirate(_config.Settings.KohAspirationVolume, _device));
+			Queue(new Aspirate(_config.Settings.KohAspirationVolume, _device));
 		}
 		[Command]
 		public async Task UploadSettings()
@@ -425,11 +425,11 @@ namespace Effani.Device.UI
 			{
 				case DnaSensorSpec:
 					SetSensorReading(sensor, ReadingPending);
-					_processEngine.QueueCommand(new ReadDna(_device, command => ShowSensorReading(sensor, command.Result)));
+					Queue(new ReadDna(_device, command => ShowSensorReading(sensor, command.Result)));
 					break;
 				case NadhSensorSpec:
 					SetSensorReading(sensor, ReadingPending);
-					_processEngine.QueueCommand(new ReadNadh(_device, command => ShowSensorReading(sensor, command.Result)));
+					Queue(new ReadNadh(_device, command => ShowSensorReading(sensor, command.Result)));
 					break;
 			}
 			Mouse.OverrideCursor = Cursors.Arrow;
@@ -473,12 +473,12 @@ namespace Effani.Device.UI
 		[Command]
 		public async Task EnableWifi()
 		{
-			_processEngine.QueueCommand(new SetWifiEnabled(true, _device));
+			Queue(new SetWifiEnabled(true, _device));
 		}
 		[Command]
 		public async Task DisableWifi()
 		{
-			_processEngine.QueueCommand(new SetWifiEnabled(false, _device));
+			Queue(new SetWifiEnabled(false, _device));
 		}
 		[Command]
 		public async Task SetWifi()
@@ -493,7 +493,7 @@ namespace Effani.Device.UI
 				DXMessageBox.Show("Enter a WiFi username first; the selected authentication needs one.", "Set WiFi");
 				return;
 			}
-			_processEngine.QueueCommand(new SetWifi(Settings.WifiAuthentication, Settings.WifiSsid, Settings.WifiUsername, Settings.WifiPassword, _device));
+			Queue(new SetWifi(Settings.WifiAuthentication, Settings.WifiSsid, Settings.WifiUsername, Settings.WifiPassword, _device));
 		}
 		/// <summary>Updates are not checked for (or installed) while an assay is running.</summary>
 		public bool CanCheckForUpdates() => !IsAssayRunning;
@@ -535,7 +535,7 @@ namespace Effani.Device.UI
 		{
 			if (String.IsNullOrWhiteSpace(_sendCommandText))
 				return;
-			_processEngine.QueueCommand(new SendCommand(_sendCommandText, _device, ReportSendResponse, TimeSpan.FromSeconds(Math.Max(1, SendTimeoutSeconds))));
+			Queue(new SendCommand(_sendCommandText, _device, ReportSendResponse, TimeSpan.FromSeconds(Math.Max(1, SendTimeoutSeconds))));
 		}
 	}
 }
