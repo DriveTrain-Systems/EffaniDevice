@@ -132,7 +132,8 @@ namespace Effani.Device.UI
 			_configNeedsGenerating = needs;
 			RaisePropertyChanged(nameof(ConfigNeedsGenerating));
 		}
-		private static string SentSignaturePath => System.IO.Path.Combine(SettingsService.DataFolder, "sent-config.sig");
+		// the emulated board has its own record: sending it a config says nothing about what the real board has
+		private static string SentSignaturePath => System.IO.Path.Combine(SettingsService.DataFolder, DeviceService.UseEmulator ? "sent-config-emulator.sig" : "sent-config.sig");
 		private static string? LoadSentSignature()
 		{
 			try { return System.IO.File.Exists(SentSignaturePath) ? System.IO.File.ReadAllText(SentSignaturePath).Trim() : null; }

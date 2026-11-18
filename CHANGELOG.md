@@ -24,6 +24,25 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+### Added
+
+- Board emulator: a new project, Drivetrain.Robotics.Emulator, stands in for the controller board so the program can
+  be run and tried with no board connected. Start the program with `--emulator` (in Visual Studio, the launch profile
+  "Effani Device (board emulator)"): nothing is then sent to a COM port. The emulated board answers the G-code the
+  program sends the way the board does: it runs config.g and the homing files, keeps where each axis is and whether
+  it is homed, takes as long over a move as the move would take, refuses to move an axis that is not homed, switches
+  outputs, gives sensor readings, receives the files Generate Config sends and restarts. A window shows its axes,
+  outputs and sensors and the G-code going to and from it, and can make it run faster than real time. Its files are
+  kept in the "Board Emulator" folder beside the program's data, and its record of which config it was sent is kept
+  apart from the real board's. It moves nothing, so it shows what the program does, not what the hardware will do.
+
+### Fixed
+
+- The generated homeall.g no longer starts with a check that raises a homed needle before the table homes: the board
+  marks every axis as not homed before it runs that file, so the check could never apply. The program itself still
+  raises the needle before it homes all axes, and homeX.g and homeY.g keep the check, which does apply there. A G28
+  for all axes typed in the command box or sent from a terminal is therefore not protected.
+
 ## 4.1.4 - 2026-11-17
 
 ### Added

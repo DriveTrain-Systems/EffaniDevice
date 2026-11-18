@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Effani Device": {
+      "commandName": "Project"
+    },
+    "Effani Device (board emulator)": {
+      "commandName": "Project",
+      "commandLineArgs": "--emulator"
+    }
+  }
+}

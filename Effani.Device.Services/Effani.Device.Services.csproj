@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Effani.Device.Control\Effani.Device.Control.csproj" />
     <ProjectReference Include="..\Effani.Device.DataCollection\Effani.Device.DataCollection.csproj" />
+    <ProjectReference Include="..\Drivetrain.Robotics.Emulator\Drivetrain.Robotics.Emulator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

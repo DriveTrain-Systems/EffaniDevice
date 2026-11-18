@@ -111,10 +111,10 @@ namespace Drivetrain.Robotics.Control
 		/// </summary>
 		public string? ClosePort()
 		{
-			if (!_initialized || !_serialPort.IsOpen)
+			if (!_initialized || !BoardIsOpen)
 				return null;
-			var name = _serialPort.PortName;
-			_serialPort.Close();
+			var name = BoardName;
+			CloseBoard();
 			return name;
 		}
 		/// <summary>
@@ -128,8 +128,39 @@ namespace Drivetrain.Robotics.Control
 			_closing.Set();
 			_disposing = true;
 			if (_initialized)
+				CloseBoard();
+		}
+		/// <summary>
+		/// Has the device talk to the board over <paramref name="link"/> instead of a COM port, from the next command on. Used to
+		/// run against the board emulator. Call it before the first command is sent.
+		/// </summary>
+		public void UseLink(IBoardLink link)
+		{
+			Initialize();
+			_link = link;
+			link.Received += Receive;
+		}
+		/// <summary>True when the device talks over a link (the board emulator) instead of a COM port.</summary>
+		public bool UsesLink => _link is not null;
+		private IBoardLink? _link;
+		private void WriteLineToBoard(string line)
+		{
+			if (_link is not null)
+				_link.WriteLine(line);
+			else
+				_serialPort.WriteLine(line);
+		}
+		private bool BoardIsOpen => _link is not null ? _link.IsOpen : _serialPort.IsOpen;
+		private string BoardName => _link is not null ? _link.Name : _serialPort.PortName;
+		private void CloseBoard()
+		{
+			if (_link is not null)
+				_link.Close();
+			else
 				_serialPort.Close();
 		}
+		/// <summary>Whether the board is there to connect to: its COM port exists (it goes away while a board restarts), or the link says so.</summary>
+		private bool BoardIsPresent(string name) => _link is not null ? _link.IsPresent : IsPortPresent(name);
 		/// <summary>
 		/// Discards the device configuration so that it is rebuilt from the current settings the next time it is needed.
 		/// Call this only while nothing is running (no assay, empty process queue): anything holding axis specifications
@@ -460,7 +491,7 @@ namespace Drivetrain.Robotics.Control
 					try
 					{
 						foreach (var line in lines)
-							_serialPort.WriteLine(line);
+							WriteLineToBoard(line);
 					}
 					finally
 					{
@@ -477,7 +508,7 @@ namespace Drivetrain.Robotics.Control
 					if (started)
 					{
 						// end the upload so the board goes back to running commands rather than writing them to the file
-						try { _serialPort.WriteLine("M29"); } catch { }
+						try { WriteLineToBoard("M29"); } catch { }
 					}
 					ClosePortAfterError(ex);
 					return $"Error: {ex.Message}";
@@ -503,10 +534,10 @@ namespace Drivetrain.Robotics.Control
 				try
 				{
 					OpenPortIfNeeded();
-					port = _serialPort.PortName;
+					port = BoardName;
 					upTimeBefore = ReadUpTime();
 					ReadData.Enqueue("Restarting the controller board...");
-					_serialPort.WriteLine("M999");
+					WriteLineToBoard("M999");
 					sent.Restart();
 				}
 				catch (Exception ex)
@@ -517,10 +548,10 @@ namespace Drivetrain.Robotics.Control
 				}
 
 				// keep reading (DataReceived does) until the board's USB connection goes
-				while (sent.Elapsed < RestartDropTimeout && IsPortPresent(port))
+				while (sent.Elapsed < RestartDropTimeout && BoardIsPresent(port))
 					Thread.Sleep(200);
-				var dropped = !IsPortPresent(port);
-				try { _serialPort.Close(); } catch (Exception ex) { Log.Debug(ex, "Error closing the port of a restarting board"); }
+				var dropped = !BoardIsPresent(port);
+				try { CloseBoard(); } catch (Exception ex) { Log.Debug(ex, "Error closing the port of a restarting board"); }
 
 				// wait for the board to start again (config.g waits for expansion boards and WiFi, so it can take a while)
 				var backTimeout = TimeoutFor(Settings.ApplyConfigTimeoutSeconds);
@@ -543,7 +574,7 @@ namespace Drivetrain.Robotics.Control
 					catch (Exception ex)
 					{
 						lastError = ex; // still starting up
-						try { if (_serialPort.IsOpen) _serialPort.Close(); } catch { }
+						try { if (BoardIsOpen) CloseBoard(); } catch { }
 					}
 				}
 				return $"Error: the controller board did not come back within {backTimeout.TotalSeconds:0} seconds of restarting" +
@@ -568,6 +599,8 @@ namespace Drivetrain.Robotics.Control
 		public void SelectPort(Settings settings)
 		{
 			Initialize();
+			if (_link is not null)
+				return; // no COM port is used
 			if (DetectPort)
 				return; // the port is found by asking each one for the firmware version instead (see FindBoardPort)
 			var name = $"COM{settings.ComPortNumber}";
@@ -644,9 +677,9 @@ namespace Drivetrain.Robotics.Control
 			try
 			{
 				foreach (var line in lines)
-					_serialPort.WriteLine(line);
+					WriteLineToBoard(line);
 				if (marker is not null)
-					_serialPort.WriteLine($"echo \"{marker}\"");
+					WriteLineToBoard($"echo \"{marker}\"");
 			}
 			catch
 			{
@@ -865,6 +898,19 @@ namespace Drivetrain.Robotics.Control
 			// unless the port is detected (DetectPort), follow the COM Port Number setting as it is now (the active settings, not the
 			// ones the configuration was built from), so a change takes effect with the next command
 			SelectPort(_settingsProvider());
+			if (_link is not null)
+			{
+				if (_link.IsOpen)
+					return;
+				OpenFresh(_link.Open);
+				if (_announcedPort != _link.Name)
+				{
+					_announcedPort = _link.Name;
+					Log.Information("Connected to {Link}", _link.Name);
+					ReadData.Enqueue($"Connected to {_link.Name}: no controller board is being used.");
+				}
+				return;
+			}
 			if (_serialPort.IsOpen)
 				return;
 			if (!DetectPort)
@@ -1052,8 +1098,8 @@ namespace Drivetrain.Robotics.Control
 				return;
 			try
 			{
-				if (_serialPort.IsOpen)
-					_serialPort.Close();
+				if (BoardIsOpen)
+					CloseBoard();
 			}
 			catch (Exception closeEx)
 			{

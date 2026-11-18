@@ -389,8 +389,10 @@ G1 {x.Designation}{x.StartingPosition} F{Math.Min(Settings.AspirateMoveSpeed, x.
 				");
 				WriteGeneratedFile(Path.Combine(folder, $"home{x.Designation}.g"), homeTextBuilder.ToString());
 			}
-			// the table is homed first: the needle is raised before it starts, when the board knows where the needle is
-			var homeAllBuilder = new StringBuilder(RaiseNeedleFirst(spec).TrimStart('\r', '\n'));
+			// No check of the needle here, unlike in the table's own homing files: G28 without an axis marks every axis as not
+			// homed before it runs this file, so the board no longer knows where the needle is by the time the file could ask.
+			// The program raises the needle itself before it sends G28 (DeviceControl.HomeAll).
+			var homeAllBuilder = new StringBuilder();
 			foreach (var x in spec.Axes)
 			{
 				homeAllBuilder.AppendLine($"M98 P\"home{x.Designation}.g\" ; home {x.Label} axis");

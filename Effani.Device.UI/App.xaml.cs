@@ -61,14 +61,29 @@ namespace Effani.Device.UI
 			SettingsService.ConfirmMigration = question =>
 				MessageBox.Show(question, "Migrate Settings", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.Yes;
 #endif
+			// started with --emulator, the program runs against an emulated controller board: nothing is sent to a COM port. This is
+			// decided before the device is first used, which creating the main window does.
+			DeviceService.UseEmulator = Array.Exists(e.Args, a => String.Equals(a, "--emulator", StringComparison.OrdinalIgnoreCase));
 			var startupForm = AppHost.Services.GetRequiredService<MainWindow>();
 			startupForm.Show();
+			if (DeviceService.UseEmulator)
+				ShowEmulator(startupForm);
 
 			base.OnStartup(e);
 
 			DevExpress.Xpf.Core.ApplicationThemeHelper.UpdateApplicationThemeName();
 		}
 
+		/// <summary>
+		/// Shows the emulated board's window in front of the main window, as a reminder that no board is in use. In a method of
+		/// its own so that the emulator's assembly is only loaded when the emulator is used.
+		/// </summary>
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		private static void ShowEmulator(Window owner)
+		{
+			if ((AppHost!.Services.GetRequiredService<IDeviceService>() as DeviceService)?.Emulator is Drivetrain.Robotics.Emulator.BoardEmulator emulator)
+				new EmulatorView(emulator) { Owner = owner }.Show();
+		}
 		protected override async void OnExit(ExitEventArgs e)
 		{
 			await AppHost!.StopAsync();
