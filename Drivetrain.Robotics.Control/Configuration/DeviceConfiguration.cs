@@ -191,8 +191,18 @@ namespace Drivetrain.Robotics.Control
 			foreach (var axis in axes)
 				CheckInputPort($"{axis.Label} endstop", axis.EndstopBoardPort);
 
-			CheckDuplicates("Input port", axes.Select(a => ($"{a.Label} endstop", a.EndstopBoardPort.Designation)));
-			CheckDuplicates("Temperature input", sensors.Select(s => (s.Label, s.PortDesignation!)));
+			// a sensor on the input side of an IO connector shares those inputs with the endstops, and needs one that can read a voltage
+			var sensorsOnInputs = sensors.Where(s => s.PortKind == PortKind.Input).ToList();
+			foreach (var sensor in sensorsOnInputs)
+			{
+				CheckInputPort(sensor.Label, sensor.BoardPort);
+				if (!AnalogInputPorts.Contains(sensor.Port))
+					warnings.Add($"{sensor.Label} is on {sensor.PortDesignation}, which cannot read an analog sensor: on a Duet 3 Mini 5+ only {string.Join(" and ", AnalogInputPorts.Select(n => $"io{n}.in"))} can, as can the temperature inputs. The board will refuse the sensor.");
+			}
+
+			CheckDuplicates("Input port", axes.Select(a => ($"{a.Label} endstop", a.EndstopBoardPort.Designation))
+				.Concat(sensorsOnInputs.Select(s => (s.Label, s.PortDesignation!))));
+			CheckDuplicates("Temperature input", sensors.Where(s => s.PortKind != PortKind.Input).Select(s => (s.Label, s.PortDesignation!)));
 
 			var outputs = GetActuatorOutputs();
 			foreach (var output in outputs)
@@ -206,6 +216,8 @@ namespace Drivetrain.Robotics.Control
 		private static string EscapeGCodeString(string? text) => (text ?? "").Replace("\"", "\"\"");
 		/// <summary>Installed drivers per board (Duet 3 Mini 5+: drivers 0-4).</summary>
 		private const int DriversPerBoard = 5;
+		/// <summary>The IO connectors whose input side can read an analog voltage (Duet 3 Mini 5+: io3.in and io6.in).</summary>
+		private static readonly int[] AnalogInputPorts = { 3, 6 };
 		private List<(int Index, string Label, BoardPort Port)> GetActuatorOutputs() => new()
 		{
 			(0, "tray UV", BoardPort.Output(Settings.TrayUvBoardNumber, Settings.TrayUvPortNumber)),
@@ -431,8 +443,8 @@ G1 {x.Designation}{x.StartingPosition} F{Math.Min(Settings.AspirateMoveSpeed, x.
 				BoardPort.Input(Settings.BasalEndstopBoardNumber, Settings.BasalEndstopPortNumber),
 				Settings.BasalLocation, Settings.BasalSyringeLoadingPosition))))));
 
-			spec.Sensors.Add(new DnaSensorSpec("DNA Sensor", Settings.DnaSensorNumber, Settings.DnaSensorBoardNumber, Settings.DnaSensorPortNumber, Settings.DnaSensorReadHigh, Settings.DnaSensorReadLow, Settings.DnaSensorLocation));
-			spec.Sensors.Add(new NadhSensorSpec("NADH Sensor", Settings.NadhSensorNumber, Settings.NadhSensorBoardNumber, Settings.NadhSensorPortNumber, Settings.NadhSensorReadHigh, Settings.NadhSensorReadLow, Settings.NadhSensorLocation));
+			spec.Sensors.Add(new DnaSensorSpec("DNA Sensor", Settings.DnaSensorNumber, Settings.DnaSensorBoardNumber, Settings.DnaSensorPortNumber, Settings.DnaSensorReadHigh, Settings.DnaSensorReadLow, Settings.DnaSensorLocation, Settings.DnaSensorPortKind));
+			spec.Sensors.Add(new NadhSensorSpec("NADH Sensor", Settings.NadhSensorNumber, Settings.NadhSensorBoardNumber, Settings.NadhSensorPortNumber, Settings.NadhSensorReadHigh, Settings.NadhSensorReadLow, Settings.NadhSensorLocation, Settings.NadhSensorPortKind));
 			return spec;
 		}
 		/// <summary>The number of sample wells on the table: every well of every tray.</summary>

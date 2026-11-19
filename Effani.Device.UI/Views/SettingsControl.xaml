@@ -21,6 +21,10 @@
             <control:PortKind>IoOutput</control:PortKind>
             <control:PortKind>Laser</control:PortKind>
         </x:Array>
+        <x:Array x:Key="SensorPortKinds" Type="{x:Type control:PortKind}">
+            <control:PortKind>Temp</control:PortKind>
+            <control:PortKind>Input</control:PortKind>
+        </x:Array>
         <SolidColorBrush  x:Key="LevelOneColor" Color="#efefef"/>
         <SolidColorBrush  x:Key="LevelTwoColor" Color="#dfdfdf"/>
         <SolidColorBrush  x:Key="LevelThreeColor" Color="#d0d0d0"/>
@@ -534,7 +538,10 @@
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the DNA sensor is connected">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" local:SettingsControl.Least="0" local:SettingsControl.Most="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Temp Input" ToolTip="Temperature input (tempN) to which the DNA sensor is connected">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Kind" ToolTip="Temp: a temperature input (tempN). Input: the input side of an IO connector (ioN.in); on a Duet 3 Mini 5+ only io3.in and io6.in can read an analog sensor, and an endstop cannot be on the same input">
+                                <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{StaticResource SensorPortKinds}" EditValue="{Binding DnaSensorPortKind, UpdateSourceTrigger=PropertyChanged}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Number of the input to which the DNA sensor is connected: the N of tempN when the Port Kind is Temp, or of ioN.in when it is Input">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" local:SettingsControl.Least="0" local:SettingsControl.Most="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding DnaSensorPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Index" ToolTip="Configuration index of the DNA sensor">
@@ -553,7 +560,10 @@
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Board Number" ToolTip="Control board number to which the NADH sensor is connected">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" local:SettingsControl.Least="0" local:SettingsControl.Most="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorBoardNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Temp Input" ToolTip="Temperature input (tempN) to which the NADH sensor is connected">
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Kind" ToolTip="Temp: a temperature input (tempN). Input: the input side of an IO connector (ioN.in); on a Duet 3 Mini 5+ only io3.in and io6.in can read an analog sensor, and an endstop cannot be on the same input">
+                                <dxe:ComboBoxEdit IsTextEditable="False" ItemsSource="{StaticResource SensorPortKinds}" EditValue="{Binding NadhSensorPortKind, UpdateSourceTrigger=PropertyChanged}" />
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Port Number" ToolTip="Number of the input to which the NADH sensor is connected: the N of tempN when the Port Kind is Temp, or of ioN.in when it is Input">
                                 <dxe:SpinEdit IsFloatValue="False" Increment="1" local:SettingsControl.Least="0" local:SettingsControl.Most="10" EditValueType="{x:Type sys:Int32}" EditValue="{Binding NadhSensorPortNumber, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Style="{StaticResource ConfigSetting}" Label="Index" ToolTip="Configuration index of the NADH sensor">

@@ -24,6 +24,14 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+### Added
+
+- The DNA and NADH sensors can be on the input side of an IO connector (ioN.in) as well as on a temperature input
+  (tempN). Each sensor has a new Port Kind setting, Temp or Input, beside its board and port number; settings saved
+  before stay on temperature inputs. The connection warnings report a sensor on an IO input that cannot read an
+  analog voltage (on a Duet 3 Mini 5+ only io3.in and io6.in can) and a sensor sharing an input with an endstop or
+  with the other sensor.
+
 ## 4.1.6 - 2026-11-18
 
 ### Fixed

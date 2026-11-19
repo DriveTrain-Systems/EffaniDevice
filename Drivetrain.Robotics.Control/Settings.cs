@@ -1611,6 +1611,24 @@ namespace Drivetrain.Robotics.Control
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaSensorNumber)));
             }
         }
+        /// <summary>
+        /// The kind of input the DNA sensor is on: a temperature input (<see cref="PortKind.Temp"/>, "tempN") or the input side of
+        /// an IO connector (<see cref="PortKind.Input"/>, "ioN.in"). The port number is the N of whichever it is.
+        /// </summary>
+        public PortKind DnaSensorPortKind
+        {
+            get
+            {
+                return _dnaSensorPortKind;
+            }
+            set
+            {
+                if (_dnaSensorPortKind == value)
+                    return;
+                _dnaSensorPortKind = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DnaSensorPortKind)));
+            }
+        }
         public int DnaSensorPortNumber
         {
             get
@@ -2231,6 +2249,24 @@ namespace Drivetrain.Robotics.Control
                     return;
                 _nadhSensorNumber = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhSensorNumber)));
+            }
+        }
+        /// <summary>
+        /// The kind of input the NADH sensor is on: a temperature input (<see cref="PortKind.Temp"/>, "tempN") or the input side of
+        /// an IO connector (<see cref="PortKind.Input"/>, "ioN.in"). The port number is the N of whichever it is.
+        /// </summary>
+        public PortKind NadhSensorPortKind
+        {
+            get
+            {
+                return _nadhSensorPortKind;
+            }
+            set
+            {
+                if (_nadhSensorPortKind == value)
+                    return;
+                _nadhSensorPortKind = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NadhSensorPortKind)));
             }
         }
         public int NadhSensorPortNumber
@@ -3565,6 +3601,8 @@ namespace Drivetrain.Robotics.Control
         PortKind _dnaLaserPortKind = PortKind.IoOutput;
         int _dnaSensorBoardNumber = 1;
         int _dnaSensorPortNumber = 0;
+        PortKind _dnaSensorPortKind = PortKind.Temp;
+        PortKind _nadhSensorPortKind = PortKind.Temp;
         #endregion
 
         #region Events

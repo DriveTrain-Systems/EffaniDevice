@@ -7,7 +7,7 @@ What is known about the hardware the Effani program drives. Links to the manufac
 | Item | What is known |
 |---|---|
 | Main controller (board 0) | Duet 3 Mini 5+, WiFi version. It has five motor drivers (0 to 4). |
-| Second board (board 1) | A board on the CAN bus at address 1. The program treats it as having the same connectors as a Mini 5+ (five drivers, `io` ports, `temp` inputs, `out6`/laser). Its model is not known. |
+| Second board (board 1) | A board on the CAN bus at address 1. It is the same board as board 0, a Duet 3 Mini 5+, with the same connectors (five drivers, `io` ports, `temp` inputs, `out6`/laser). |
 | Firmware | RepRapFirmware 3.7.0. The version on board 1 is not known. |
 | WiFi module firmware | Not known. WPA2-Enterprise WiFi needs RepRapFirmware 3.5.1 or later, which 3.7.0 satisfies, together with WiFi module firmware 2.1.0 or later. |
 | Connection to the PC | USB serial. The board is found by sending `M115` to each COM port; a Duet identifies itself by USB vendor ID `1D50`. The link is put in raw mode with `M575 P0 S2`. |
@@ -227,6 +227,14 @@ the program switches a laser on, and the 6 seconds the program waits before a re
 Defined with `M308 S{n} P"{pin}" Y"linear-analog" ... B0 C4095` and read with
 `M409 K"sensors.analog[{n}].lastReading"`. A reading is taken 6 seconds after the laser is switched on. The sensor
 parts are not known.
+
+On a Duet 3 Mini 5+ only two of the `io` inputs can read an analog voltage: `io3.in` and `io6.in`. The inputs of
+io0, io1, io2, io4 and io5 are digital only, so a linear analog sensor defined on one of them is refused. The `temp`
+inputs are analog.
+
+Each sensor's input is set by its board number, port kind and port number: the kind is Temp (`tempN`, the default) or
+Input (`ioN.in`). An input can have one user only, so a sensor cannot share an `io` input with an endstop or with the
+other sensor; the board answers "Pin ... is not free" to the second.
 
 ## Sample trays and the table
 
