@@ -100,6 +100,28 @@ namespace Drivetrain.Robotics.Control
 			var text = string.Concat(configuration._capture.Select(f => $"{f.Key}\n{f.Value}\n"));
 			return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(text)));
 		}
+		/// <summary>
+		/// What each axis and sensor is connected to as <paramref name="settings"/> have it, for showing beside them: an axis's
+		/// motor driver ("1.0", under <see cref="DriverKey"/>) and endstop input ("1.io0.in", under <see cref="EndstopKey"/>), and a
+		/// sensor's number and input ("S0, 1.temp0", under <see cref="SensorKey"/>). Built from the settings as they are now, not
+		/// from the configuration in use, which is only rebuilt between commands.
+		/// </summary>
+		public static IReadOnlyDictionary<string, string> GetConnections(Settings settings)
+		{
+			var spec = new DeviceConfiguration(settings, withoutPlates: true).CreateDeviceSpec();
+			var connections = new Dictionary<string, string>();
+			foreach (var axis in spec.Axes)
+			{
+				connections[DriverKey(axis.Label)] = axis.DriverBoardPort.Designation;
+				connections[EndstopKey(axis.Label)] = axis.EndstopBoardPort.Designation;
+			}
+			foreach (var sensor in spec.Sensors)
+				connections[SensorKey(sensor.Label)] = $"S{sensor.SensorNumber}, {sensor.PortDesignation}";
+			return connections;
+		}
+		public static string DriverKey(string axisLabel) => $"driver:{axisLabel}";
+		public static string EndstopKey(string axisLabel) => $"endstop:{axisLabel}";
+		public static string SensorKey(string sensorLabel) => $"sensor:{sensorLabel}";
 		/// <summary>Full paths of the files written by the last <see cref="GenerateConfigFiles"/> call (config.g is last).</summary>
 		public IReadOnlyList<string> GeneratedFiles => _generatedFiles.OrderBy(f => Path.GetFileName(f) == "config.g").ToList();
 		private readonly List<string> _generatedFiles = new();

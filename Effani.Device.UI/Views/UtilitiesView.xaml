@@ -37,6 +37,7 @@
 				<Style x:Key="NoScrollListBox" TargetType="ListBox"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBox"><ItemsPresenter /></ControlTemplate></Setter.Value></Setter></Style>
 				<local:PassThroughConverter x:Key="PassThroughConverter"/>
 			<local:AxisPositionConverter x:Key="AxisPositionConverter"/>
+			<local:ConnectionConverter x:Key="ConnectionConverter"/>
 			<local:AxisPositionValueConverter x:Key="AxisPositionValueConverter"/>
 			<local:AxisHomedConverter x:Key="AxisHomedConverter"/>
 			<local:AxisHomedBrushConverter x:Key="AxisHomedBrushConverter"/>
@@ -156,16 +157,18 @@
 						<StackPanel Orientation="Vertical">
 							<TextBlock Width="200" x:Name="label" FontSize="15" Margin="0,1,5,0">
 								<TextBlock.Text>
-									<MultiBinding StringFormat="{}Axis {0}, {1}">
-										<Binding Path="Designation" />
-										<Binding Path="DriverPort" />
+									<!-- the driver and, below, the endstop input as the settings now have them -->
+									<MultiBinding Converter="{StaticResource ConnectionConverter}" ConverterParameter="driver">
+										<Binding />
+										<Binding ElementName="axesList" Path="DataContext.Connections" />
 									</MultiBinding>
 								</TextBlock.Text>
 							</TextBlock>
 							<TextBlock Width="200" FontSize="15" Margin="0,1,5,0">
 								<TextBlock.Text>
-									<MultiBinding StringFormat="{}{0}">
-										<Binding Path="Driver.Endstop.SensorPort" />
+									<MultiBinding Converter="{StaticResource ConnectionConverter}" ConverterParameter="endstop">
+										<Binding />
+										<Binding ElementName="axesList" Path="DataContext.Connections" />
 									</MultiBinding>
 								</TextBlock.Text>
 							</TextBlock>
@@ -424,9 +427,10 @@
 						<TextBlock Width="200" Text="{Binding Label}" FontSize="22" FontWeight="Bold" Margin="0,1,5,0" />
 						<TextBlock Width="200" x:Name="label" FontSize="15" Margin="0,1,5,0">
 							<TextBlock.Text>
-								<MultiBinding StringFormat="{}S{0}, {1}">
-									<Binding Path="SensorNumber" />
-									<Binding Path="PortDesignation" />
+								<!-- the sensor's number and input as the settings now have them -->
+								<MultiBinding Converter="{StaticResource ConnectionConverter}">
+									<Binding />
+									<Binding Path="DataContext.Connections" RelativeSource="{RelativeSource AncestorType=dx:ThemedWindow}" />
 								</MultiBinding>
 							</TextBlock.Text>
 						</TextBlock>

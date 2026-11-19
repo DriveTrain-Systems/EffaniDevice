@@ -53,6 +53,14 @@ namespace Effani.Device.UI
 			DependencyProperty.RegisterAttached("Least", typeof(double), typeof(SettingsControl), new PropertyMetadata(double.NaN));
 		public static double GetLeast(DependencyObject element) => (double)element.GetValue(LeastProperty);
 		public static void SetLeast(DependencyObject element, double value) => element.SetValue(LeastProperty, value);
+		/// <summary>
+		/// What a setting must be greater than, for one that may be as small as you like but not this value itself (a speed above
+		/// 0); set on its field in the XAML in place of <see cref="LeastProperty"/>. Checked by <see cref="CheckRules"/>, not by the field.
+		/// </summary>
+		public static readonly DependencyProperty AboveProperty =
+			DependencyProperty.RegisterAttached("Above", typeof(double), typeof(SettingsControl), new PropertyMetadata(double.NaN));
+		public static double GetAbove(DependencyObject element) => (double)element.GetValue(AboveProperty);
+		public static void SetAbove(DependencyObject element, double value) => element.SetValue(AboveProperty, value);
 		/// <summary>The most a setting may be; set on its field in the XAML. Checked by <see cref="CheckRules"/>, not by the field.</summary>
 		public static readonly DependencyProperty MostProperty =
 			DependencyProperty.RegisterAttached("Most", typeof(double), typeof(SettingsControl), new PropertyMetadata(double.NaN));
@@ -60,14 +68,16 @@ namespace Effani.Device.UI
 		public static void SetMost(DependencyObject element, double value) => element.SetValue(MostProperty, value);
 
 		/// <summary>
-		/// Checks a value against the rule its field carries (<see cref="LeastProperty"/>, <see cref="MostProperty"/>): null when
+		/// Checks a value against the rule its field carries (<see cref="LeastProperty"/> or <see cref="AboveProperty"/>, <see cref="MostProperty"/>): null when
 		/// the value is allowed, otherwise what is wrong with it. Used for the settings pages and by any other window whose
 		/// number field has limits (the move windows, the number of samples), so every limit is checked and worded the same way.
 		/// </summary>
-		public static string? RuleProblem(DependencyObject field, string name, double value) => RuleProblem(name, value, GetLeast(field), GetMost(field));
-		private static string? RuleProblem(string name, double value, double least, double most)
+		public static string? RuleProblem(DependencyObject field, string name, double value) => RuleProblem(name, value, GetLeast(field), GetMost(field), GetAbove(field));
+		private static string? RuleProblem(string name, double value, double least, double most, double above)
 		{
 			static string Number(double number) => number.ToString("0.#####", System.Globalization.CultureInfo.CurrentCulture);
+			if (!double.IsNaN(above) && value <= above)
+				return $"{name} is {Number(value)}: it should be greater than {Number(above)}.";
 			if (!double.IsNaN(least) && value < least)
 				return $"{name} is {Number(value)}: it should be at least {Number(least)}.";
 			if (!double.IsNaN(most) && value > most)
@@ -75,7 +85,7 @@ namespace Effani.Device.UI
 			return null;
 		}
 		/// <summary>A setting with a rule: its name on the pages, the setting it is, and what it allows.</summary>
-		private sealed record Rule(string Name, string Setting, double Least, double Most);
+		private sealed record Rule(string Name, string Setting, double Least, double Most, double Above);
 
 		/// <summary>Finds the rules on the pages and has them checked whenever a setting changes, or other settings become the active ones.</summary>
 		private void StartRules()
@@ -90,8 +100,9 @@ namespace Effani.Device.UI
 						continue;
 					var least = GetLeast(field);
 					var most = GetMost(field);
-					if (!double.IsNaN(least) || !double.IsNaN(most))
-						_rules.Add(new Rule(RuleName(page, item), setting, least, most));
+					var above = GetAbove(field);
+					if (!double.IsNaN(least) || !double.IsNaN(most) || !double.IsNaN(above))
+						_rules.Add(new Rule(RuleName(page, item), setting, least, most, above));
 				}
 			}
 			_rulesTimer.Tick += (s, e) =>
@@ -142,7 +153,7 @@ namespace Effani.Device.UI
 					double value;
 					try { value = raw.ToDouble(System.Globalization.CultureInfo.InvariantCulture); }
 					catch { continue; }
-					if (RuleProblem(rule.Name, value, rule.Least, rule.Most) is string problem)
+					if (RuleProblem(rule.Name, value, rule.Least, rule.Most, rule.Above) is string problem)
 						problems.Add(problem);
 				}
 			}

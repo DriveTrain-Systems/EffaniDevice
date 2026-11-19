@@ -25,6 +25,16 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+### Changed
+
+- Fluid Syringe Speed may be any value greater than 0; it no longer has to be at least 0.1 mm/min.
+
+### Fixed
+
+- On Component Control, the lines under each axis and sensor that say what it is connected to (motor driver, endstop
+  input, sensor number and input) now follow the settings as they are changed. They used to keep what the settings
+  held when Tools was opened, until the config was generated or other settings were made active.
+
 ## 4.1.8 - 2026-11-18
 
 ### Added

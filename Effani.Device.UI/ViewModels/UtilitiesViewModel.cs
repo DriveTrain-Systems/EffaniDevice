@@ -76,12 +76,30 @@ namespace Effani.Device.UI
 			UpdateConfigNeedsGenerating();
 			UpdateLocationCautions();
 			UpdateHasSettingsChanges();
+			UpdateConnections();
 		}
 		private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			UpdateConfigNeedsGenerating();
 			UpdateLocationCautions();
 			UpdateHasSettingsChanges();
+			UpdateConnections();
+		}
+		/// <summary>
+		/// The board and port each axis and sensor is connected to, as the settings now have them: Component Control shows these
+		/// beside each axis and sensor, so a connection changed on the Settings tab shows there at once.
+		/// </summary>
+		public IReadOnlyDictionary<string, string> Connections => _connections;
+		private IReadOnlyDictionary<string, string> _connections = new Dictionary<string, string>();
+		private void UpdateConnections()
+		{
+			IReadOnlyDictionary<string, string> connections;
+			try { connections = DeviceConfiguration.GetConnections(_settingsService.Settings); }
+			catch { return; } // half-edited settings: leave what is shown as it was
+			if (_connections.Count == connections.Count && connections.All(c => _connections.TryGetValue(c.Key, out var was) && was == c.Value))
+				return;
+			_connections = connections;
+			RaisePropertyChanged(nameof(Connections));
 		}
 		/// <summary>
 		/// Checks each component location (the fluid ports, the needle, the sensors and the biopsy location) against the trays, their wells and the

@@ -338,7 +338,7 @@
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Emission Speed" local:SettingsControl.Note="How fast a syringe moves while it dispenses or primes, and how long the device waits after dispensing before it moves on." Orientation="Vertical">
                             <dxlc:LayoutItem Label="Fluid Syringe Speed (mm/min)" ToolTip="Speed at which a fluid syringe moves while emitting or priming, in mm/min (sent as the F of each emission move; 5 mm/min is about 0.08 mm/s). The board holds it to the pump's Max Speed.">
-                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="0.5" local:SettingsControl.Least="0.1" local:SettingsControl.Most="2000" EditValue="{Binding FluidSyringeSpeed, UpdateSourceTrigger=PropertyChanged}" />
+                                <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="True" Mask="{StaticResource DecimalMask}" Increment="0.5" local:SettingsControl.Above="0" local:SettingsControl.Most="2000" EditValue="{Binding FluidSyringeSpeed, UpdateSourceTrigger=PropertyChanged}" />
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Fluid Emission Pause (ms)" ToolTip="Milliseconds to wait before moving after dispensing fluid">
                                 <dxe:SpinEdit Style="{StaticResource DeviceControlSetting}" IsFloatValue="False" Increment="1" local:SettingsControl.Least="0" local:SettingsControl.Most="144000000" EditValueType="{x:Type sys:Int32}" EditValue="{Binding FluidEmissionDwell, UpdateSourceTrigger=PropertyChanged}" />
