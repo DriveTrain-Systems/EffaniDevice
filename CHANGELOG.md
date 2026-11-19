@@ -14,7 +14,8 @@ To release a version, say 4.1.2:
 3. Push the branch and the tag to GitHub: `git push github develop v4.1.2`. GitHub then drafts a Release called
    "Effani 4.1.2" with that section as its notes (`.github/workflows/release.yml`). If the tagged version has no section
    here, no release is drafted and the run fails saying so.
-4. Build `Setup\Effani Installer.aip`, which makes `Effani-Installer-4.1.2.exe`. Then build `Setup\EffaniUpdates.aip`
+4. Build `Setup\Effani Installer.aip`, which makes `Effani-Installer-4.1.2.exe` in `Setup\Setup Files` (a folder git
+   ignores). Then build `Setup\EffaniUpdates.aip`
    with an entry for 4.1.2 whose URL is
    `https://github.com/DriveTrain-Systems/EffaniDevice/releases/download/v4.1.2/Effani-Installer-4.1.2.exe`.
    It writes the update list to `Setup\EffaniUpdates-SetupFiles\EffaniUpdates.txt`.
@@ -23,6 +24,12 @@ To release a version, say 4.1.2:
    that moment.
 
 ## Unreleased
+
+### Changed
+
+- The installer is built into `Setup\Setup Files`, no longer into the Dropbox folder, where syncing got in the way of
+  the build. The update list takes the size and checksums of 4.1.7 from there; its entries for earlier versions
+  still read the installers in the Dropbox folder.
 
 ## 4.1.7 - 2026-11-18
 

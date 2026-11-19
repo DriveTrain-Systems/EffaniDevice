@@ -1,5 +1,18 @@
 ;aiu;
 
+[4.1.7]
+Name = Effani
+ProductVersion = 4.1.7.0
+URL = https://github.com/DriveTrain-Systems/EffaniDevice/releases/download/v4.1.7/Effani-Installer-4.1.7.exe
+Size = 179282069
+SHA256 = 47BAC242C12F1EF32A01E1419E8EF6F4CE8EB2070D72B8E5A5E3B5EF0D6E3121
+MD5 = 83bafddf1364cb549956b3c2f2de043e
+ServerFileName = Effani-Installer-4.1.7.exe
+Flags = Critical
+RegistryKey = HKLM\SOFTWARE\WOW6432Node\DriveTrain Systems\Effani
+Version = 4.1.7.0
+AutoCloseApplication = [APPDIR]Effani Device.exe
+
 [4.1.6]
 Name = Effani
 ProductVersion = 4.1.6.0
