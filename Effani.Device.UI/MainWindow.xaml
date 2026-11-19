@@ -19,6 +19,7 @@
 			<Setter Property="BorderBrush" Value="CornflowerBlue" />
 			<Setter Property="Padding" Value="20" />
 		</Style>
+		<BooleanToVisibilityConverter x:Key="UpdateNoticeVisibility" />
     </dx:ThemedWindow.Resources>
 	<Grid>
 		<!-- the background image is on the whole window, so it shows through the transparent toolbar as well as behind the wizard -->
@@ -42,6 +43,16 @@
 				</dx:SimpleButton.Content>
 			</dx:SimpleButton>
 		</StackPanel>
+		<!-- a newer version of the program was found (looked for each time the program or Tools opens) and has not been ignored -->
+		<Border Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="14,8,0,8" Padding="18,6,8,6" CornerRadius="6"
+				Background="#FFF8E1" BorderBrush="#F9A825" BorderThickness="2"
+				Visibility="{Binding IsBannerVisible, Source={x:Static local:UpdateWatch.Current}, Converter={StaticResource UpdateNoticeVisibility}}">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="{Binding Message, Source={x:Static local:UpdateWatch.Current}}" />
+				<dx:SimpleButton Margin="18,0,0,0" Padding="20,0,20,0" MinHeight="56" FontSize="20" CornerRadius="4" VerticalAlignment="Center" Content="See what's new" Click="WhatsNew_Click"
+						ToolTip="Show the release notes of the new version, with the choice of installing it or ignoring it" />
+			</StackPanel>
+		</Border>
 		<local:Wizard Grid.Row="1"></local:Wizard>
 		<!-- turns typing with the on-screen keyboard on and off; the same button is in the lower right corner of every window -->
 		<local:OnScreenInputToggle Grid.Row="0" Grid.RowSpan="2" />

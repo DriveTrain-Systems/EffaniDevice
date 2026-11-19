@@ -495,41 +495,6 @@ namespace Effani.Device.UI
 			}
 			Queue(new SetWifi(Settings.WifiAuthentication, Settings.WifiSsid, Settings.WifiUsername, Settings.WifiPassword, _device));
 		}
-		/// <summary>Updates are not checked for (or installed) while an assay is running.</summary>
-		public bool CanCheckForUpdates() => !IsAssayRunning;
-		[Command]
-		public async Task CheckForUpdates()
-		{
-			if (_checkingForUpdates)
-				return;
-			_checkingForUpdates = true;
-			try
-			{
-				UpdateStatus = "Checking for updates...";
-				var current = typeof(UtilitiesViewModel).Assembly.GetName().Version ?? new Version(0, 0);
-				var result = await _updateChecker.CheckAsync(current);
-				UpdateStatus = result.Message;
-				if (!result.IsUpdateAvailable)
-					return;
-
-				if (IsAssayRunning)
-				{
-					UpdateStatus += " Install it once the assay has finished.";
-					return;
-				}
-				var prompt = $"{result.Message}\n\nThe updater will close this program to install it. Run the updater now?";
-				if (DXMessageBox.Show(prompt, "Software Update", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-					UpdateChecker.StartUpdater();
-			}
-			catch (Exception ex)
-			{
-				UpdateStatus = $"Could not start the updater: {ex.Message}";
-			}
-			finally
-			{
-				_checkingForUpdates = false;
-			}
-		}
 		[Command]
 		public async Task Send()
 		{

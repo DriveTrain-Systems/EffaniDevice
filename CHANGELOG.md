@@ -25,11 +25,36 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+## 4.1.8 - 2026-11-18
+
+### Added
+
+- A newer version is looked for each time the program opens and each time Tools opens. When one is found, a notice
+  appears at the top of the main window and beside the software version in Tools, each with a "See what's new"
+  button. The button opens the release notes of the version found, with Install Now and Ignore. Ignore takes the
+  notice off the main window until the program is next started; Tools goes on showing it. Install Now is not
+  available while an assay is running.
+- Install Now downloads the installer the update list names, showing how far it has got, checks it against the
+  SHA-256 checksum in the list, then starts it and closes the program. A download that does not match is deleted
+  and not run. The Advanced Installer updater program is no longer started: it chose a version by its own rules,
+  without regard to the major number. Downloads are kept in `%LOCALAPPDATA%\Effani\Updates`.
+- Program and installer are version 4.1.8.
+
 ### Changed
 
+- The Check for Updates button in Tools is gone: checking is automatic. A check that fails, as on a device with no
+  network, shows nothing and is written to the log.
+- Only versions with the same major number as the running program are offered as updates. A version with a different
+  major number is software for different hardware.
 - The installer is built into `Setup\Setup Files`, no longer into the Dropbox folder, where syncing got in the way of
   the build. The update list takes the size and checksums of 4.1.7 from there; its entries for earlier versions
   still read the installers in the Dropbox folder.
+
+### Fixed
+
+- The program could not read the published update list: it looked for sections named "Update", and the list names
+  each section after its version. Check for Updates therefore always reported that the update information could not
+  be read.
 
 ## 4.1.7 - 2026-11-18
 

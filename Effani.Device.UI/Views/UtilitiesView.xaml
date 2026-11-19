@@ -18,6 +18,7 @@
     mc:Ignorable="d" d:DesignHeight="1024" d:DesignWidth="1980">
 	<dx:ThemedWindow.Resources>
 		<ResourceDictionary>
+			<BooleanToVisibilityConverter x:Key="UpdateNoticeVisibility" />
 			<Style TargetType="dxlc:LayoutItemLabel">
 				<Setter Property="FontWeight" Value="Normal"/>
 			</Style>
@@ -485,17 +486,20 @@
 							ToolTip="Close Tools and go back to the main screen" Click="Close_Click" />
 				</DataTemplate>
 			</dx:DXTabControl.ControlBoxLeftTemplate>
-			<!-- at the other end of the row of tabs: the software version, checking for updates and what the check reported -->
+			<!-- at the other end of the row of tabs: the software version and, when a newer one has been found, a notice of it -->
 			<dx:DXTabControl.ControlBoxRightTemplate>
 				<DataTemplate>
 					<StackPanel Orientation="Horizontal" Margin="14,4,6,4" VerticalAlignment="Center"
 							DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=dx:DXTabControl}}">
-						<TextBlock VerticalAlignment="Center" Margin="0,0,18,0" MaxWidth="460" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Right" Text="{Binding UpdateStatus}"
-								Visibility="{DXBinding 'UpdateStatus == null or UpdateStatus == `` ? `Collapsed` : `Visible`'}" />
 						<TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0" Text="Software" />
 						<TextBlock VerticalAlignment="Center" Opacity="0.7" Margin="0,0,14,0" Text="{Binding SoftwareVersion, StringFormat=Version {0}}" />
-						<dx:SimpleButton CornerRadius="3" Padding="16,0,16,0" MinHeight="54" VerticalAlignment="Center" Command="{Binding CheckForUpdatesCommand}" Content="Check for Updates"
-								ToolTipService.ShowOnDisabled="True" ToolTip="{DXBinding 'IsAssayRunning ? `Not available while an assay is running` : `Check whether a newer version of this software is available`'}" />
+						<!-- updates are looked for each time the program or this window opens; this shows only when one was found -->
+						<StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+								Visibility="{Binding IsUpdateAvailable, Source={x:Static local:UpdateWatch.Current}, Converter={StaticResource UpdateNoticeVisibility}}">
+							<TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#B26A00" Margin="4,0,14,0" Text="{Binding Message, Source={x:Static local:UpdateWatch.Current}}" />
+							<dx:SimpleButton CornerRadius="3" Padding="16,0,16,0" MinHeight="54" VerticalAlignment="Center" Content="See what's new" Click="WhatsNew_Click"
+									ToolTip="Show the release notes of the new version, with the choice of installing it" />
+						</StackPanel>
 					</StackPanel>
 				</DataTemplate>
 			</dx:DXTabControl.ControlBoxRightTemplate>

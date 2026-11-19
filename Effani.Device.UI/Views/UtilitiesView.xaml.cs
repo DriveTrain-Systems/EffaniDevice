@@ -27,6 +27,7 @@ namespace Effani.Device.UI
 			DataContext = new UtilitiesViewModel(settingsService, processEngine, device, consoleMessages) { IsAssayRunning = isAssayRunning };
 			Closed += (s, e) => (DataContext as IDisposable)?.Dispose();
 			StartSpinners();
+			_ = UpdateWatch.Current.CheckAsync(); // a newer version is looked for each time Tools opens
 			this.Height = (System.Windows.SystemParameters.PrimaryScreenHeight * 0.90);
 			this.Width = (System.Windows.SystemParameters.PrimaryScreenWidth * 0.90);
 #if DEBUG
@@ -78,6 +79,7 @@ namespace Effani.Device.UI
 		}
 #endif
 		private void Close_Click(object sender, System.Windows.RoutedEventArgs e) => Close();
+		private void WhatsNew_Click(object sender, System.Windows.RoutedEventArgs e) => UpdateWatch.Current.ShowWhatsNew(this);
 		/// <summary>
 		/// The gear of an axis: shows or hides the axis's settings under its row. The panel is built the first time, from the
 		/// fields of the settings pages (see <see cref="SettingsControl.CreateAxisSettingsPanel"/>).

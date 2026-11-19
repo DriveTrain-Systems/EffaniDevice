@@ -272,16 +272,6 @@ namespace Effani.Device.UI
 		public bool ConfigNeedsGenerating => _configNeedsGenerating;
 		/// <summary>The version of the running software (major.minor.build).</summary>
 		public string SoftwareVersion { get; } = typeof(UtilitiesViewModel).Assembly.GetName().Version?.ToString(3) ?? "unknown";
-		/// <summary>The outcome of the last check for a new software version, or the progress of a check under way.</summary>
-		public string UpdateStatus
-		{
-			get => _updateStatus;
-			private set
-			{
-				_updateStatus = value;
-				RaisePropertyChanged(nameof(UpdateStatus));
-			}
-		}
 		/// <summary>True when an assay is running; settings the device control uses are locked while it is.</summary>
 		public bool IsAssayRunning { get; init; }
 		public Well CurrentWell
@@ -457,9 +447,6 @@ namespace Effani.Device.UI
 		bool _reportSendResponse;
 		bool _isCommandQueueBusy;
 		int _sendTimeoutSeconds;
-		string _updateStatus = "";
-		bool _checkingForUpdates;
-		readonly UpdateChecker _updateChecker = new();
 		readonly ISettingsService _settingsService;
 		Settings? _attachedSettings;
 		bool _configNeedsGenerating;
