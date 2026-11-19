@@ -25,9 +25,12 @@ To release a version, say 4.1.2:
 
 ## Unreleased
 
+## 4.1.9 - 2026-11-18
+
 ### Changed
 
 - Fluid Syringe Speed may be any value greater than 0; it no longer has to be at least 0.1 mm/min.
+- Program and installer are version 4.1.9.
 
 ### Fixed
 

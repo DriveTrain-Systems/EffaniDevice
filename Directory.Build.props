@@ -9,6 +9,6 @@
     Keep in step with ProductVersion in Setup\Effani Installer.aip.
   -->
   <PropertyGroup>
-    <Version>4.1.8</Version>
+    <Version>4.1.9</Version>
   </PropertyGroup>
 </Project>
